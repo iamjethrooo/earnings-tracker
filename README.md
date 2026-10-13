@@ -12,7 +12,7 @@ dotnet test nerve-earnings-tracker.slnx --no-build --no-restore
 
 The committed source includes the complete v1 baseline migration, bundled catalog/artwork, Inter font, and isolated tests. The historical development migration chain is preserved in commit `89feb15`. Local provider caches and credentials are not needed to build or run the offline tests. Maintainer tests use Python 3.11+ and its standard library: `python -m unittest discover -s Tools -p "test_*.py"`.
 
-Launching the application can migrate the current user's database. Use a disposable Windows profile for manual testing; do not launch it merely to verify a build. The [v1.0.0 release plan](Docs/VELOPACK_PLAN.md) documents the separately approved database reset and packaging work; Velopack is not integrated yet.
+Launching the application can migrate the current user's database. Use a disposable Windows profile for manual testing; do not launch it merely to verify a build. Phase 2 now integrates Velopack bootstrap/local packaging; automatic application-update checks and update UI are not implemented. See the [release plan](Docs/VELOPACK_PLAN.md) and [Phase 2 verification/manual steps](Docs/UI-Phase-2-Velopack.md).
 
 Fresh databases use `20261013055107_InitialCreate` and initialize bundled games/catalog plus default settings, with no personal records. Old development databases are archived rather than upgraded by this baseline; do not open an archived database with the rebased application or use an old development executable against the new database. See the [Phase 1 record](Docs/PHASE1_REBASELINE_APPROVAL.md).
 
@@ -23,6 +23,14 @@ dotnet ef migrations has-pending-model-changes -- --database C:\path\design-time
 ```
 
 The local EF tool is pinned to `10.0.11`. Design-time commands require an explicit path and reject the normal `nerve_earnings_tracker.db` filename; ordinary application startup continues to use per-user storage.
+
+## Local installer
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File Tools/Release.ps1 -Version 1.0.0 -UnsignedLocal
+```
+
+This restores the pinned Velopack CLI/SDK `1.2.161`, publishes Windows x64 self-contained with runtime `10.0.12`, validates private-data exclusions, and creates unsigned limited-test artifacts under a new `artifacts` directory. It never publishes to GitHub or resets data. Broad public distribution requires signing and catalog review. The committed icon can be regenerated from its SVG with `python Tools/generate_icon.py`.
 
 ## Games catalog
 

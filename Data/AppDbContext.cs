@@ -32,27 +32,14 @@ namespace nerve_earnings_tracker.Data
             if (optionsBuilder.IsConfigured)
                 return;
 
-            var appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NerveEarningsTracker");
+            var appData = Utilities.AppDataPaths.DirectoryPath;
             Directory.CreateDirectory(appData);
             var path = Path.Combine(appData, "nerve_earnings_tracker.db");
             var legacyPath = Path.Combine(AppContext.BaseDirectory, "nerve_earnings_tracker.db");
-            if (!File.Exists(path) && File.Exists(legacyPath))
-            {
-                // SQLite backup includes committed WAL data and leaves the old database untouched.
-                using var source = new SqliteConnection(new SqliteConnectionStringBuilder
-                {
-                    DataSource = legacyPath,
-                    Mode = SqliteOpenMode.ReadOnly
-                }.ToString());
-                using var destination = new SqliteConnection(new SqliteConnectionStringBuilder
-                {
-                    DataSource = path
-                }.ToString());
-                source.Open();
-                destination.Open();
-                source.BackupDatabase(destination);
-            }
-            optionsBuilder.UseSqlite($"Data Source={path}");
+            // Verified temporary copy includes committed WAL data; no existing database is replaced.
+            if (!Utilities.AppDataPaths.HasOverride)
+                Utilities.DatabaseInitialization.CopyLegacyIfMissing(path, legacyPath);
+            optionsBuilder.UseSqlite(new SqliteConnectionStringBuilder { DataSource = path }.ToString());
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

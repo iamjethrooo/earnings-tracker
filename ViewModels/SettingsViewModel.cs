@@ -20,7 +20,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public string BuildLabel => Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
         .FirstOrDefault(attribute => attribute.Key == "ReleaseVersion")?.Value is { Length: > 0 } release
             ? $"Version {release}" : "Development build";
-    public string DataFolder => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NerveEarningsTracker");
+    public string DataFolder => AppDataPaths.DirectoryPath;
     internal SettingsViewModel(DbContextOptions<AppDbContext>? options = null)
     { settings = new(options); Reload(); }
     internal bool GamePass => settings.Subscriptions().Contains("PC Game Pass");

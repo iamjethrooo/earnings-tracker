@@ -8,6 +8,7 @@
         xmlns:controls="clr-namespace:nerve_earnings_tracker.Controls"
         mc:Ignorable="d"
         Title="Nerve Earnings Tracker" Height="720" Width="1200"
+        Icon="/nerve-earnings-tracker;component/Resources/App.ico"
         FontFamily="{StaticResource AppFont}"
         xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         WindowStyle="None"

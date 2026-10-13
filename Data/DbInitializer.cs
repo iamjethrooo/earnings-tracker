@@ -25,6 +25,10 @@ namespace nerve_earnings_tracker.Data
             if (games == null)
                 return;
 
+            // The non-null default on Game.Name must not make a missing seed name acceptable.
+            if (games.Any(game => game == null || string.IsNullOrWhiteSpace(game.Name)))
+                throw new InvalidDataException("The game seed contains a missing or empty name.");
+
             db.Games.AddRange(games);
             db.SaveChanges();
         }

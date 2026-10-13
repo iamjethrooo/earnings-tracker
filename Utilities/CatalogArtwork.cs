@@ -13,7 +13,7 @@ internal static class CatalogArtwork
     private static readonly SemaphoreSlim Downloads = new(4);
     private static readonly ConcurrentDictionary<string, Lazy<Task<ImageSource?>>> Pending = new();
     private static readonly DecodedArtworkCache Decoded = new();
-    internal static string CacheDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NerveEarningsTracker", "Artwork");
+    internal static string CacheDirectory => Path.Combine(AppDataPaths.DirectoryPath, "Artwork");
 
     internal static async Task<ImageSource?> LoadAsync(string url, string hash)
     {

@@ -127,7 +127,7 @@ namespace nerve_earnings_tracker.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ICommand OpenDetailsCommand { get; }
+        public ICommand? OpenDetailsCommand { get; }
 
 
         public GameItemViewModel(Game game, bool isBookmarked) : this(game, isBookmarked, null) { }

@@ -56,6 +56,19 @@ namespace nerve_earnings_tracker.Tests
         }
 
         [Fact]
+        public void MissingSeedNameFailsBeforeAnyGamesAreInserted()
+        {
+            File.WriteAllText(_seedFile, "[{\"Name\":\"Valid\"},{\"RatePerHour\":1}]");
+            using var database = new TestDatabase();
+            using var db = database.CreateContext();
+            db.Sessions.Add(new Session { GameName = "Preserved recording", Earnings = 1.23m });
+            db.SaveChanges();
+            Assert.Throws<InvalidDataException>(() => DbInitializer.Initialize(db, _seedFile));
+            Assert.Empty(db.Games);
+            Assert.Equal(1.23m, Assert.Single(db.Sessions).Earnings);
+        }
+
+        [Fact]
         public void FailedSeedSaveRollsBackEarlierInsertsAndCanBeRetried()
         {
             File.WriteAllText(_seedFile, "[{\"Name\":\"First\"},{\"Name\":\"Second\"}]");

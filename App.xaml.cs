@@ -2,6 +2,8 @@
 using nerve_earnings_tracker.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Windows;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace nerve_earnings_tracker
 {
@@ -10,6 +12,17 @@ namespace nerve_earnings_tracker
     /// </summary>
     public partial class App : Application
     {
+        private Mutex? _instanceMutex;
+        private bool _ownsInstanceMutex;
+        [STAThread]
+        private static void Main(string[] args)
+        {
+            Velopack.VelopackApp.Build().SetAutoApplyOnStartup(false).Run();
+            var app = new App();
+            app.InitializeComponent();
+            app.Run();
+        }
+
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -19,14 +32,23 @@ namespace nerve_earnings_tracker
             Views.StartupWindow? progress = null;
             try
             {
+                var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Utilities.AppDataPaths.DirectoryPath.ToUpperInvariant())));
+                _instanceMutex = new Mutex(false, @"Local\Nerve.EarningsTracker-" + identity);
+                try { _ownsInstanceMutex = _instanceMutex.WaitOne(0); }
+                catch (AbandonedMutexException) { _ownsInstanceMutex = true; }
+                if (!_ownsInstanceMutex)
+                {
+                    MessageBox.Show("The tracker is already running for this data folder. Close the other instance before opening it again.",
+                        "Tracker already running", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Shutdown();
+                    return;
+                }
                 progress = new Views.StartupWindow();
                 progress.Show();
                 await InitializeBeforeOpeningAsync(() =>
                 {
                     using var db = new AppDbContext();
-                    db.Database.Migrate();
-                    DbInitializer.Initialize(db);
-                    Utilities.AppSettings.InitializeDefaults(db);
+                    Utilities.DatabaseInitialization.Initialize(db);
                     // Catalog failure must not prevent access to the user's financial records.
                     try { Utilities.CatalogService.ImportBundled(db); }
                     catch (Exception ex) { System.Diagnostics.Trace.TraceError($"Catalog import failed: {ex}"); }
@@ -49,6 +71,13 @@ namespace nerve_earnings_tracker
                 if (progress != null) { progress.InitializationFinished = true; progress.Close(); }
                 ShutdownMode = shutdownMode;
             }
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            if (_ownsInstanceMutex) { _instanceMutex?.ReleaseMutex(); _ownsInstanceMutex = false; }
+            _instanceMutex?.Dispose();
+            base.OnExit(e);
         }
 
         internal static async Task InitializeBeforeOpeningAsync(Action initialize, Action openWindow)
