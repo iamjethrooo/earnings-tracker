@@ -7,6 +7,20 @@ namespace nerve_earnings_tracker.Data
 {
     class AppDbContext : DbContext
     {
+        private IDisposable? updateWork;
+        private void TrackUpdateWork() => updateWork ??= Utilities.UpdateRestartGuard.Shared.Enter();
+
+        public override void Dispose()
+        {
+            try { base.Dispose(); }
+            finally { Interlocked.Exchange(ref updateWork, null)?.Dispose(); }
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            try { await base.DisposeAsync(); }
+            finally { Interlocked.Exchange(ref updateWork, null)?.Dispose(); }
+        }
         public AppDbContext() { }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -28,6 +42,7 @@ namespace nerve_earnings_tracker.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            TrackUpdateWork();
             // Explicit database options must never initialize or copy the user's database.
             if (optionsBuilder.IsConfigured)
                 return;

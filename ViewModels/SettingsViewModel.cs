@@ -21,8 +21,11 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         .FirstOrDefault(attribute => attribute.Key == "ReleaseVersion")?.Value is { Length: > 0 } release
             ? $"Version {release}" : "Development build";
     public string DataFolder => AppDataPaths.DirectoryPath;
-    internal SettingsViewModel(DbContextOptions<AppDbContext>? options = null)
-    { settings = new(options); Reload(); }
+    public ApplicationUpdates? ApplicationUpdates { get; }
+    public bool CheckApplicationOnStartup => settings.Get("applicationUpdates.startup") != "false";
+    internal void SetApplicationStartup(bool value) => settings.Set("applicationUpdates.startup", value ? "true" : "false");
+    internal SettingsViewModel(DbContextOptions<AppDbContext>? options = null, ApplicationUpdates? applicationUpdates = null)
+    { ApplicationUpdates = applicationUpdates; settings = new(options); Reload(); }
     internal bool GamePass => settings.Subscriptions().Contains("PC Game Pass");
     internal bool AutomaticUpdates => settings.Get("updates.automatic") != "false";
     internal void SetGamePass(bool value) => settings.SaveSubscriptions(value ? ["PC Game Pass"] : []);

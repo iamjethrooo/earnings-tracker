@@ -4,5 +4,6 @@
     xmlns:converters="clr-namespace:nerve_earnings_tracker.Converters">
 
     <converters:MinutesToHoursConverter x:Key="MinutesToHoursConverter"/>
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
 </ResourceDictionary>

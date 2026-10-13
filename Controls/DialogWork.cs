@@ -13,6 +13,7 @@ internal sealed class DialogWork(UserControl owner, TextBlock status) : IDisposa
     internal async Task<T> RunAsync<T>(string message, Func<T> operation, bool committing = false)
     {
         if (IsRunning || IsDisposed) throw new InvalidOperationException("This dialog is not available for another operation.");
+        using var updateWork = Utilities.UpdateRestartGuard.Shared.Enter();
         IsRunning = true;
         owner.IsEnabled = false;
         status.Text = message;

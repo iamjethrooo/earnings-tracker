@@ -33,6 +33,7 @@ internal sealed class CatalogUpdates
 
     internal async Task<string> RefreshAsync(bool manual)
     {
+        using var updateWork = UpdateRestartGuard.Shared.Enter();
         if (!await RefreshLock.WaitAsync(0)) return "A catalog update is already running.";
         try
         {

@@ -14,6 +14,49 @@ namespace nerve_earnings_tracker
     public partial class MainWindow : Window
     {
         private readonly Func<NavigationPage, UserControl> _createPage;
+        internal Utilities.ApplicationUpdates? ApplicationUpdates { get; private set; }
+        internal bool IsEditorOpen => MainModal.Visibility == Visibility.Visible || MainModal.IsBusy
+            || MainContent.Content is Views.SessionsView { DataContext: ViewModels.SessionsViewModel sessions }
+                && sessions.Sessions.Any(item => item.IsEditing);
+
+        internal void AttachApplicationUpdates(Utilities.ApplicationUpdates updates)
+        {
+            ApplicationUpdates = updates;
+            ApplicationUpdateNotice.DataContext = updates;
+            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(VisibilityProperty, typeof(Controls.Modal))
+                .AddValueChanged(MainModal, ModalVisibilityChanged);
+            Closed += (_, _) =>
+            {
+                System.ComponentModel.DependencyPropertyDescriptor.FromProperty(VisibilityProperty, typeof(Controls.Modal))
+                    .RemoveValueChanged(MainModal, ModalVisibilityChanged);
+            };
+        }
+        private void ModalVisibilityChanged(object? sender, EventArgs e) => ApplicationUpdates?.RefreshRestartEligibility();
+        private void ApplicationUpdateNotice_Click(object sender, RoutedEventArgs e)
+        {
+            // The quiet notice must not discard an active inline draft or import/editor dialog.
+            if (!IsEditorOpen) NavigateTo(NavigationPage.Settings);
+        }
+
+        internal Action PrepareUpdateExit()
+        {
+            if (IsEditorOpen) throw new InvalidOperationException("Close the editing/import dialog before restarting.");
+            var page = MainContent.Content;
+            var enabled = IsEnabled;
+            void Restore() { IsEnabled = enabled; MainContent.Content = page; }
+            try
+            {
+                IsEnabled = false;
+                MainContent.Content = null;
+                MainContent.UpdateLayout();
+                // Flush queued Unloaded handlers (subscriptions and credential cleanup) before arming Update.exe.
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                if (page is IDisposable disposable) disposable.Dispose();
+                Trace.Flush();
+                return Restore;
+            }
+            catch { Restore(); throw; }
+        }
 
         public MainWindow() : this(null) { }
 
@@ -274,7 +317,7 @@ namespace nerve_earnings_tracker
                 case NavigationPage.Statistics:
                     return new Views.StatisticsView();
                 case NavigationPage.Settings:
-                    return new Views.SettingsView();
+                    return new Views.SettingsView(null, ApplicationUpdates);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(page));
             }

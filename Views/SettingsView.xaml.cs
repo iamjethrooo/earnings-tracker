@@ -14,10 +14,10 @@ public partial class SettingsView : UserControl
     private readonly SettingsViewModel model;
     private readonly DbContextOptions<AppDbContext>? options;
     public SettingsView() : this(null) { }
-    internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions)
+    internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions, ApplicationUpdates? applicationUpdates = null)
     {
         options = databaseOptions;
-        InitializeComponent(); model = new(options); DataContext = model;
+        InitializeComponent(); model = new(options, applicationUpdates); DataContext = model;
         GamePass.IsChecked = model.GamePass; Automatic.IsChecked = model.AutomaticUpdates;
         UpdateKeyStatus(); Unloaded += (_, _) => ApiKey.Clear();
     }
@@ -25,6 +25,17 @@ public partial class SettingsView : UserControl
     {
         try { KeyStatus.Text = string.IsNullOrEmpty(CatalogCredentials.Get()) ? "Not configured" : "Saved"; }
         catch { KeyStatus.Text = "Credential status unavailable"; }
+    }
+    private async void CheckApplication_Click(object sender, RoutedEventArgs e)
+    { if (model.ApplicationUpdates != null) await model.ApplicationUpdates.CheckAsync(); }
+    private async void DownloadApplication_Click(object sender, RoutedEventArgs e)
+    { if (model.ApplicationUpdates != null) await model.ApplicationUpdates.DownloadAsync(); }
+    private void CancelApplication_Click(object sender, RoutedEventArgs e) => model.ApplicationUpdates?.Cancel();
+    private void RestartApplication_Click(object sender, RoutedEventArgs e) => model.ApplicationUpdates?.Restart();
+    private void ApplicationStartup_Click(object sender, RoutedEventArgs e)
+    {
+        try { model.SetApplicationStartup(ApplicationStartup.IsChecked == true); }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceError(ex.ToString()); ApplicationStartup.IsChecked = ApplicationStartup.IsChecked != true; ShowFeedback("Application update preference could not be saved. Retry.", FeedbackTone.Error); }
     }
     private void Subscription_Click(object sender, RoutedEventArgs e)
     {

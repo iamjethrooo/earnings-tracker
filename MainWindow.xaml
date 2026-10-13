@@ -165,7 +165,14 @@
             </Grid>
 
             <!--Content-->
-            <ContentControl x:Name="MainContent" Grid.Column="1" Style="{StaticResource PageHost}"/>
+            <DockPanel Grid.Column="1">
+                <Button x:Name="ApplicationUpdateNotice" DockPanel.Dock="Top" Content="{Binding Notice}" Click="ApplicationUpdateNotice_Click"
+                        Style="{StaticResource SecondaryButton}" Margin="20,12,20,0" HorizontalAlignment="Right"
+                        AutomationProperties.LiveSetting="Polite" ToolTip="Finish editing, then open Application updates in Settings">
+                    <Button.Visibility><Binding Path="HasNotice" FallbackValue="Collapsed" Converter="{StaticResource BooleanToVisibilityConverter}"/></Button.Visibility>
+                </Button>
+                <ContentControl x:Name="MainContent" Style="{StaticResource PageHost}"/>
+            </DockPanel>
 
           </Grid>
             <controls:Modal x:Name="MainModal" Visibility="Collapsed"/>

@@ -30,7 +30,7 @@
      <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" ToolTip="Verified Philippine PC games are added to Playable now. Availability expires after seven days without verification."/></Expander>
     </StackPanel></Border>
     <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Updates" Style="{StaticResource CompactSectionHeading}"/>
+     <TextBlock Text="Catalog updates" Style="{StaticResource CompactSectionHeading}"/>
      <DockPanel>
       <Button x:Name="Refresh" DockPanel.Dock="Right" Content="Refresh now" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="8,0,0,0"/>
       <CheckBox x:Name="Automatic" Content="Auto-check" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
@@ -74,6 +74,25 @@
      </WrapPanel>
     </StackPanel></Border>
    </Grid>
+   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="Application updates" Style="{StaticResource CompactSectionHeading}"/>
+    <CheckBox x:Name="ApplicationStartup" Content="Check when the application starts" IsChecked="{Binding CheckApplicationOnStartup, Mode=OneWay}" Click="ApplicationStartup_Click" Margin="0,0,0,8"/>
+    <StackPanel DataContext="{Binding ApplicationUpdates}">
+     <TextBlock Text="{Binding CurrentVersion, StringFormat=Installed version: {0}}" Foreground="{StaticResource SecondaryTextColor}"/>
+     <TextBlock Text="{Binding Message, TargetNullValue=Application updates are unavailable in this launch. Your saved data remains usable.}" AutomationProperties.LiveSetting="Polite"/>
+     <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="6" Margin="0,0,0,8">
+      <ProgressBar.Style><Style TargetType="ProgressBar"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsDownloading}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ProgressBar.Style>
+     </ProgressBar>
+     <WrapPanel>
+      <Button Content="Check for updates" Click="CheckApplication_Click" IsEnabled="{Binding CanCheck, FallbackValue=False}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Padding="10,7"/>
+      <Button Content="Download update" Click="DownloadApplication_Click" IsEnabled="{Binding CanDownload, FallbackValue=False}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Padding="10,7"/>
+      <Button Content="Cancel" Click="CancelApplication_Click" IsEnabled="{Binding CanCancel, FallbackValue=False}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Padding="10,7"/>
+      <Button Content="Restart and update" Click="RestartApplication_Click" IsEnabled="{Binding CanRestart, FallbackValue=False}" Style="{StaticResource PrimaryButton}" Margin="0,0,0,8" Padding="10,7"/>
+     </WrapPanel>
+     <TextBlock Text="{Binding RestartHint}" Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+     <TextBlock Text="You can keep working and restart later. Updates never download or restart automatically." Foreground="{StaticResource SecondaryTextColor}" Margin="0,4,0,0"/>
+    </StackPanel>
+   </StackPanel></Border>
   </StackPanel>
  </ScrollViewer>
   <Border Grid.Row="1" MaxWidth="760" Margin="20,0,20,20" Padding="0,12,0,0"
