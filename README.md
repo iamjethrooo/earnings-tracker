@@ -10,9 +10,19 @@ dotnet build nerve-earnings-tracker.slnx --no-restore
 dotnet test nerve-earnings-tracker.slnx --no-build --no-restore
 ```
 
-The committed source includes the existing EF Core migration history, bundled catalog/artwork, Inter font, and isolated tests. Local provider caches and credentials are not needed to build or run the existing offline tests. Maintainer tests use Python 3.11+ and its standard library: `python -m unittest discover -s Tools -p "test_*.py"`.
+The committed source includes the complete v1 baseline migration, bundled catalog/artwork, Inter font, and isolated tests. The historical development migration chain is preserved in commit `89feb15`. Local provider caches and credentials are not needed to build or run the offline tests. Maintainer tests use Python 3.11+ and its standard library: `python -m unittest discover -s Tools -p "test_*.py"`.
 
 Launching the application can migrate the current user's database. Use a disposable Windows profile for manual testing; do not launch it merely to verify a build. The [v1.0.0 release plan](Docs/VELOPACK_PLAN.md) documents the separately approved database reset and packaging work; Velopack is not integrated yet.
+
+Fresh databases use `20261013055107_InitialCreate` and initialize bundled games/catalog plus default settings, with no personal records. Old development databases are archived rather than upgraded by this baseline; do not open an archived database with the rebased application or use an old development executable against the new database. See the [Phase 1 record](Docs/PHASE1_REBASELINE_APPROVAL.md).
+
+For EF tooling, run `dotnet tool restore`, then supply an absolute scratch path, for example:
+
+```powershell
+dotnet ef migrations has-pending-model-changes -- --database C:\path\design-time.db
+```
+
+The local EF tool is pinned to `10.0.11`. Design-time commands require an explicit path and reject the normal `nerve_earnings_tracker.db` filename; ordinary application startup continues to use per-user storage.
 
 ## Games catalog
 

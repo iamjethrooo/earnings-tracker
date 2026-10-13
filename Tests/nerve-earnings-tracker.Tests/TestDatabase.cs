@@ -1,7 +1,5 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using nerve_earnings_tracker.Data;
 
 namespace nerve_earnings_tracker.Tests
@@ -12,15 +10,12 @@ namespace nerve_earnings_tracker.Tests
         private readonly SqliteConnection _connection = new("Data Source=:memory:;Foreign Keys=True");
         public DbContextOptions<AppDbContext> Options { get; }
 
-        public TestDatabase(string? targetMigration = null)
+        public TestDatabase()
         {
             _connection.Open();
             Options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(_connection).Options;
             using var db = CreateContext();
-            if (targetMigration == null)
-                db.Database.Migrate();
-            else
-                db.GetService<IMigrator>().Migrate(targetMigration);
+            db.Database.Migrate();
         }
 
         public AppDbContext CreateContext() => new(Options);

@@ -125,9 +125,9 @@ public class ImportEvidenceTests
     }
 
     [Fact]
-    public void MigrationKeepsExistingHistoryAndDoesNotInventSourceEvidence()
+    public void RepeatedBaselineMigrationKeepsHistoryAndDoesNotInventSourceEvidence()
     {
-        using var database = new TestDatabase("20261011100000_AddSessionChangeHistory");
+        using var database = new TestDatabase();
         using var db = database.CreateContext();
         db.Database.ExecuteSqlRaw("INSERT INTO SessionChanges (SessionId, ChangedAt, ChangeType, BeforeValuesJson, AfterValuesJson) VALUES (42, '2026-06-05', 'Deleted', {0}, {1});", "{\"Earnings\":1}", "{}");
         db.Database.Migrate();

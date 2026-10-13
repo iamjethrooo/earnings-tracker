@@ -25,6 +25,7 @@ namespace nerve_earnings_tracker.Tests
             using (var seed = database.CreateContext())
             {
                 Assert.Equal(seed.Database.GetMigrations(), seed.Database.GetAppliedMigrations());
+                Assert.EndsWith("_InitialCreate", Assert.Single(seed.Database.GetAppliedMigrations()));
                 Assert.False(seed.Database.HasPendingModelChanges());
                 seed.Games.Add(new Game { Name = "Test game", RatePerHour = 1m, MinutesCap = 60m });
                 seed.SaveChanges();
@@ -49,15 +50,21 @@ namespace nerve_earnings_tracker.Tests
         }
 
         [Fact]
-        public void UpgradingLegacySchemaPreservesSessionsPayoutRangesAndBookmarks()
+        public void RepeatedBaselineMigrationPreservesSessionsPayoutRangesAndBookmarks()
         {
-            using var database = new TestDatabase("20260910193006_AddGameName");
+            using var database = new TestDatabase();
             using (var legacy = database.CreateContext())
             {
-                // Use the actual old schema; the current EF model cannot insert into it.
+                // Explicit current values replace the historical development-only backfills.
                 legacy.Database.ExecuteSqlRaw("INSERT INTO Games (Id, Name, RatePerHour, MinutesCap, IsArchived) VALUES (1, 'Legacy game', '1.50', '60', 0);");
-                legacy.Database.ExecuteSqlRaw("INSERT INTO Payouts (Id, StartDate, EndDate) VALUES (1, '2026-06-01 00:00:00', '2026-06-30 00:00:00');");
-                legacy.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameId, GameName, PayoutId, Date, Duration, Status, Earnings) VALUES (1, 'Legacy game', 1, '2026-06-05 12:00:00', '00:10:00', 1, '1.25');");
+                legacy.Payouts.Add(new Payout { Id = 1, StartDate = new DateTime(2026, 6, 1), EndDate = new DateTime(2026, 6, 30),
+                    Date = new DateTime(2026, 6, 1), Type = "Payment", Status = "Legacy" });
+                legacy.SaveChanges();
+                legacy.Sessions.Add(new Session { GameId = 1, GameName = "Legacy game", PayoutId = 1,
+                    Date = new DateTime(2026, 6, 5, 12, 0, 0), RecordedDate = new DateTime(2026, 6, 5, 12, 0, 0),
+                    PostedDate = new DateTime(2026, 6, 5, 12, 0, 0), Duration = TimeSpan.FromMinutes(10),
+                    Status = Enums.SessionStatus.Verified, Earnings = 1.25m });
+                legacy.SaveChanges();
                 legacy.Database.ExecuteSqlRaw("INSERT INTO Bookmarks (GameId) VALUES (1);");
                 legacy.Database.Migrate();
             }
@@ -81,12 +88,12 @@ namespace nerve_earnings_tracker.Tests
         }
 
         [Fact]
-        public void PostedDateBackfillPreservesForceVerificationDatesAndMissingDates()
+        public void RepeatedBaselineMigrationPreservesPostedAndUnknownForceVerificationDates()
         {
-            using var database = new TestDatabase("20261009110000_AddSessionForceVerificationFlag");
+            using var database = new TestDatabase();
             using (var legacy = database.CreateContext())
             {
-                legacy.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameName, Date, RecordedDate, PostedDate, Duration, Status, Earnings, IsForceVerified) VALUES ('Ordinary', '2026-06-05 00:00:00', '2026-06-05 00:00:00', NULL, '00:10:00', 1, '1', 0);");
+                legacy.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameName, Date, RecordedDate, PostedDate, Duration, Status, Earnings, IsForceVerified) VALUES ('Ordinary', '2026-06-05 00:00:00', '2026-06-05 00:00:00', '2026-06-05 00:00:00', '00:10:00', 1, '1', 0);");
                 legacy.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameName, Date, RecordedDate, PostedDate, Duration, Status, Earnings, IsForceVerified) VALUES ('Force missing', '2026-06-05 00:00:00', '2026-06-05 00:00:00', NULL, '00:10:00', 1, '1', 1);");
                 legacy.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameName, Date, RecordedDate, PostedDate, Duration, Status, Earnings, IsForceVerified) VALUES ('Force known', '2026-06-05 00:00:00', '2026-06-05 00:00:00', '2026-06-10 00:00:00', '00:10:00', 1, '1', 1);");
                 legacy.Database.Migrate();

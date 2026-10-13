@@ -11,8 +11,8 @@ using nerve_earnings_tracker.Data;
 namespace nerve_earnings_tracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261011152844_AddGameCatalog")]
-    partial class AddGameCatalog
+    [Migration("20261013055107_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

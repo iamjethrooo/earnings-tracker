@@ -57,7 +57,7 @@ public class CatalogTests
     [Fact]
     public void MigrationAndRepeatedImportsPreserveFinancialAndPersonalData()
     {
-        using var database = new TestDatabase("20261010100000_AddGameCapResetDate");
+        using var database = new TestDatabase();
         int id;
         using (var db = database.CreateContext())
         {

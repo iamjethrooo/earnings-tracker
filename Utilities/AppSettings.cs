@@ -5,6 +5,19 @@ namespace nerve_earnings_tracker.Utilities;
 
 internal sealed class AppSettings(DbContextOptions<AppDbContext>? options = null)
 {
+    internal static void InitializeDefaults(AppDbContext db)
+    {
+        if (db.CatalogSettings.Find("updates.automatic") == null)
+            CatalogService.SetSetting(db, "updates.automatic", "true");
+        foreach (var service in CatalogSubscriptions.Services)
+        {
+            var key = "subscription." + service;
+            if (db.CatalogSettings.Find(key) == null)
+                CatalogService.SetSetting(db, key, "false");
+        }
+        db.SaveChanges();
+    }
+
     internal AppDbContext Context() => options == null ? new() : new(options);
     internal string Get(string key) { using var db = Context(); return CatalogService.GetSetting(db, key); }
     internal void Set(string key, string value)

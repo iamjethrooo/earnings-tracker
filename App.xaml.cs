@@ -26,6 +26,7 @@ namespace nerve_earnings_tracker
                     using var db = new AppDbContext();
                     db.Database.Migrate();
                     DbInitializer.Initialize(db);
+                    Utilities.AppSettings.InitializeDefaults(db);
                     // Catalog failure must not prevent access to the user's financial records.
                     try { Utilities.CatalogService.ImportBundled(db); }
                     catch (Exception ex) { System.Diagnostics.Trace.TraceError($"Catalog import failed: {ex}"); }
