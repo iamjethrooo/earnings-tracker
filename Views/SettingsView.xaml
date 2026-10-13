@@ -1,0 +1,88 @@
+<UserControl x:Class="nerve_earnings_tracker.Views.SettingsView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <UserControl.Resources>
+  <Style TargetType="TextBlock">
+   <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/>
+   <Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="0,0,0,6"/>
+  </Style>
+  <Style TargetType="Expander">
+   <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/>
+   <Setter Property="Margin" Value="0,8,0,0"/>
+  </Style>
+ </UserControl.Resources>
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+ <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <StackPanel Margin="20" MaxWidth="760" HorizontalAlignment="Stretch">
+   <TextBlock Text="Settings" Style="{StaticResource TabName}" Margin="0,0,0,14"/>
+   <TextBlock x:Name="Feedback" Foreground="{StaticResource SecondaryTextColor}" AutomationProperties.LiveSetting="Polite">
+    <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+     <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
+    </Style></TextBlock.Style>
+   </TextBlock>
+   <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <TextBlock Text="Subscriptions" Style="{StaticResource CompactSectionHeading}"/>
+     <CheckBox x:Name="GamePass" Content="PC Game Pass" Click="Subscription_Click" MinHeight="32" VerticalContentAlignment="Center" ToolTip="Select if your membership is active. Changes save automatically."/>
+     <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" ToolTip="Verified Philippine PC games are added to Playable now. Availability expires after seven days without verification."/></Expander>
+    </StackPanel></Border>
+    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <TextBlock Text="Updates" Style="{StaticResource CompactSectionHeading}"/>
+     <DockPanel>
+      <Button x:Name="Refresh" DockPanel.Dock="Right" Content="Refresh now" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="8,0,0,0"/>
+      <CheckBox x:Name="Automatic" Content="Auto-check" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
+     </DockPanel>
+     <Expander Header="Update details"><TextBlock Text="{Binding UpdateStatus}" Margin="0,8,0,0"/></Expander>
+    </StackPanel></Border>
+    <Border Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <DockPanel>
+      <TextBlock x:Name="KeyStatus" DockPanel.Dock="Right" Foreground="{StaticResource SecondaryTextColor}" Margin="12,0,0,0"/>
+      <TextBlock Text="IsThereAnyDeal API key" Style="{StaticResource CompactSectionHeading}" ToolTip="Optional. Enables manual live price refresh."/>
+     </DockPanel>
+     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <PasswordBox x:Name="ApiKey" Padding="8" MaxLength="1000" Background="{StaticResource DefaultBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" AutomationProperties.Name="Replacement IsThereAnyDeal API key" ToolTip="Optional key for live prices. Enter a replacement or leave blank to keep the saved key."/>
+      <Button Grid.Column="1" Content="Save" Click="SaveKey_Click" Style="{StaticResource PrimaryButton}" Padding="12,7" Margin="8,0,0,0"/>
+      <Button Grid.Column="2" Content="Remove" Click="RemoveKey_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" Margin="8,0,0,0"/>
+     </Grid>
+    </StackPanel></Border>
+    <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <TextBlock Text="Currency &amp; region" Style="{StaticResource CompactSectionHeading}"/>
+     <TextBlock Text="Philippines · PC"/>
+     <TextBlock Text="Prices: PHP · Earnings: USD" Margin="0" ToolTip="Region and currencies are fixed for the supported catalog."/>
+     <TextBlock Text="{Binding RateStatus}" Margin="0,8,0,0" Foreground="{StaticResource SecondaryTextColor}"/>
+    </StackPanel></Border>
+    <Border Grid.Row="4" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <TextBlock Text="Support &amp; about" Style="{StaticResource CompactSectionHeading}"/>
+     <Button Content="Export diagnostics" Click="Export_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" HorizontalAlignment="Left" ToolTip="Exports version, update timestamps and outcomes. Excludes credentials and financial records."/>
+     <StackPanel Margin="0,8,0,0">
+      <TextBlock Text="Metadata: IGDB · Prices: IsThereAnyDeal · Rates: Frankfurter"/>
+      <TextBlock Text="{Binding DataFolder, StringFormat=Local data: {0}}" Margin="0"/>
+     </StackPanel>
+    </StackPanel></Border>
+    <Border Grid.Row="6" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
+     <DockPanel>
+      <TextBlock Text="Coming later" DockPanel.Dock="Right" Foreground="{StaticResource SecondaryTextColor}" Margin="8,0,0,0"/>
+      <TextBlock Text="Planned settings" Style="{StaticResource CompactSectionHeading}"/>
+     </DockPanel>
+     <WrapPanel>
+      <TextBlock Text="Backup &amp; restore" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,24,0"/>
+      <TextBlock Text="Game-view defaults" Foreground="{StaticResource SecondaryTextColor}" Margin="0,0,24,0"/>
+      <TextBlock Text="Display preferences" Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+     </WrapPanel>
+    </StackPanel></Border>
+   </Grid>
+  </StackPanel>
+ </ScrollViewer>
+  <Border Grid.Row="1" MaxWidth="760" Margin="20,0,20,20" Padding="0,12,0,0"
+          BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,1,0,0">
+   <DockPanel>
+    <TextBlock x:Name="BuildFooter" Text="{Binding BuildLabel}" ToolTip="{Binding AssemblyVersionLabel}" DockPanel.Dock="Right"
+               FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Margin="12,0,0,0"/>
+    <TextBlock Text="Nerve Earnings Tracker" Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+   </DockPanel>
+  </Border>
+ </Grid>
+</UserControl>

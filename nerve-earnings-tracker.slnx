@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="nerve-earnings-tracker.csproj" />
+  <Project Path="Tests/nerve-earnings-tracker.Tests/nerve-earnings-tracker.Tests.csproj" />
+</Solution>

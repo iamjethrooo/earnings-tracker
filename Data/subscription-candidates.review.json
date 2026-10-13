@@ -1,0 +1,500 @@
+{
+  "CollectionHash": "369182cb97b126c8a072b91958ab53818e46ea4a05bef07bec5e3a4998d3522c",
+  "Decisions": [
+    {
+      "CandidateId": "c8ee54c3b5fdd74453e45f61",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102711Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b0ad3e8626fa0c7fb922565d",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102725Z",
+      "Evidence": "Reviewed survival terraforming game, corroborated by IGDB 143574 / Steam app 1284190; full Windows PH PC Game Pass entitlement"
+    },
+    {
+      "CandidateId": "c4304d20109e92140d9cf387",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102730Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "706a48eefccc4988f368a8aa",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102732Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "8ee8c084d780554a012be6f3",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102734Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "693d282d1e855e8732736a3f",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102736Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "8036551c2fc43c0736f62e8e",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102738Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "d6699ca206c0ea7c39bb1a22",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102740Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "3f886971b47bf593dfa1cec3",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102742Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b9f98604cdf506f159057f3e",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102744Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "7b876f84e2b56b1e903c8ba1",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102746Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "c97c40c165741afecc036811",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102748Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "7f287380b7d6c372de24aeda",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102750Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "a822cbc5c5f7130b2d96a0de",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102752Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "489f02639b84ca6ef238513f",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102754Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "4e6097799b4759d9eef4debc",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102759Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b0e0b76276bc55634a19977e",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102762Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b79e0963f5db17d38b92d66c",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102764Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "41cf647048673468198bacac",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102766Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ac1dc9889011c4c666b63784",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102768Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ad21b0a213574cdfd18f0450",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102770Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "da6f754ebfa194079146db88",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102772Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "92e6d0f57dbb212064c4bb4b",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102773Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "2eb7c19fab74bbb7fde8f445",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102775Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ba5bae1f3c97e32826967355",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102777Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "9023ca14ad06e5ecfed0a621",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102779Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "a02f7a658852a9faa1bccff7",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102781Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "033c2ae376f53a43d4fff17f",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102783Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "07718eb7f8c7a1aafbf7fc69",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102785Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "a35d08db56f82ce8171fd045",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102787Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "07ee7cf3d3e417dd3cff7963",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102789Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "834c1803cf4be7c497399ce1",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102790Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "696a2edf5dcd1bc5f96157c5",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102792Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "28f47e4b7bc8992ee1eb7d48",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102794Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "feeafe7979727d44f4658e16",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102796Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "0148c8fb9935763fdbf1c80d",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102800Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "6df2d965f8069e6345f67b2c",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102802Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "8f5819b905282ff88e46ebe9",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102803Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "0e40477f23867fd8937d85fe",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102805Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "378308eb0bf235537fe4721d",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102807Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "c5fc6392ca769b534e3456ba",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102809Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "581c1a76a1e153f95f9584e2",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102811Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "29b3f58af3a5916a0ce1bb7e",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102813Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "7f491506ca8e72587e52cd39",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102815Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "9dd5bb1f5dd0cd6ff31751f6",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102816Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "cc53cc76245b0ac50e7c039a",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102818Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "65936306ddd710cb0bb83f8b",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102820Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ec09c4d1348a20acc3fc0ecc",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102822Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "1017fb6a803ca72c5f07a707",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102824Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ca5eea6bbd616ca8f0171229",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102825Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "f5f8b50080362d9b15b62791",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102827Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "224355ba855e0844bd9894f9",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102829Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "ffd2784f702aa6bffeb5e93d",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102831Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b18d458a12cb0e88ee700a1d",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102833Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    },
+    {
+      "CandidateId": "b3d9a3bec3da4019a31e6b6e",
+      "Approved": true,
+      "IdentityConfirmed": true,
+      "EditionConfirmed": true,
+      "ReviewedBy": "Catalog maintainer assistant",
+      "CheckedAt": "2026-10-12T03:40:24.102836Z",
+      "Evidence": "Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID"
+    }
+  ]
+}

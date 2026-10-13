@@ -354,6 +354,17 @@ paket-files/
 **/__pycache__/
 *.pyc
 
+# Reusable local provider caches and catalog preparation intermediates.
+# Keep these files on disk so enrichment does not need another IGDB fetch.
+Data/IgdbCache/
+Data/igdb-candidates.json
+Data/itad-title-cache.json
+Data/itad-steam-cache.json
+Data/steam-free-cache.json
+Data/catalog-*-stage.json
+Data/catalog-stage.json
+Data/SubscriptionCache/
+
 # Cake - Uncomment if you are using it
 #tools/**
 #!tools/packages.config
@@ -427,3 +438,28 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# One-time focused provider research; reviewed mappings and snapshots are committed separately.
+Data/RemainingCache/
+Data/remaining-candidates.json
+
+# User databases, SQLite sidecars, and local recovery/export material.
+*.db
+*.db-*
+*.db3
+*.db3-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.bak
+*.backup
+PersonalData/
+Exports/
+DevelopmentBackups/
+
+# Local credentials and private signing material.
+.env.*
+*.key
+*.pem
+*.p12

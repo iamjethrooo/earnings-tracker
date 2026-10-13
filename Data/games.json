@@ -1,0 +1,3476 @@
+[
+    {
+        "Name": "Enlisted",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hogwarts Legacy",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Persona 5 Royal",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Elgato Game Capture",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ghost of Tsushima",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Detroit Become Human",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Eden",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Unreal Engine",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Last of Us Part I",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PS Remote Play",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Black Myth: Wukong",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Persona 3 Reload",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Red Dead Redemption",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Silent Hill 2",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Doki Doki Literature Club!",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Kingdom Come: Deliverance",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Yuzu",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Danganronpa Trigger Happy Havoc",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TWD Final",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cemu",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dispatch",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "mGBA",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "DeSmuME",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Danganronpa 2: Goodbye Despair",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cookie Clicker",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Death Stranding",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Star Wars Jedi: Survivor",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Shadow PC",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Life is Strange: Reunion",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "VTube Studio",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "OMORI",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fallen Order",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NieR Automata",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ShadPS4",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Days Gone",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Yakuza 0",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RetroArch",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Persona 4",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MGSV Phantom Pain",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Azahar Emulator",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Danganronpa Killing Harmony",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Stellar Blade",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Silent Hill f",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Final Fantasy VII Remake",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fire Alpaca",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Legends of IdleOn",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Discover",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Deduction",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "WEBFISHING",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Brotato",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Revolution Idle",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Death Stranding",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 5.0
+    },
+    {
+        "Name": "Death Stranding 2: On The Beach",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 5.0
+    },
+    {
+        "Name": "Kerbal Space",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 5.0
+    },
+    {
+        "Name": "Rocket League",
+        "IsArchived": true,
+        "MinutesCap": 60,
+        "RatePerHour": 2.0
+    },
+    {
+        "Name": "Trailmakers",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 5.0
+    },
+    {
+        "Name": "Binding of Isaac",
+        "IsArchived": true,
+        "MinutesCap": 60,
+        "RatePerHour": 1.0
+    },
+    {
+        "Name": "Roblox",
+        "IsArchived": true,
+        "MinutesCap": 60,
+        "RatePerHour": 0.0
+    },
+    {
+        "Name": "Trailmakers",
+        "IsArchived": true,
+        "MinutesCap": 1800,
+        "RatePerHour": 3.0
+    },
+    {
+        "Name": "Death Stranding",
+        "IsArchived": true,
+        "MinutesCap": 1800,
+        "RatePerHour": 3.0
+    },
+    {
+        "Name": "Death Stranding 2: On The Beach",
+        "IsArchived": true,
+        "MinutesCap": 1800,
+        "RatePerHour": 3.0
+    },
+    {
+        "Name": "Kerbal Space",
+        "IsArchived": true,
+        "MinutesCap": 1800,
+        "RatePerHour": 3.0
+    },
+    {
+        "Name": "Kerbal Space Program 2",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 5.0
+    },
+    {
+        "Name": "Kerbal Space Program 2",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 3.0
+    },
+    {
+        "Name": "Generation Zero",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Watch Dogs",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Just Cause 4",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sleeping Dogs: Definitive Edition",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Watch Dogs Legion",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Avatar: Frontiers of Pandora",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Far Cry 3",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Far Cry New Dawn",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Car Mechanic Sim 18'",
+        "IsArchived": true,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SCP Containment Breach",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Demonologist",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Stormworks",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Over The Top: WWI",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Celeste",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Scam Line",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TABS",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "My Summer Car",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Liar's Bar",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Voices Of The Void",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mordhau",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assetto Corsa Competizione",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dofus",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cuphead",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nuclear Option",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hitman 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Guild Wars 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ESO",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dragon Ball FighterZ",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Total War: WARHAMMER 40,000",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Poppy Playtime Chapter 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Grounded 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dying Light 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Spider Man Remastered",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sonic Racing: CrossWorlds",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Grand Theft Auto IV",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Football Manager 26",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Drive Beyond Horizons",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sledding Game",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Conquerors Blade",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "DRAGON BALL GEKISHIN SQUADRA EM",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Battlefield 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Cycle Frontier",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Panicore",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Portal 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "A Dance of Fire and Ice",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "V Rising",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Approximately Up",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "GR Breakpoint",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Supermarket Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Species: Unknown",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Day of Dragons",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: Modern Warfare 2 (2009)",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Grounded",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SnowRunner",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ghost Recon Wildlands",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Headliners",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Icarus",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Green Hell",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Witcher 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fate Trigger: The Novita",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mortal Kombat 1",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Overcooked! 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "One-armed robber",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "World of Warships",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "God of War Ragnar\u00f6k",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Blade & Sorcery",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crab Game",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sandstorm",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Abiotic Factor",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Together After Dark",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Plants vs. Zombies: Garden Warfare 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Halo Infinite",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "eFootball PES 2021",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Beat Saber",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "War of Rights",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Counter-Strike: Source",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Tabletop Sim",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Deceit 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "House Flipper",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dune: Awakening",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Meowgic",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Slapshot: Rebound",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Library Of Ruina",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Megabonk",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fishing Planet",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ultimate Chicken Horse",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pixel Worlds",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crime Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Shift At Midnight",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Undisputed",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Combat Master",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Don't Starve Together",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crusader Kings 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rhythia",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hello Neighbor",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Highguard",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "EA Sports FC 24",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RotMG Exalt",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Lost Ark",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Enshrouded",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dragon Ball Xenoverse 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TCG Card Shop Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Half-Life 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sky: Children of the Light",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Poker Night at the Inventory",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Clone Hero",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Clone Drone",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MX Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rivals 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ghosts Of Tabor",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MTG Arena",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call To Arms",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pok\u00e9mon Infinite Fusion",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Animalia Survival",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nine-Ball Roulette",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "God of War",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "CarX Street PC",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PokeMMO",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cheese Rolling",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Growtopia",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Trees Hate You",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "GONE Fishing",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dark Souls II",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nova-Life: Amboise",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Echo VR",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "White Knuckle",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Friday the 13th",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Worms W.M.D",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dead Island 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Golf It",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Eternal Return",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "X-Plane 11",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ArcheAge",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Predecessor",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Long Drive",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "S.T.A.L.K.E.R. Anomaly",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Yu-Gi-Oh! Master Duel",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Russian Fishing 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Monster Hunter Rise",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Subnautica Below Zero",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Casualties Unknown",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cult of the Lamb",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Forza Horizon 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Palia",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Factorio",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "CloverPit",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Space Engineers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Borderlands 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "DON'T SCREAM TOGETHER",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Descenders",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pixel Gun 3D",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Broken Arrow",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cities: Skylines II",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "My Voice Zoo",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ANEURISM IV",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Alicia Online",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Zort",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NFS Most Wanted",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Diablo 2 Resurrected",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SOS OPS!",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Scritchy Scratchy",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MISERY",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Space Station 13",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Muck",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Quaver",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rabbit and Steel",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RISK Global Domination",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Little Nightmares III",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Lobotomy",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Guilty as Sock!",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Path of Exile 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nin Online",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Devil May Cry 5",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "KLETKA",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PUBG: BLINDSPOT",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mongil: Star Dive",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Maplestory",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Idols of Ash",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "DDraceNetwork",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Soulmask",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Road to Vostok",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Arkham Knight",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Borderlands 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Project F",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: Black Ops II",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "FPS Chess",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "No Rest for the Wicked",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "One-Armed Cook",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rivals of Aether",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TrackMania United Forever",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cry of Fear",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Battlefield 2042",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ranch Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Stellaris",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nioh 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PGA TOUR 2K25",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RuneScape",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "My Winter Car",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Coop Deluxe",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Lies of P",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Car Service Together",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "INAZUMA ELEVEN: Victory Road",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Astroneer",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Quarantine Zone: The Last Check",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "JoJo\u2019s Bizarre Adventure: All-Star Battle R",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Slay the Spire",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Inside the Backrooms",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Yandere Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PICO PARK",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "OMSI 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Business Tour",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NBA 2K25",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "DiRT Rally 2.0",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Total War: WARHAMMER III",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Retro Rewind",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Bonerooms",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: Black Ops 6",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Minecraft Dungeons",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Outlast",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Core Keeper",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "World of Tanks: Blitz",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Metro 2033",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ONE PIECE Bounty Rush",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PlateUp!",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Civilization 6",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Track Day R",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Plants vs. Zombies",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "We Gotta Go",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "WWE 2K25",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Crew 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Frog Sqwad",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Polytoria",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Whisk",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Drunken Wrestlers 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Watch Dogs 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Flashing Lights",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Labyrinthine",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Infinity Nikki",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "GoreBox",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Monster Hunter Stories 3: Twisted Reflection",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: Black Ops Cold War",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assassins Creed: Unity",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cities",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Metal Gear Rising",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dale & Dawson SS",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Outer Wilds",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Baldi's Basics",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "GTFO",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fast Food Simulator: Prologue",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Project: Playtime",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Redmatch 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "FIFA 23",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "House Flipper 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Metro Exodus",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Uno",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "HumanitZ",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Far Cry 6",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sound Space +",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ravenfield",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Global Rescue",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Lords of the Fallen",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Granblue Fantasy Versus: Rising",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Elsword",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Resident Evil",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Zombs Royale",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ground Branch",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Gears 5",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "S.T.A.L.K.E.R. 2: Heart of Chornobyl",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Grapples Galore",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hades II",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Texas Chainsaw Massacre",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Wizard101",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "High On Life 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "F1 24",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Shadow of War",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TETR.IO",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NASCAR 25",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Need for Speed Unbound",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Postal 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "VTOL VR",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Carry The Glass",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Lucid Blocks",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Isonzo",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Spider-Man Miles Morales",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "EVE Online",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Spaceflight Simulator M",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cursed Companions",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Goddess of Victory: Nikke",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Scrap Mechanic",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "My Singing Monsters",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Tekken 7",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Armored Core VI: Fires of Rubicon",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NFS Hot Pursuit",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SWTOR",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "World of Sea Battle",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "New World",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "State of Decay 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Barony",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sledders",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Last Oasis",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sifu",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Wobbly Life",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Farlight 84",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "BattleBit Remastered",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "War Robots",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Spelunky 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PowerWash Simulator 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Warface",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Jibbers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crime Cleaner",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assetto Corsa EVO",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SP Football Life 2026",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Motor Town: Behind The Wheel",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Smite",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Wreckfest",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Car Mechanic Simulator 2021",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Football Manager 2024",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "3D Aim Trainer",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Intruder",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mech Arena",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Haste",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Noita",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TH: Undergound 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cold War",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Divinity",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assassin's Creed Odyssey",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hades",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Remnant II",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ShellShock Live",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Make Way",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Goofy Gorillas",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Getting Over It",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Automobilista 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "WWZ",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SCP: 5K",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Asphalt 9",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ultimate Custom Night",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Slime Rancher 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Planet Crafter",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Project: Doors",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Muse Dash",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sniper Elite 5",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "BAPBAP",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The First Descendant",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "VEIN",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Super Bunny Man",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Omega Strikers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pizza Tower",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "ConSim",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Elite Dangerous",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rising Storm 2 Vietnam",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "High on Life",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Europa IV",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "GOALS",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Police Simulator: Patrol Officers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RaceRoom Racing",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Blue Archive",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Delivery & Beyond",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assetto Corsa Rally",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Tanki Online",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Riders Republic",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Castle Crashers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Devil May Cry HD Collection",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Steep",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Strayed",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Loftia",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mage Arena",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rise of the Tomb Raider",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Deadside",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Arkheron",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Slime Rancher",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Just Cause 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Live for Speed",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hero Siege",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Total War: NAPOLEON",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Shape of Dreams",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Train Sim World 6",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Beetleball",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PokeXGames",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Super Animal Royale",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "BIGFOOT",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Assassin's Creed IV",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Knights End",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Paladins",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MK11",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Black Mesa",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Runescape: Dragonwilds",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MiSide",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "John Carpenter's Toxic Commando",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Alien: Isolation",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Subliminal",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "BMX Streets",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Bazaar",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Banana Shooter",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pacify",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Borderlands 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crab Champions",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Chained Wheels",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PowerWash Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Crossout",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Long Dark",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: Black Ops",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rogue Company",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Medieval Dynasty",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Climb The Backrooms",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Forza Motorsport",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "A Gentlemen's Dispute",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pit of Goblin",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "I Know a Guy",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dangerous Mountain Together",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Payday 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MultiVersus",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Trepang2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Don't Panic! It is Just Turbulence",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Heroes of the Storm",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Storebound",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Keep Talking and Nobody Explodes",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Five Nights at Freddy's",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Who's Your Daddy",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Gloria Victis",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Resident Evil 0 / Biohazard 0",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "IOSoccer",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Bus",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Night Shippers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Half-Life",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "PlanetSide 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Starcraft 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Far Cry 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Gears of War: Reloaded",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Tomb Raider",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Horsey Game",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Doom Eternal",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Spike Cross",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cryo",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Nine Sols",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Hatsune Miku Project DIVA Mega Mix",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mortal Kombat X",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Raid Shadow Legends",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Fallout 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Spell Brigade",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Spiderheck",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Kart Racing Pro",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Kenshi",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "KEEP GAMBLING",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dofus Retro",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "My Hero Academia: All's Justice",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pok\u00e9mon Trading Card Game Live",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "MovieStar Planet",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RUMBLE",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "H1Z1",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SpeedRunners 2: King of Speed",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Age of Empires 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "IMVU",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Vacation Cafe Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Doom: The Dark Ages",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Vampire Crawlers",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "OPTCG Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Division",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "S.K.I.L.L. - Special Force 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Dead Cells",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Gunfire Reborn",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Roboquest",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Deadzone: Rogue",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mullet Mad Jack",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ravenswatch",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ghostrunner",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Diablo 3",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Diablo 4",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Killing floor 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Doom",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "F1 23",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "WRC",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Wreckfest 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NFS Payback",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Mon Bazou",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "City Car Driving",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "RIDE 5",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Contraband Police",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Thief Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Gas Station Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Grocery Store Simulator",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Car Mechanic Simulator 2018",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Car For Sale Simulator 2023",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Viscera Cleanup Detail",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Blasphemous",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Enter the Gungeon",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cat Quest 2",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "SWORN",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Ace Combat 7",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Need For Speed",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "The Ultimate Doom",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Borderlands",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Call of Duty: World at War",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Sven Co-op",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Taxi Life",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Bus Simulator 21 Next Stop",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "F1 22",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Le Mans Ultimate",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NIGHT-RUNNERS PROLOGUE",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Pacific Drive",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "FS 19",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Clustertruck",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Cruelty Squad",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Tiny Tina's Wonderlands",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Rooftops & Alleys: The Parkour Game",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Besiege",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "F1 2020",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NASCAR Heat 5",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "NASCAR 2003",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Paint the Town Red",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "TCG Card Shop Simulator: Prologue",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "BioShock",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Bomb Rush Cyberfunk",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Scooter Flow",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    },
+    {
+        "Name": "Enlisted",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 1.5
+    }
+]

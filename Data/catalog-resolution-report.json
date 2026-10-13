@@ -1,0 +1,578 @@
+[
+  {
+    "CatalogId": "86def17c-00c4-4c43-a5aa-183afd8d4228",
+    "Name": "Poppy Playtime Chapter 3",
+    "IgdbId": 258842,
+    "ResolvedTitle": "Poppy Playtime: Chapter 3 - Deep Sleep",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/2555190/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 379.0,
+        "SalePrice": 379.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:00.742596Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 2555190"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "370818a2-37de-484d-9b61-fa00f344d0bf",
+    "Name": "DRAGON BALL GEKISHIN SQUADRA EM",
+    "IgdbId": 314178,
+    "ResolvedTitle": "Dragon Ball Gekishin Squadra",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/2072560/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 0,
+        "SalePrice": null,
+        "Kind": "FreeToPlay",
+        "VerifiedAt": "2026-10-12T03:33:01.641042Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 2072560"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "7279dabc-a4a7-4fab-8b52-7342f83e4ebe",
+    "Name": "Call of Duty: Modern Warfare 2 (2009)",
+    "IgdbId": 559,
+    "ResolvedTitle": "Call of Duty: Modern Warfare 2",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/10180/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 1200.0,
+        "SalePrice": 1200.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:02.501437Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 10180"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "b11c25b6-3b9c-46fd-bcf9-a51e86f41acd",
+    "Name": "eFootball PES 2021",
+    "IgdbId": 135881,
+    "ResolvedTitle": "eFootball PES 2021 Season Update",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1259970/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:03.385009Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1259970"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "dc741b4e-d73b-4d8d-84ed-f97dd08e16ec",
+    "Name": "MX Simulator",
+    "IgdbId": 21182,
+    "ResolvedTitle": "MX Simulator",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Official website",
+        "Url": "https://mxsimulator.com/order.html",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:04.013636Z",
+        "ExpiresAt": null,
+        "Provenance": "Reviewed official developer/project link; purchase price unknown"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "362033d2-1f30-4a06-a346-0aa1177af8c8",
+    "Name": "Pokémon Infinite Fusion",
+    "IgdbId": 143761,
+    "ResolvedTitle": "Pokémon Infinite Fusion",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Official website",
+        "Url": "https://www.pokecommunity.com/threads/pok%C3%A9mon-infinite-fusion.347883/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:04.024651Z",
+        "ExpiresAt": null,
+        "Provenance": "Reviewed official developer/project link; purchase price unknown"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "c0ff3d88-e06a-4d6d-91ed-f550ce5e432b",
+    "Name": "Nova-Life: Amboise",
+    "IgdbId": 104328,
+    "ResolvedTitle": "Nova-Life",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/885570/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 0,
+        "SalePrice": null,
+        "Kind": "FreeToPlay",
+        "VerifiedAt": "2026-10-12T03:33:04.319858Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 885570"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "e11dae2a-6508-4cc9-8b94-7011f79b4da3",
+    "Name": "Golf It",
+    "IgdbId": 30099,
+    "ResolvedTitle": "Golf It!",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/571740/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 289.95,
+        "SalePrice": 289.95,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:05.900515Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 571740"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "bb5b1b5f-9336-4413-9e44-b632f198c6c3",
+    "Name": "Coop Deluxe",
+    "IgdbId": 307768,
+    "ResolvedTitle": "SM64CoOpDX",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Official website",
+        "Url": "https://www.sm64coopdx.com/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:06.511365Z",
+        "ExpiresAt": null,
+        "Provenance": "Reviewed official developer/project link; purchase price unknown"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "00889b82-7ec2-4314-9c86-c0b22aebbe3f",
+    "Name": "Retro Rewind",
+    "IgdbId": 346334,
+    "ResolvedTitle": "Retro Rewind: Video Store Simulator",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/3552140/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 615.0,
+        "SalePrice": 615.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:06.969070Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 3552140"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "de16fc61-f732-4a0c-8801-847a3fc67e2c",
+    "Name": "Track Day R",
+    "IgdbId": 143045,
+    "ResolvedTitle": "TrackDayR",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1511630/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 1300.0,
+        "SalePrice": 1300.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:08.501742Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1511630"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "907fb493-f3e7-4567-8596-23bac03cda0e",
+    "Name": "Cities",
+    "IgdbId": 9066,
+    "ResolvedTitle": "Cities: Skylines",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/255710/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 1189.0,
+        "SalePrice": 1189.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:10.065507Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 255710"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "bd178553-74f4-46cc-b29a-eec554dd7ed5",
+    "Name": "Baldi's Basics",
+    "IgdbId": 102832,
+    "ResolvedTitle": "Baldi's Basics in Education and Learning",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Official website",
+        "Url": "https://mystman12.itch.io/baldis-basics",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:11.312822Z",
+        "ExpiresAt": null,
+        "Provenance": "Reviewed official developer/project link; purchase price unknown"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "8daedd91-5900-4ebe-8d83-9dbc3f5846e4",
+    "Name": "Fast Food Simulator: Prologue",
+    "IgdbId": null,
+    "ResolvedTitle": "Fast Food Simulator: Prologue",
+    "Evidence": "Exact official Steam prologue app; distinct from full game",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/3099020/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:11.610315Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 3099020"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "d32d8fed-967d-4cfd-a46c-2a672b2c30e8",
+    "Name": "Sound Space +",
+    "IgdbId": null,
+    "ResolvedTitle": "Sound Space +",
+    "Evidence": "Owner confirmed Roblox Sound Space, not standalone Rhythia/Sound Space Plus",
+    "Sources": [
+      {
+        "Source": "Roblox",
+        "Url": "https://www.roblox.com/games/2677609345/Sound-Space-Rhythm-Game",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:11.916199Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Roblox experience; storefront access price not verified"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "505aebbc-fb02-4a11-9663-5389ca45ca49",
+    "Name": "Spaceflight Simulator M",
+    "IgdbId": 190824,
+    "ResolvedTitle": "Spaceflight Simulator",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1718870/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 485.0,
+        "SalePrice": 485.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:12.323337Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1718870"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "c3e0a70a-5ff4-4bc0-93e2-a5f0bdab1d1e",
+    "Name": "New World",
+    "IgdbId": 24654,
+    "ResolvedTitle": "New World: Aeternum",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1063730/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:13.248507Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1063730"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "5afc2df5-00d0-4cce-b459-e969d9a6fdf4",
+    "Name": "The Planet Crafter",
+    "IgdbId": 143574,
+    "ResolvedTitle": "Planet Crafter",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1284190/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 779.0,
+        "SalePrice": 779.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:14.788060Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1284190"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "87cbc6ba-2d7a-48aa-b697-4ddae5ce6163",
+    "Name": "OPTCG Simulator",
+    "IgdbId": null,
+    "ResolvedTitle": "OPTCG Simulator",
+    "Evidence": "Owner confirmed Batsu's One Piece Card Game simulator; creator's Linktree links this site",
+    "Sources": [
+      {
+        "Source": "Official website",
+        "Url": "https://optcgsim.com/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": null,
+        "SalePrice": null,
+        "Kind": "Unknown",
+        "VerifiedAt": "2026-10-12T03:33:15.422416Z",
+        "ExpiresAt": null,
+        "Provenance": "Official creator download page; purchase price not verified"
+      }
+    ],
+    "HasArtwork": false,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "043b48a8-cae9-4327-a7bb-020a24f546f8",
+    "Name": "WRC",
+    "IgdbId": 264412,
+    "ResolvedTitle": "EA Sports WRC",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1849250/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 2499.0,
+        "SalePrice": 2499.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:15.695606Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1849250"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "98b1e639-30ba-4cb9-81b9-c338b63d4daa",
+    "Name": "SWORN",
+    "IgdbId": 291948,
+    "ResolvedTitle": "Sworn",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source; owner explicitly selected this edition",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1763250/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 1299.0,
+        "SalePrice": 441.66,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:16.615550Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1763250"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "f6529d11-4d41-42d2-bfdd-eef2751dee82",
+    "Name": "Bus Simulator 21 Next Stop",
+    "IgdbId": 240037,
+    "ResolvedTitle": "Bus Simulator 21: Next Stop",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/976590/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 749.0,
+        "SalePrice": 262.15,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:17.570144Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 976590"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "5b31dd3e-730b-4d94-9a2d-8e1e26849b9e",
+    "Name": "TCG Card Shop Simulator: Prologue",
+    "IgdbId": null,
+    "ResolvedTitle": "TCG Card Shop Simulator: Prologue",
+    "Evidence": "Exact official Steam prologue app; distinct from full game",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/3103840/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 0,
+        "SalePrice": null,
+        "Kind": "FreeToPlay",
+        "VerifiedAt": "2026-10-12T03:33:18.422109Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 3103840"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  },
+  {
+    "CatalogId": "a996c534-faba-488a-9d51-44c5932ea2c4",
+    "Name": "Scooter Flow",
+    "IgdbId": 152451,
+    "ResolvedTitle": "ScooterFlow",
+    "Evidence": "Reviewed exact identity/platform/edition using cached IGDB and official source",
+    "Sources": [
+      {
+        "Source": "Steam",
+        "Url": "https://store.steampowered.com/app/1648390/",
+        "Edition": "Reviewed edition",
+        "Region": "PH",
+        "Currency": "PHP",
+        "RegularPrice": 599.0,
+        "SalePrice": 599.0,
+        "Kind": "Purchase",
+        "VerifiedAt": "2026-10-12T03:33:18.991357Z",
+        "ExpiresAt": null,
+        "Provenance": "Official Steam appdetails; cc=ph; exact reviewed app ID 1648390"
+      }
+    ],
+    "HasArtwork": true,
+    "HasGenres": true
+  }
+]

@@ -1,0 +1,29 @@
+<UserControl x:Class="nerve_earnings_tracker.Views.Modals.PayoutEditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <StackPanel MaxWidth="620">
+            <TextBlock Text="Changes are saved with an audit entry. Amounts retain their original sign." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,16"/>
+            <TextBlock Text="Date" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <DatePicker AutomationProperties.Name="Date" x:Name="PayoutDate" Margin="0,4,0,12"/>
+            <TextBlock Text="Type" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <ComboBox AutomationProperties.Name="Type" x:Name="PayoutType" Margin="0,4,0,12"/>
+            <TextBlock Text="Description" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <TextBox AutomationProperties.Name="Description" x:Name="Description" Style="{StaticResource ModalTextBox}" Margin="0,4,0,12"/>
+            <TextBlock Text="Status" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <ComboBox AutomationProperties.Name="Status" x:Name="Status" Margin="0,4,0,12"/>
+            <TextBlock Text="Signed amount (USD)" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <TextBox AutomationProperties.Name="Signed amount (USD)" x:Name="Amount" Style="{StaticResource ModalTextBox}" Margin="0,4,0,4"/>
+            <TextBlock Text="Use a decimal point, for example 23.84 or -2.50. A minus sign indicates a negative amount." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+            <StackPanel x:Name="AdjustmentOptions" Margin="0,4,0,12">
+                <TextBlock Text="Reconciliation" Style="{StaticResource CompactSectionHeading}"/>
+                <RadioButton x:Name="IncludedRadio" GroupName="AdjustmentReconciliation" Content="Already included in session earnings" Foreground="{StaticResource DefaultTextColor}" Margin="0,3"/>
+                <TextBlock Text="Keeps this adjustment from being added to Total Earned again." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="20,4,0,8"/>
+                <RadioButton x:Name="SeparateRadio" GroupName="AdjustmentReconciliation" Content="Separate from session earnings" Foreground="{StaticResource DefaultTextColor}" Margin="0,3"/>
+                <TextBlock Text="Counts the signed adjustment in Total Earned only when Verified, Paid, or Processing. Negative corrections reduce earnings." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="20,4,0,0"/>
+            </StackPanel>
+            <TextBlock Text="Change reason (optional; required history is saved automatically)" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+            <TextBox AutomationProperties.Name="Change reason (optional)" x:Name="Reason" Style="{StaticResource ModalTextBox}" Margin="0,4,0,14"/>
+            <TextBlock x:Name="ValidationMessage" Style="{StaticResource InputValidationText}" Margin="0,0,0,12"/>
+            <Button x:Name="SaveButton" Content="Save payout" Click="SaveButton_Click" Style="{StaticResource PrimaryButton}" Padding="20,10" HorizontalAlignment="Center"/>
+        </StackPanel>
+</UserControl>

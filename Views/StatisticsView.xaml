@@ -1,0 +1,222 @@
+<UserControl x:Class="nerve_earnings_tracker.Views.StatisticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="720" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <Style TargetType="ToolTip" BasedOn="{StaticResource ChartToolTip}"/>
+    </UserControl.Resources>
+    <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="{StaticResource PageInset}">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Statistics" Style="{StaticResource TabName}"/>
+
+            </Grid>
+
+            <Border x:Name="LoadStatusPanel" Visibility="Collapsed" Style="{StaticResource FeedbackPanel}">
+                <DockPanel>
+                    <Button x:Name="RetryLoadButton" DockPanel.Dock="Right" Content="Retry" Style="{StaticResource SecondaryButton}" Padding="12,7" Margin="12,0,0,0" Click="RetryLoadButton_Click"/>
+                    <TextBlock x:Name="LoadStatusText" AutomationProperties.LiveSetting="Polite" Foreground="{StaticResource SecondaryTextColor}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+            <StackPanel x:Name="TotalsPanel" Visibility="Collapsed">
+                <UniformGrid x:Name="MetricCards" Columns="3" Margin="-4,0,-4,16" SizeChanged="MetricCards_SizeChanged">
+
+                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                        <StackPanel>
+                            <TextBlock Text="Today" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="{Binding TodayEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource AccentTextColor}"/>
+                            <TextBlock Text="Verified sessions + separate adjustments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                        <StackPanel>
+                            <TextBlock Text="This Week" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="{Binding ThisWeekEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
+                            <TextBlock Text="Monday through today" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                        <StackPanel>
+                            <TextBlock Text="This Month" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="{Binding ThisMonthEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
+                            <TextBlock Text="Month to date" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <TextBlock Text="Earnings analysis" Style="{StaticResource SectionHeading}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,8,0,12">
+                    <TextBlock Text="EARNINGS RANGE" Style="{StaticResource FilterLabel}" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="EarningsRangeComboBox" Width="165" AutomationProperties.Name="Earnings chart date range" SelectedIndex="0" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Last 30 days" Tag="30"/>
+                        <ComboBoxItem Content="Last 90 days" Tag="90"/>
+                        <ComboBoxItem Content="This year" Tag="Year"/>
+                        <ComboBoxItem Content="All time" Tag="All"/>
+                        <ComboBoxItem Content="Current payout" Tag="Payout"/>
+                    </ComboBox>
+                </StackPanel>
+                <TextBlock Text="{Binding RangeDescription}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                <TextBlock x:Name="PayoutRangeNotice" Visibility="Collapsed" Foreground="{StaticResource SecondaryTextColor}"
+                           FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                <Grid x:Name="ChartsGrid" SizeChanged="ChartsGrid_SizeChanged">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.15*"/>
+                        <ColumnDefinition Width="0.85*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="TrendPanel" Grid.Column="0" Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="0,0,7,0" MinHeight="300">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                                <TextBlock Text="Earnings over time" Style="{StaticResource SectionHeading}"/>
+                                <TextBlock Text="Verified sessions plus separate bonuses and corrections" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <Canvas Grid.Row="1" x:Name="EarningsTrendCanvas" Height="230" SizeChanged="EarningsTrendCanvas_SizeChanged"/>
+                            <Expander Grid.Row="2" x:Name="TrendValuesExpander" Header="View trend values" Margin="0,10,0,0"
+                                      Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeSupporting}">
+                                <ListBox x:Name="TrendValuesList" ItemsSource="{Binding TrendPeriods}" Height="180" Margin="0,8,0,0"
+                                         Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"
+                                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                         AutomationProperties.Name="Trend earnings and hours by period">
+                                    <ListBox.Resources>
+                                        <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                                    </ListBox.Resources>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource ItemButton}">
+                                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleSummary}"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding TooltipDate}" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding EarningsText}" Margin="10,0" Foreground="{StaticResource DefaultTextColor}"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding HoursText}" Foreground="{StaticResource SecondaryTextColor}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Expander>
+                        </Grid>
+                    </Border>
+                    <Border x:Name="GameEarningsPanel" Grid.Column="1" Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="7,0,0,0" MinHeight="300">
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                                <TextBlock Text="Earnings by game" Style="{StaticResource SectionHeading}"/>
+                                <TextBlock Text="Top 8 titles · verified session earnings. Bars are relative to the highest earner." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <TextBlock Grid.Row="1" Text="No verified sessions in this range. Choose another range or import sessions." TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding GameEarnings.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ItemsControl Grid.Row="1" ItemsSource="{Binding GameEarnings}"
+                                          ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,6">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding GameName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding AccessibleSummary}" AutomationProperties.Name="{Binding AccessibleSummary}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <ProgressBar Style="{StaticResource MetricProgressBar}" Grid.Column="1" Value="{Binding Share, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding EarningsText}" FontSize="{StaticResource FontSizeSupporting}" TextAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </Grid>
+                <Border Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="0,16,0,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="220"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Game cap utilization" Style="{StaticResource SectionHeading}" Margin="4,0,4,8"/>
+                        <TextBlock Grid.Row="1" Text="Verified recording time in the current cap cycle. Games without a reset date include all recorded history." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="2" x:Name="GameAssociationNoticeText" Text="{Binding GameAssociationNotice}" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UnlinkedSessionCount}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ListView Grid.Row="3" x:Name="GameCapList" ItemsSource="{Binding GameCapRows}" SizeChanged="GameCapList_SizeChanged"
+                                  ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                  ItemContainerStyle="{StaticResource TableRow}"
+                                  GridViewColumnHeader.Click="GameCapList_ColumnHeaderClick"
+                                  Background="Transparent" BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.Resources>
+                                <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                                <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource CompactTableColumnHeader}">
+                                    <Setter Property="ContentTemplate"><Setter.Value><DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                    </DataTemplate></Setter.Value></Setter>
+                                </Style>
+
+                            </ListView.Resources>
+                            <ListView.View>
+                                <GridView AllowsColumnReorder="False">
+                                    <GridViewColumn Header="GAME" Width="160">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding GameName}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="VERIFIED TIME" Width="120">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding VerifiedTimeText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="CAP" Width="80">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding CapText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="CYCLE START" Width="110">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding CycleStartText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="UTILIZATION" Width="130">
+                                        <GridViewColumn.CellTemplate><DataTemplate>
+                                            <Grid VerticalAlignment="Center">
+                                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                                <ProgressBar Style="{StaticResource MetricProgressBar}" Value="{Binding ProgressValue, Mode=OneWay}" Maximum="100" VerticalAlignment="Center" Margin="2,0,7,0"/>
+                                                <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="{Binding UtilizationText}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" TextAlignment="Right"/>
+                                            </Grid>
+                                        </DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="RATE" Width="90">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding RateText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="EARNED" Width="125">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding EarningsText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+            <TextBlock x:Name="StatisticsViewEmptyState" Grid.Row="3" Text="No linked history for active games. Import sessions through a game or review game links in Sessions.">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding GameCapRows.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
