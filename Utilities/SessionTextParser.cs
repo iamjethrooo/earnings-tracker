@@ -84,7 +84,7 @@ namespace EarningsTracker.Utilities
         {
             List<Session> sessions = [];
             Session? currentSession = null;
-            var selectedGame = ResolveGame(game.Name, games, game);
+            var selectedGame = ResolveGame(game.Name, games, game)!;
             var recordingLine = 0;
             var hasEarnings = false;
 
@@ -185,6 +185,7 @@ namespace EarningsTracker.Utilities
             var hasEarnings = false;
 
             var sourceStart = 0;
+            var durationText = string.Empty;
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -203,23 +204,28 @@ namespace EarningsTracker.Utilities
                 {
                     EnsureRecordingComplete(currentSession, recordingLine);
                     var parts = line.Split((char)183);
-                    if (parts.Length != 3)
+                    // Newer Recordings exports append local file availability to the header.
+                    // It is metadata, not the upload/verification status that follows the row.
+                    if (parts.Length != 3 && !(parts.Length == 4
+                        && parts[3].Trim().Equals("File deleted", StringComparison.OrdinalIgnoreCase)))
                         throw new InvalidSessionFormatException($"Line {i + 1}: expected filename · recorded date · duration.");
                     var gameIndex = i - 1;
                     while (gameIndex >= 0 && string.IsNullOrWhiteSpace(lines[gameIndex]))
                         gameIndex--;
                     if (gameIndex < 0)
                         throw new InvalidSessionFormatException($"Line {i + 1}: the recording is missing its game name.");
-                    var game = ResolveGame(lines[gameIndex].Trim(), games, selectedGame);
+                    var gameName = lines[gameIndex].Trim();
+                    var game = ResolveGame(gameName, games, selectedGame, allowAmbiguous: true);
                     sourceStart = gameIndex;
                     var date = ReadRecordedDate(parts[1].Trim(), i + 1);
+                    durationText = parts[2].Trim();
                     currentSession = new Session
                     {
                         Date = date,
                         RecordedDate = date,
-                        Duration = ReadDuration(parts[2].Trim(), i + 1),
-                        GameName = game.Name,
-                        GameId = game.Id
+                        Duration = ReadDuration(durationText, i + 1),
+                        GameName = game?.Name ?? gameName,
+                        GameId = game?.Id
                     };
                     recordingLine = i + 1;
                     hasEarnings = false;
@@ -236,10 +242,15 @@ namespace EarningsTracker.Utilities
                     hasEarnings = true;
                 }
 
-                // Parse status
+                // Parse status. Preserve an explicit status following a below-minimum notice.
+                if (line == "Below minimum time" && nextLine < lines.Length
+                    && TryParseStatus(lines[nextLine].Trim(), out _))
+                    continue;
                 if (TryParseStatus(line, out var status))
                 {
                     CompleteRecording(currentSession, status, line, hasEarnings, i + 1);
+                    if (!currentSession.GameId.HasValue)
+                        MatchRecordingEarnings(currentSession, games, durationText, hasEarnings);
                     currentSession.ImportSourceText = string.Join("\n", lines[sourceStart..(i + 1)]);
                     sessions.Add(currentSession);
                     currentSession = null; // Reset currentSession for the next entry
@@ -344,7 +355,7 @@ namespace EarningsTracker.Utilities
                 return true;
             }
 
-            if (line.Contains("Local file deleted") || line.Contains("File missing"))
+            if (line.Contains("Local file deleted") || line.Contains("File missing") || line.Contains("Below minimum time"))
             {
                 status = Enums.SessionStatus.NotUploaded;
                 return true;
@@ -354,7 +365,47 @@ namespace EarningsTracker.Utilities
             return false;
         }
 
-        private static Game ResolveGame(string gameName, List<Game> games, Game? selectedGame)
+        private static void MatchRecordingEarnings(Session session, List<Game> games, string durationText, bool hasEarnings)
+        {
+            if (!hasEarnings || session.Status != Enums.SessionStatus.Verified
+                || session.IsForceVerified || session.Earnings <= 0m || session.Duration <= TimeSpan.Zero)
+                return;
+            var candidates = games.Where(game => game.Name.Equals(session.GameName, StringComparison.OrdinalIgnoreCase)).ToList();
+            // A minute-only source can be truncated or rounded. Seconds explicitly supplied are exact.
+            var uncertainty = durationText.Contains('s') ? 0m : durationText.Contains('m') ? 60m : 3600m;
+            var seconds = session.Duration.Ticks / (decimal)TimeSpan.TicksPerSecond;
+            var minimumSeconds = Math.Max(0m, seconds - uncertainty);
+            var maximumSeconds = seconds + uncertainty;
+            var scale = Math.Max(2, (decimal.GetBits(session.Earnings)[3] >> 16) & 0xff);
+            var rounding = 0.5m;
+            for (int i = 0; i < scale; i++) rounding /= 10m;
+            var minimumAmount = session.Earnings - rounding;
+            var maximumAmount = session.Earnings > decimal.MaxValue - rounding
+                ? decimal.MaxValue : session.Earnings + rounding;
+            Game? match = null;
+            foreach (var candidate in candidates)
+            {
+                // Missing rate evidence cannot eliminate a candidate safely.
+                if (candidate.RatePerHour <= 0m) return;
+                decimal minimum, maximum;
+                try
+                {
+                    minimum = candidate.RatePerHour * minimumSeconds / 3600m;
+                    maximum = candidate.RatePerHour * maximumSeconds / 3600m;
+                }
+                catch (OverflowException) { return; }
+                var agrees = minimum <= maximumAmount && maximum >= minimumAmount;
+                // Nerve pays the whole recording even when it crosses a cap. Compare the full
+                // duration; never clip the amount to remaining cap minutes or guess a closest rate.
+                if (!agrees) continue;
+                if (match != null) return;
+                match = candidate;
+            }
+            if (match == null) return; // Changed historical rates/adjustments are not a closest-match rule.
+            session.GameId = match.Id;
+        }
+
+        private static Game? ResolveGame(string gameName, List<Game> games, Game? selectedGame, bool allowAmbiguous = false)
         {
             if (selectedGame != null && gameName.Equals(selectedGame.Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -366,6 +417,8 @@ namespace EarningsTracker.Utilities
                 throw new GameNotFoundException(gameName);
             if (matchingGames.Count == 1)
                 return matchingGames[0];
+            if (allowAmbiguous)
+                return null;
             throw new InvalidSessionFormatException($"Multiple games are named '{gameName}'. Select the correct game in Games and use Add Session to import these recordings. No sessions were imported.");
         }
 

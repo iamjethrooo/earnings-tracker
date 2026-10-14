@@ -54,7 +54,7 @@
             <StackPanel>
                 <TextBlock x:Name="SessionsFoundText"
                    Style="{StaticResource SectionHeading}"/>
-                <TextBlock Text="Review before saving. Ambiguous and invalid recordings are excluded; repeated rows are skipped."
+                <TextBlock Text="Review before saving. Unresolved game matches are saved unlinked and can be resolved in Ambiguous. Conflicting and invalid recordings are excluded; repeated rows are skipped."
                            Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,8,0,4"/>
 
                 <TextBlock x:Name="NewSessionsText"
@@ -68,6 +68,7 @@
                    FontSize="{StaticResource FontSizeBody}"/>
 
                 <TextBlock x:Name="AmbiguousSessionsText"
+                   TextWrapping="Wrap"
                    Margin="0,4,0,0"
                    Foreground="{StaticResource PendingTextColor}"
                    FontSize="{StaticResource FontSizeBody}"/>
@@ -85,6 +86,33 @@
                 <TextBlock x:Name="TotalEarningsText"
                    Margin="0,20,0,0"
                    Style="{StaticResource SectionHeading}"/>
+                <Expander x:Name="ConflictsSection" Header="View conflicts" Visibility="Collapsed" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="These rows will not be imported. Their recording identity or existing game association needs review."
+                                   Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                        <ListBox x:Name="ConflictRows" MaxHeight="240" Background="Transparent" BorderThickness="0"
+                                 AutomationProperties.Name="Conflicting session import rows"
+                                 ScrollViewer.CanContentScroll="True"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 VirtualizingPanel.IsVirtualizing="True"
+                                 VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ItemButton}">
+                                    <Setter Property="Padding" Value="8"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="FontSize" Value="{StaticResource FontSizeCompactBody}"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Expander>
             </StackPanel>
             </Border>
             <WrapPanel Grid.Row="1" HorizontalAlignment="Right">

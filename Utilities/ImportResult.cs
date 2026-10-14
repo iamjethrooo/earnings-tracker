@@ -18,6 +18,8 @@ namespace EarningsTracker.Utilities
         public int AmbiguousCount => AmbiguousSessions.Count;
         public int InvalidCount => InvalidSessions.Count;
         public int SkippedCount => SkippedRows.Count;
+        public int UnlinkedCount => NewSessions.Count(session => !session.GameId.HasValue)
+            + Updates.Count(update => !update.Imported.GameId.HasValue);
 
         public int TotalSessions =>
             InsertedCount + UpdatedCount + AmbiguousCount + InvalidCount + SkippedCount;

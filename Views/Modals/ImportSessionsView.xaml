@@ -19,7 +19,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="Paste the complete recordings copied from Nerve, then review the import summary." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="Paste the complete recordings copied from Nerve’s Recordings page, then review the import summary." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
             <TextBox Grid.Row="1" AutomationProperties.Name="Session import text" x:Name="ImportTextBox" Style="{StaticResource ImportInputTextBox}">
             </TextBox>
             <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste session text before parsing." Style="{StaticResource InputValidationText}"/>

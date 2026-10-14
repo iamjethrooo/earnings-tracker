@@ -28,6 +28,12 @@ Tests do not start `App.OnStartup`, open the user's database, call `EnsureDelete
 
 ## Scope and limits
 
+Session imports preserve explicit game selection and unique name matches. Duplicate names can be resolved from positive Verified earnings only when exactly one rate agrees with the source duration precision and monetary rounding. Minute-only durations allow one minute of uncertainty in either direction; explicit seconds remain exact. Matching assumes Nerve pays the full recording when it crosses a cap, so positive earnings are compared against the full duration without clipping to remaining cap minutes. Missing/zero earnings, unknown rates, overlapping evidence and historical amounts that disagree with every rate remain unlinked. Reported earnings are never recalculated.
+
+Unresolved game matches are saved with a null game link, retain their verification status, and appear in Sessions' Ambiguous filter for audited manual linking. They contribute to overall accounting, but not a particular game's totals. Recording-identity conflicts remain excluded by the existing duplicate safeguards and can be inspected in the preview's View conflicts section. Re-import cannot erase or replace an existing game association. Tests cover mixed imports, manual resolution, re-import, source precision, caps and offscreen preview/filter/editor behavior.
+
+At a minute-only timestamp, a zero-duration, zero-earnings NotUploaded recording and a recording lasting at least a minute are distinct attempts. Import and re-import keep both, even when pasted separately. Differing earnings or game links for the same recording category, indistinguishable database matches, and collisions at precise timestamps still require resolution.
+
 Automated coverage includes accounting and reconciliation, import parsing and idempotence, audit history, SQLite migrations and recovery, reporting, settings, update configuration, and offscreen WPF presentation. Passing tests do not verify visible interaction, OS-level durability, installed-package behavior, every legacy schema, or full startup against a real user profile.
 
 For UI or release changes, add the relevant manual keyboard, DPI, scrolling, dialog, package lifecycle, and isolated-storage checks. Do not launch the default application just to verify a build.

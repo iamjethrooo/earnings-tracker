@@ -63,16 +63,24 @@ namespace EarningsTracker.Views.Modals
 
             NewSessionsText.Text = $"✓ {result.InsertedCount} new sessions";
             UpdatedSessionsText.Text = $"↻ {result.UpdatedCount} existing sessions will be updated";
-            AmbiguousSessionsText.Text = $"⚠ {result.AmbiguousCount} ambiguous";
+            AmbiguousSessionsText.Text = result.UnlinkedCount > 0
+                ? $"⚠ {result.UnlinkedCount} ambiguous game matches will be saved unlinked; {result.AmbiguousCount} conflicts skipped"
+                : $"⚠ {result.AmbiguousCount} ambiguous conflicts skipped";
             InvalidSessionsText.Text = $"✕ {result.InvalidCount} invalid";
             SkippedSessionsText.Text = $"↷ {result.SkippedCount} repeated rows skipped";
             TotalEarningsText.Text = $"Total session earnings: {CurrencyDisplay.FormatUsd(result.TotalEarnings)}";
 
             NewSessionsText.Visibility = result.InsertedCount == 0 ? Visibility.Collapsed : Visibility.Visible;
             UpdatedSessionsText.Visibility = result.UpdatedCount == 0 ? Visibility.Collapsed : Visibility.Visible;
-            AmbiguousSessionsText.Visibility = result.AmbiguousCount == 0 ? Visibility.Collapsed : Visibility.Visible;
+            AmbiguousSessionsText.Visibility = result.AmbiguousCount + result.UnlinkedCount == 0 ? Visibility.Collapsed : Visibility.Visible;
             InvalidSessionsText.Visibility = result.InvalidCount == 0 ? Visibility.Collapsed : Visibility.Visible;
             SkippedSessionsText.Visibility = result.SkippedCount == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            ConflictsSection.Header = $"View conflicts ({result.AmbiguousCount})";
+            ConflictsSection.Visibility = result.AmbiguousCount == 0 ? Visibility.Collapsed : Visibility.Visible;
+            ConflictsSection.IsExpanded = false;
+            ConflictRows.ItemsSource = result.AmbiguousSessions.Select(session =>
+                $"{session.GameName}\n{session.RecordedDate:MMM d, yyyy h:mm:ss.FFFFFFF tt} · {session.DurationText} · {CurrencyDisplay.FormatUsd(session.Earnings)} · {(session.Status == EarningsTracker.Enums.SessionStatus.NotUploaded ? "Not uploaded" : session.Status.ToString())}").ToList();
 
             PreviewPanel.Visibility = Visibility.Visible;
         }

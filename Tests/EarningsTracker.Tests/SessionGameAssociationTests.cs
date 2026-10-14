@@ -36,15 +36,14 @@ namespace EarningsTracker.Tests
         }
 
         [Theory]
-        [InlineData("$10.00")]
         [InlineData("$0.00")]
         [Trait("Category", "Regression")]
         public void DuplicateNamesWithoutASelectionRequireUserResolution(string earnings)
         {
-            var error = Assert.Throws<InvalidSessionFormatException>(() => SessionTextParser.Parse(
+            var session = Assert.Single(SessionTextParser.Parse(
                 $"Example\nvideo.mkv · 2026-06-05T12:00:01 · 1h\n{earnings}\nVerified", Games(), null));
-            Assert.Contains("Games", error.Message);
-            Assert.Contains("Example", error.Message);
+            Assert.Null(session.GameId);
+            Assert.Equal("Example", session.GameName);
         }
 
         [Fact]

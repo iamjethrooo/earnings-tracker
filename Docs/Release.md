@@ -14,6 +14,12 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
 
+## v1.0.0 session import scope
+
+Only session imports copied from Nerve's **Recordings page** are supported in v1.0.0, through **Sessions → Import Sessions**. Recordings is the default and only accessible session import format. Payout imports remain available unchanged.
+
+The Game Details session importer (**Games → game details → Add Session**) is hidden and deferred to a future release. Its implementation, parsing logic and existing tests are retained. This scope adjustment does not change stored sessions or databases.
+
 ## Velopack preparation
 
 `Tools/Release.ps1` is the supported local packaging entry point. It pins the Velopack SDK and CLI, publishes a self-contained Windows x64 build, validates package inputs and privacy exclusions, and creates a local release manifest and checksums.

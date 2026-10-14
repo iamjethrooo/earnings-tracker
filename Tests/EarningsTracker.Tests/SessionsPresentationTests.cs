@@ -116,6 +116,74 @@ public class SessionsPresentationTests(WpfTestHost host)
     });
 
     [Fact]
+    [Trait("Category", "Regression")]
+    public Task ImportedUnlinkedRecordingUsesAmbiguousFilterAndExistingGameEditor() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var games = new List<Game>
+        {
+            new() { Id = 1, Name = "Example", RatePerHour = 5m },
+            new() { Id = 2, Name = "Example", RatePerHour = 5m }
+        };
+        using (var seed = database.CreateContext()) { seed.Games.AddRange(games); seed.SaveChanges(); }
+        var importer = new SessionImporter(database.Options);
+        const string text = "Example\nExample · Jun 5, 2026 12:00 PM · 1h 0m · File deleted\n+$5.00\nVerified";
+        importer.ImportSessions(importer.PreviewImport(SessionTextParser.Parse(text, games, null)));
+        var view = new SessionsView(database.Options) { Width = 740, Height = 560 };
+        var model = (SessionsViewModel)view.DataContext;
+        await view.RefreshSessionsAsync();
+        model.SelectStatus(model.StatusFilters.Single(filter => filter.OnlyUnlinked));
+        var item = Assert.Single(model.SessionsView.Cast<SessionItemViewModel>());
+        Assert.Equal(SessionStatus.Verified, item.Session.Status);
+        Assert.True(item.CanSelectGame);
+        item.BeginEdit();
+        item.DraftGame = games[1];
+        Assert.True(item.TryCreateEditedSession(out var edited, out var error), error);
+        SessionService.Update(item.Session.Id, edited, database.Options);
+        importer.ImportSessions(importer.PreviewImport(SessionTextParser.Parse(text, games, null)));
+        await view.RefreshSessionsAsync();
+        Assert.True(model.SessionsView.IsEmpty);
+        using var read = database.CreateContext();
+        Assert.Equal(2, Assert.Single(read.Sessions).GameId);
+        Assert.Equal(2, read.SessionChanges.Count());
+    });
+
+    [Fact]
+    [Trait("Category", "Regression")]
+    public Task ConflictDetailsShowBothRowsAndKeepLargeListsBounded() => host.RunAsync(async () =>
+    {
+        var summary = new ImportResultModal { Width = 600, FontFamily = (FontFamily)Application.Current.FindResource("AppFont") };
+        var result = new ImportResult();
+        for (int i = 0; i < 1000; i++)
+            result.AmbiguousSessions.Add(new Session
+            {
+                GameName = "Assassin's Creed Odyssey",
+                RecordedDate = new DateTime(2026, 9, 28, 19, 0, 0),
+                Duration = i % 2 == 0 ? TimeSpan.FromMinutes(65) : TimeSpan.Zero,
+                Earnings = i % 2 == 0 ? 1.65m : 0m,
+                Status = i % 2 == 0 ? SessionStatus.Verified : SessionStatus.NotUploaded
+            });
+        summary.ShowPreview(result);
+        var section = (Expander)summary.FindName("ConflictsSection");
+        var list = (ListBox)summary.FindName("ConflictRows");
+        Assert.Equal(Visibility.Visible, section.Visibility);
+        Assert.Equal("View conflicts (1000)", section.Header);
+        Assert.False(section.IsExpanded);
+        Assert.Equal(1000, list.Items.Count);
+        Assert.Contains("Assassin's Creed Odyssey", (string)list.Items[0]);
+        Assert.Contains("1h 5m · $1.65 · Verified", (string)list.Items[0]);
+        Assert.Contains("<1m · $0.00 · Not uploaded", (string)list.Items[1]);
+        section.IsExpanded = true;
+        await Layout(summary, 600, 680);
+        Assert.InRange(list.ActualHeight, 1, 240);
+        Assert.InRange(Descendants<ListBoxItem>(list).Count(), 1, 50);
+        Save(summary, "session-import-conflicts");
+        summary.ShowPreview(new ImportResult());
+        Assert.Equal(Visibility.Collapsed, section.Visibility);
+        Assert.Empty(list.Items);
+    });
+
+    [Fact]
     public Task ImportFeedbackUsesSemanticTokensAndOffersRecoveryOnlyBeforeSuccess() => host.RunAsync(async () =>
     {
         var summary = new ImportResultModal { Width = 600, FontFamily = (FontFamily)Application.Current.FindResource("AppFont") };
@@ -127,6 +195,7 @@ public class SessionsPresentationTests(WpfTestHost host)
         summary.ShowPreview(result);
         await Layout(summary, 600, 400);
         Assert.Same(Application.Current.FindResource("PendingTextColor"), ((TextBlock)summary.FindName("AmbiguousSessionsText")).Foreground);
+        Assert.Contains("1 ambiguous game matches will be saved unlinked", ((TextBlock)summary.FindName("AmbiguousSessionsText")).Text);
         Assert.Same(Application.Current.FindResource("RejectedTextColor"), ((TextBlock)summary.FindName("InvalidSessionsText")).Foreground);
         Save(summary, "session-import-preview");
         summary.ShowError("Unable to parse the imported data: line 4 has an incomplete duration. Return to input to correct it.");

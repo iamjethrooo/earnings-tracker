@@ -408,7 +408,8 @@
             <!--Add Session-->
             <StackPanel Grid.Row="4" Margin="0,8">
                 <TextBlock Text="{Binding BookmarkError}" DataContext="{Binding DataContext, ElementName=Root}" Style="{StaticResource InlineValidationText}" Margin="0,0,0,8"/>
-                <Button Content="Add Session" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="AddSessionButton_Click"/>
+                <!-- Game Details import is deferred beyond v1.0.0; retain the implementation. -->
+                <Button x:Name="AddSessionButton" Visibility="Collapsed" Content="Add Session" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="AddSessionButton_Click"/>
             </StackPanel>
             <!--Sessions-->
             <Border Grid.Row="5" Style="{StaticResource SurfacePanel}" CornerRadius="8,8,0,0" Margin="0 4 0 0">

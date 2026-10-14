@@ -132,7 +132,8 @@ namespace EarningsTracker.Utilities
             var targetedExistingIds = new HashSet<int>();
             var disputedExistingIds = new HashSet<int>();
 
-            foreach (var group in importedSessions.GroupBy(GetImportKey, StringComparer.OrdinalIgnoreCase))
+            foreach (var group in importedSessions.GroupBy(GetImportKey, StringComparer.OrdinalIgnoreCase)
+                .SelectMany(SplitBelowMinimumRecordings))
             {
                 foreach (var session in group)
                     SessionService.ValidateImportedSession(session);
@@ -145,7 +146,8 @@ namespace EarningsTracker.Utilities
                 foreach (var duplicate in group.Skip(1))
                     result.SkippedRows.Add($"Repeated session row: {duplicate.GameName}, {duplicate.RecordedDate:g}, {duplicate.DurationText}.");
 
-                var minuteMatches = FindMatchingSessions(db, importedSession);
+                var minuteMatches = FindMatchingSessions(db, importedSession)
+                    .Where(existing => !AreSeparateRecordings(existing, importedSession)).ToList();
                 var matches = minuteMatches.Where(session => session.Date == importedSession.Date).ToList();
                 // Same-name games can be different rate/cap versions of one Nerve game.
                 // A different local link must neither overwrite the recording nor create earned income again.
@@ -198,6 +200,28 @@ namespace EarningsTracker.Utilities
 
         private static string GetImportKey(Session session) =>
             $"{session.GameName.Trim().ToUpperInvariant()}|{session.RecordedDate.Ticks}";
+
+        private static bool IsBelowMinimumRecording(Session session) =>
+            session.Duration == TimeSpan.Zero && session.Earnings == 0m
+            && session.Status == Enums.SessionStatus.NotUploaded;
+
+        private static IEnumerable<IEnumerable<Session>> SplitBelowMinimumRecordings(IEnumerable<Session> group)
+        {
+            var rows = group.ToList();
+            // The Recordings page omits seconds. A below-minimum attempt and a recording
+            // lasting at least a minute can share that displayed timestamp without being versions.
+            if (rows[0].RecordedDate.Ticks % TimeSpan.TicksPerMinute == 0
+                && rows.Any(IsBelowMinimumRecording)
+                && rows.All(row => IsBelowMinimumRecording(row) || row.Duration >= TimeSpan.FromMinutes(1)))
+                return rows.GroupBy(IsBelowMinimumRecording);
+            return [rows];
+        }
+
+        private static bool AreSeparateRecordings(Session first, Session second) =>
+            first.RecordedDate == second.RecordedDate
+            && first.RecordedDate.Ticks % TimeSpan.TicksPerMinute == 0
+            && ((IsBelowMinimumRecording(first) && second.Duration >= TimeSpan.FromMinutes(1))
+                || (IsBelowMinimumRecording(second) && first.Duration >= TimeSpan.FromMinutes(1)));
 
         private static bool SameImportedSession(Session first, Session second) =>
             first.GameId == second.GameId && first.Date == second.Date
