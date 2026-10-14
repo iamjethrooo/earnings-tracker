@@ -2,10 +2,10 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Utilities;
+using EarningsTracker.Data;
+using EarningsTracker.Utilities;
 
-namespace nerve_earnings_tracker.ViewModels;
+namespace EarningsTracker.ViewModels;
 
 internal sealed class SettingsViewModel : INotifyPropertyChanged
 {

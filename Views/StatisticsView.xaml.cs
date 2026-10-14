@@ -7,13 +7,13 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Enums;
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Utilities;
+using EarningsTracker.Data;
+using EarningsTracker.Enums;
+using EarningsTracker.Models;
+using EarningsTracker.Utilities;
 using System.Windows.Threading;
 
-namespace nerve_earnings_tracker.Views
+namespace EarningsTracker.Views
 {
     public partial class StatisticsView : UserControl, INotifyPropertyChanged
     {

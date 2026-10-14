@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Text.Json;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Data
+namespace EarningsTracker.Data
 {
     class DbInitializer
     {

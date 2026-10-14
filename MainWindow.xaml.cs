@@ -1,12 +1,12 @@
 using System.Diagnostics;
-using nerve_earnings_tracker.Enums;
+using EarningsTracker.Enums;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Views.Modals;
+using EarningsTracker.Models;
+using EarningsTracker.Views.Modals;
 
-namespace nerve_earnings_tracker
+namespace EarningsTracker
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

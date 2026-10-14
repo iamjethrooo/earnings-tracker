@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace nerve_earnings_tracker.Enums
+namespace EarningsTracker.Enums
 {
     public enum SessionStatus
     {

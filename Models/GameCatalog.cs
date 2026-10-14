@@ -1,4 +1,4 @@
-namespace nerve_earnings_tracker.Models;
+namespace EarningsTracker.Models;
 
 public class GameMetadata
 {

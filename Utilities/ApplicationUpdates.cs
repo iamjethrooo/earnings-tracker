@@ -5,7 +5,7 @@ using System.Windows.Threading;
 using Velopack;
 using Velopack.Sources;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal enum ApplicationUpdateState { Unavailable, Idle, Checking, UpToDate, Available, Downloading, ReadyToRestart, Error }
 
@@ -44,15 +44,8 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
 
     internal static UpdateManager CreateManager()
     {
-        var local = Environment.GetEnvironmentVariable(LocalSourceVariable);
-        // Local feeds are permitted only alongside the explicit isolated data override.
-        if (!string.IsNullOrEmpty(local))
-        {
-            if (!AppDataPaths.HasOverride || !Path.IsPathFullyQualified(local))
-                Trace.TraceWarning("Ignoring local update source: an absolute feed path and an isolated data directory are required.");
-            else return new UpdateManager(Path.GetFullPath(local));
-        }
-        return new UpdateManager(new GithubSource("https://github.com/iamjethrooo/nerve-earnings-tracker", null, false));
+        return new UpdateManager(ApplicationUpdateConfiguration.FromAssembly(),
+            new UpdateOptions { ExplicitChannel = ApplicationUpdateConfiguration.Channel, AllowVersionDowngrade = false });
     }
 
     internal ApplicationUpdates(UpdateManager manager, Dispatcher dispatcher, UpdateRestartGuard guard,
@@ -115,6 +108,8 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
             var result = await Task.Run(manager.CheckForUpdatesAsync);
             if (disposed || id != operationId) return;
             token.ThrowIfCancellationRequested();
+            if (result?.TargetFullRelease.Version.IsPrerelease == true)
+                throw new InvalidDataException("A prerelease package cannot be offered on the stable application channel.");
             available = result;
             Set(result == null ? ApplicationUpdateState.UpToDate : ApplicationUpdateState.Available,
                 result == null ? "You have the latest application version." : $"Version {Version} is available. Download when convenient.");

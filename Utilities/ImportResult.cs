@@ -1,9 +1,9 @@
-﻿using nerve_earnings_tracker.Models;
+﻿using EarningsTracker.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     public class ImportResult
     {

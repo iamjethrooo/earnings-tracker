@@ -1,11 +1,11 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="clr-namespace:nerve_earnings_tracker.Utilities"
+    xmlns:ui="clr-namespace:EarningsTracker.Utilities"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Palette and geometry retain the existing visual identity. -->
-    <FontFamily x:Key="AppFont">/nerve-earnings-tracker;component/Resources/Fonts/#Inter</FontFamily>
+    <FontFamily x:Key="AppFont">/EarningsTracker;component/Resources/Fonts/#Inter</FontFamily>
     <SolidColorBrush x:Key="SurfaceColor">#17171B</SolidColorBrush>
     <SolidColorBrush x:Key="CardBackgroundColor">#1A1A1E</SolidColorBrush>
     <SolidColorBrush x:Key="SidebarBackgroundColor">#141417</SolidColorBrush>

@@ -1,4 +1,4 @@
-<UserControl x:Class="nerve_earnings_tracker.Views.Modals.PayoutEditView"
+<UserControl x:Class="EarningsTracker.Views.Modals.PayoutEditView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <StackPanel MaxWidth="620">

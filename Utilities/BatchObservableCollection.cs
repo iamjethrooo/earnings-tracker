@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 // Materialize before replacing so a failed enumeration cannot discard the displayed snapshot.
 internal sealed class BatchObservableCollection<T> : ObservableCollection<T>

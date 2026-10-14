@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Data;
+namespace EarningsTracker.Data;
 
 internal static class CatalogModelConfiguration
 {

@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using nerve_earnings_tracker.Data;
+using EarningsTracker.Data;
 
 #nullable disable
 
-namespace nerve_earnings_tracker.Migrations
+namespace EarningsTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace nerve_earnings_tracker.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Bookmark", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Bookmark", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -34,7 +34,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("Bookmarks");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.CatalogSetting", b =>
+            modelBuilder.Entity("EarningsTracker.Models.CatalogSetting", b =>
                 {
                     b.Property<string>("Key")
                         .HasColumnType("TEXT");
@@ -48,7 +48,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("CatalogSettings");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.ExchangeRate", b =>
+            modelBuilder.Entity("EarningsTracker.Models.ExchangeRate", b =>
                 {
                     b.Property<string>("Currency")
                         .HasColumnType("TEXT");
@@ -64,7 +64,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("ExchangeRates");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Game", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Game", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -91,7 +91,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("Games");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameChange", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameChange", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -122,7 +122,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("GameChanges");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameGenre", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameGenre", b =>
                 {
                     b.Property<int>("GameId")
                         .HasColumnType("INTEGER");
@@ -135,7 +135,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("GameGenres");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameMetadata", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameMetadata", b =>
                 {
                     b.Property<int>("GameId")
                         .HasColumnType("INTEGER");
@@ -180,7 +180,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("GameMetadata");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameOwnership", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameOwnership", b =>
                 {
                     b.Property<int>("GameId")
                         .HasColumnType("INTEGER");
@@ -204,7 +204,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("GameOwnership");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Payout", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Payout", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -266,7 +266,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("Payouts");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.PayoutChange", b =>
+            modelBuilder.Entity("EarningsTracker.Models.PayoutChange", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -300,7 +300,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("PayoutChanges");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Session", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -346,7 +346,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("Sessions");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.SessionChange", b =>
+            modelBuilder.Entity("EarningsTracker.Models.SessionChange", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -380,7 +380,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("SessionChanges");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.StoreOffer", b =>
+            modelBuilder.Entity("EarningsTracker.Models.StoreOffer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -435,7 +435,7 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("StoreOffers");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.SubscriptionAvailability", b =>
+            modelBuilder.Entity("EarningsTracker.Models.SubscriptionAvailability", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -480,47 +480,47 @@ namespace nerve_earnings_tracker.Migrations
                     b.ToTable("SubscriptionAvailability");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Bookmark", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Bookmark", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", "Game")
+                    b.HasOne("EarningsTracker.Models.Game", "Game")
                         .WithOne()
-                        .HasForeignKey("nerve_earnings_tracker.Models.Bookmark", "GameId")
+                        .HasForeignKey("EarningsTracker.Models.Bookmark", "GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Game");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameGenre", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameGenre", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", null)
+                    b.HasOne("EarningsTracker.Models.Game", null)
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameMetadata", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameMetadata", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", null)
+                    b.HasOne("EarningsTracker.Models.Game", null)
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.GameOwnership", b =>
+            modelBuilder.Entity("EarningsTracker.Models.GameOwnership", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", null)
+                    b.HasOne("EarningsTracker.Models.Game", null)
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.PayoutChange", b =>
+            modelBuilder.Entity("EarningsTracker.Models.PayoutChange", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Payout", "Payout")
+                    b.HasOne("EarningsTracker.Models.Payout", "Payout")
                         .WithMany("Changes")
                         .HasForeignKey("PayoutId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -529,14 +529,14 @@ namespace nerve_earnings_tracker.Migrations
                     b.Navigation("Payout");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Session", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Session", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", "Game")
+                    b.HasOne("EarningsTracker.Models.Game", "Game")
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("nerve_earnings_tracker.Models.Payout", "Payout")
+                    b.HasOne("EarningsTracker.Models.Payout", "Payout")
                         .WithMany()
                         .HasForeignKey("PayoutId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -546,25 +546,25 @@ namespace nerve_earnings_tracker.Migrations
                     b.Navigation("Payout");
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.StoreOffer", b =>
+            modelBuilder.Entity("EarningsTracker.Models.StoreOffer", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", null)
+                    b.HasOne("EarningsTracker.Models.Game", null)
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.SubscriptionAvailability", b =>
+            modelBuilder.Entity("EarningsTracker.Models.SubscriptionAvailability", b =>
                 {
-                    b.HasOne("nerve_earnings_tracker.Models.Game", null)
+                    b.HasOne("EarningsTracker.Models.Game", null)
                         .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("nerve_earnings_tracker.Models.Payout", b =>
+            modelBuilder.Entity("EarningsTracker.Models.Payout", b =>
                 {
                     b.Navigation("Changes");
                 });

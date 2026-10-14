@@ -1,7 +1,7 @@
-﻿<Application x:Class="nerve_earnings_tracker.App"
+﻿<Application x:Class="EarningsTracker.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:nerve_earnings_tracker">
+             xmlns:local="clr-namespace:EarningsTracker">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

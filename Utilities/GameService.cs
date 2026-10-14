@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
 using System.Text.Json;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     internal static class GameService
     {

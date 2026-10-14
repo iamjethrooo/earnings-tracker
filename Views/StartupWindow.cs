@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace nerve_earnings_tracker.Views;
+namespace EarningsTracker.Views;
 
 internal sealed class StartupWindow : Window
 {
@@ -10,7 +10,7 @@ internal sealed class StartupWindow : Window
 
     internal StartupWindow()
     {
-        Title = "Nerve Earnings Tracker";
+        Title = "Earnings Tracker";
         Width = 440; Height = 180;
         ResizeMode = ResizeMode.NoResize;
         WindowStyle = WindowStyle.None;
@@ -19,7 +19,7 @@ internal sealed class StartupWindow : Window
         Foreground = (Brush)FindResource("DefaultTextColor");
         FontFamily = TryFindResource("AppFont") as FontFamily ?? SystemFonts.MessageFontFamily;
         var content = new StackPanel();
-        content.Children.Add(new TextBlock { Text = "Nerve Earnings Tracker", FontSize = 22, FontWeight = FontWeights.SemiBold });
+        content.Children.Add(new TextBlock { Text = "Earnings Tracker", FontSize = 22, FontWeight = FontWeights.SemiBold });
         content.Children.Add(new TextBlock { Text = "Preparing your tracker…", FontSize = (double)FindResource("FontSizeBody"), Margin = new Thickness(0, 14, 0, 10),
             Foreground = (Brush)FindResource("SecondaryTextColor") });
         content.Children.Add(new ProgressBar { IsIndeterminate = true, Height = 4,

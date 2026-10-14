@@ -1,10 +1,10 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
+using EarningsTracker.Data;
 using System.Data;
 using System.IO;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal static class DatabaseInitialization
 {
@@ -12,6 +12,7 @@ internal static class DatabaseInitialization
     {
         var available = db.Database.GetMigrations().ToArray();
         var applied = db.Database.GetAppliedMigrations().ToArray();
+
         if (applied.Any(id => !available.Contains(id)) || !applied.SequenceEqual(available.Take(applied.Length)))
             throw new InvalidOperationException("This database uses an older development or newer application migration history. Use its matching application or the reviewed recovery procedure. The database has not been reset.");
 
@@ -56,7 +57,7 @@ internal static class DatabaseInitialization
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
-    private static void CopyVerified(string sourcePath, string destinationPath)
+    internal static void CopyVerified(string sourcePath, string destinationPath)
     {
         using var source = new SqliteConnection(new SqliteConnectionStringBuilder
         { DataSource = sourcePath, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());

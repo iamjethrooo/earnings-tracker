@@ -1,4 +1,4 @@
-namespace nerve_earnings_tracker.Enums;
+namespace EarningsTracker.Enums;
 
 public enum NavigationPage
 {

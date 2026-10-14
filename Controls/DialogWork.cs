@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace nerve_earnings_tracker.Controls;
+namespace EarningsTracker.Controls;
 
 // Dialogs retain their existing preview/commit workflows. Only the blocking work runs on a worker.
 internal sealed class DialogWork(UserControl owner, TextBlock status) : IDisposable

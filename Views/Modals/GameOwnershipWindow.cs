@@ -3,9 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Automation;
-using nerve_earnings_tracker.ViewModels;
+using EarningsTracker.ViewModels;
 
-namespace nerve_earnings_tracker.Views.Modals;
+namespace EarningsTracker.Views.Modals;
 
 internal sealed class GameOwnershipWindow : Window
 {

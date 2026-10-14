@@ -1,15 +1,15 @@
-﻿using nerve_earnings_tracker.Commands;
-using nerve_earnings_tracker.Models;
+﻿using EarningsTracker.Commands;
+using EarningsTracker.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using nerve_earnings_tracker.Data;
+using EarningsTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using nerve_earnings_tracker.Utilities;
+using EarningsTracker.Utilities;
 using System.Windows.Media;
 
-namespace nerve_earnings_tracker.ViewModels
+namespace EarningsTracker.ViewModels
 {
     public class GameItemViewModel : INotifyPropertyChanged
     {

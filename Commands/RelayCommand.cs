@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace nerve_earnings_tracker.Commands;
+namespace EarningsTracker.Commands;
 
 public class RelayCommand : ICommand
 {

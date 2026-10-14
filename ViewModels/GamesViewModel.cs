@@ -1,5 +1,5 @@
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,9 +8,9 @@ using System.Text;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Utilities;
+using EarningsTracker.Utilities;
 
-namespace nerve_earnings_tracker.ViewModels
+namespace EarningsTracker.ViewModels
 {
     class GamesViewModel : INotifyPropertyChanged
     {

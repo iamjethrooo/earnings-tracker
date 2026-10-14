@@ -180,9 +180,21 @@
                         <Grid x:Name="PART_Root">
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/><ColumnDefinition Width="32"/></Grid.ColumnDefinitions>
-                            <Button x:Name="PART_PreviousButton" Style="{StaticResource CalendarNavigationButton}" Content="â€¹" Focusable="False" Padding="0" Height="30" FontSize="20"/>
+                            <Button x:Name="PART_PreviousButton" Style="{StaticResource CalendarNavigationButton}" AutomationProperties.Name="Previous period" Focusable="False" Padding="0" Height="30">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <Path Data="M6,0 L0,5 L6,10" Width="6" Height="10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
                             <Button x:Name="PART_HeaderButton" Style="{StaticResource CalendarNavigationButton}" Grid.Column="1" Focusable="False" FontWeight="SemiBold" Height="30"/>
-                            <Button x:Name="PART_NextButton" Style="{StaticResource CalendarNavigationButton}" Grid.Column="2" Content="â€º" Focusable="False" Padding="0" Height="30" FontSize="20"/>
+                            <Button x:Name="PART_NextButton" Style="{StaticResource CalendarNavigationButton}" Grid.Column="2" AutomationProperties.Name="Next period" Focusable="False" Padding="0" Height="30">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <Path Data="M0,0 L6,5 L0,10" Width="6" Height="10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
                             <Grid x:Name="PART_MonthView" Grid.Row="1" Grid.ColumnSpan="3">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>

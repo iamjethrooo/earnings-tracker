@@ -3,11 +3,11 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.ViewModels;
+using EarningsTracker.Data;
+using EarningsTracker.Utilities;
+using EarningsTracker.ViewModels;
 
-namespace nerve_earnings_tracker.Views;
+namespace EarningsTracker.Views;
 
 public partial class SettingsView : UserControl
 {
@@ -76,7 +76,7 @@ public partial class SettingsView : UserControl
     }
     private void Export_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new SaveFileDialog { FileName = "nerve-diagnostics.json", Filter = "JSON report (*.json)|*.json" };
+        var dialog = new SaveFileDialog { FileName = "EarningsTracker-diagnostics.json", Filter = "JSON report (*.json)|*.json" };
         if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
         try { File.WriteAllText(dialog.FileName, model.Diagnostics()); ShowFeedback("Diagnostics exported.", FeedbackTone.Success); }
         catch { ShowFeedback("Diagnostics could not be exported. Choose another location or retry.", FeedbackTone.Error); }

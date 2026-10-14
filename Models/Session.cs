@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using nerve_earnings_tracker.Enums;
+using EarningsTracker.Enums;
 
-namespace nerve_earnings_tracker.Models
+namespace EarningsTracker.Models
 {
     public class Session
     {

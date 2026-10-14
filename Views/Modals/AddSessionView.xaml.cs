@@ -1,8 +1,8 @@
-using nerve_earnings_tracker.Controls;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Exceptions;
+using EarningsTracker.Controls;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
+using EarningsTracker.Utilities;
+using EarningsTracker.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace nerve_earnings_tracker.Views.Modals
+namespace EarningsTracker.Views.Modals
 {
     /// <summary>
     /// Interaction logic for ImportSessionsView.xaml

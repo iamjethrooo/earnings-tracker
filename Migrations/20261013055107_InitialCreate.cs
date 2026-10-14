@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace nerve_earnings_tracker.Migrations
+namespace EarningsTracker.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

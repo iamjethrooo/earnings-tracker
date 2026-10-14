@@ -1,7 +1,7 @@
-using nerve_earnings_tracker.Enums;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Enums;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal sealed record EarningsPeriods(decimal Today, decimal Week, decimal Month)
 {

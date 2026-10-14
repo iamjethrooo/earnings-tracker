@@ -1,6 +1,6 @@
 using System.Windows.Media.Imaging;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 // Frozen images can be shared across dispatchers. Limit both entry count and decoded pixel bytes.
 internal sealed class DecodedArtworkCache(int capacity = 128, long byteLimit = 16 * 1024 * 1024)

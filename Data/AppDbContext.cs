@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Models;
 using System.IO;
 
-namespace nerve_earnings_tracker.Data
+namespace EarningsTracker.Data
 {
     class AppDbContext : DbContext
     {
@@ -47,12 +47,13 @@ namespace nerve_earnings_tracker.Data
             if (optionsBuilder.IsConfigured)
                 return;
 
+            Utilities.AppDataPaths.EnsureDataLocation();
             var appData = Utilities.AppDataPaths.DirectoryPath;
             Directory.CreateDirectory(appData);
-            var path = Path.Combine(appData, "nerve_earnings_tracker.db");
-            var legacyPath = Path.Combine(AppContext.BaseDirectory, "nerve_earnings_tracker.db");
+            var path = Path.Combine(appData, Utilities.AppDataPaths.DatabaseFileName);
+            var legacyPath = Path.Combine(AppContext.BaseDirectory, Utilities.AppDataPaths.LegacyDatabaseFileName);
             // Verified temporary copy includes committed WAL data; no existing database is replaced.
-            if (!Utilities.AppDataPaths.HasOverride)
+            if (Utilities.AppDataPaths.UsesProductionStorage)
                 Utilities.DatabaseInitialization.CopyLegacyIfMissing(path, legacyPath);
             optionsBuilder.UseSqlite(new SqliteConnectionStringBuilder { DataSource = path }.ToString());
         }

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     public static partial class RegexPatterns
     {

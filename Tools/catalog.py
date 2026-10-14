@@ -38,7 +38,7 @@ def save(path, value):
 
 def request(url, payload=None, headers=None, raw=False):
     data = payload.encode() if isinstance(payload, str) else (json.dumps(payload).encode() if payload is not None else None)
-    req = urllib.request.Request(url, data=data, headers={"User-Agent": "NerveEarningsTracker-Catalog/1.0", **(headers or {})})
+    req = urllib.request.Request(url, data=data, headers={"User-Agent": "EarningsTracker-Catalog/1.0", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
             result = response.read(16 * 1024 * 1024 + 1)
@@ -304,7 +304,7 @@ def package(args):
                 raise ValueError(f'Artwork checksum mismatch: {game["Name"]}')
             if path.name not in archive.namelist():
                 archive.write(path, path.name)
-    base = "https://github.com/iamjethrooo/nerve-earnings-tracker/releases/download/" + catalog["Version"] + "/"
+    base = "https://github.com/iamjethrooo/earnings-tracker/releases/download/" + catalog["Version"] + "/"
     save(output / "manifest.json", {"SchemaVersion": 1, "CatalogUrl": base + "catalog.json",
                                    "Sha256": hashlib.sha256((output / "catalog.json").read_bytes()).hexdigest(),
                                    "ArtworkUrl": base + "artwork.zip",

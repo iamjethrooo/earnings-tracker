@@ -1,4 +1,4 @@
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 // One gate for update exit only; existing contexts and dialog ownership remain unchanged.
 internal sealed class UpdateRestartGuard

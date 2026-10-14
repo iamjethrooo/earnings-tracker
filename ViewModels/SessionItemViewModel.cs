@@ -1,12 +1,12 @@
-using nerve_earnings_tracker.Enums;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Enums;
+using EarningsTracker.Models;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
-using nerve_earnings_tracker.Utilities;
+using EarningsTracker.Utilities;
 
-namespace nerve_earnings_tracker.ViewModels
+namespace EarningsTracker.ViewModels
 {
     public class SessionItemViewModel : INotifyPropertyChanged
     {

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
+using EarningsTracker.Data;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal sealed class AppSettings(DbContextOptions<AppDbContext>? options = null)
 {

@@ -85,6 +85,7 @@
     </Style>
 
     <Style x:Key="ScrollBarRepeatButton" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
@@ -98,17 +99,21 @@
     </Style>
 
     <Style x:Key="VerticalScrollThumb" TargetType="Thumb">
-        <Setter Property="MinHeight" Value="18"/>
-        <Setter Property="MinWidth" Value="8"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="MinWidth" Value="12"/>
+        <Setter Property="Focusable" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="ThumbBorder"
-                    Background="{DynamicResource ScrollThumbColor}"
-                    CornerRadius="4"
-                    Margin="1"
-                    />
+                    <Grid Background="Transparent">
+                        <Border x:Name="ThumbBorder"
+                                Background="{DynamicResource ScrollThumbColor}"
+                                CornerRadius="4" Margin="3,2"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Horizontal">
+                            <Setter TargetName="ThumbBorder" Property="Margin" Value="2,3"/>
+                        </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource ScrollThumbHoverColor}"/>
                         </Trigger>
@@ -121,20 +126,31 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Horizontal">
-                <Setter Property="MinHeight" Value="8"/>
-                <Setter Property="MinWidth" Value="18"/>
+                <Setter Property="MinHeight" Value="12"/>
+                <Setter Property="MinWidth" Value="48"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style x:Key="VerticalScrollBar" TargetType="ScrollBar">
-        <Setter Property="Width" Value="12.5"/>
+        <Style.Resources>
+            <!-- Track uses half of these values for its minimum thumb length. -->
+            <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">96</sys:Double>
+            <sys:Double x:Key="{x:Static SystemParameters.HorizontalScrollBarButtonWidthKey}">96</sys:Double>
+        </Style.Resources>
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
                     <Grid x:Name="TrackBackground"
                       Background="{TemplateBinding Background}">
+                        <Border x:Name="TrackRail" Margin="3,2" CornerRadius="4"
+                                Background="{DynamicResource ControlBackgroundColor}" Opacity="0"
+                                IsHitTestVisible="False"/>
                         <Track x:Name="PART_Track"
                                Orientation="{TemplateBinding Orientation}"
                             IsDirectionReversed="True"
@@ -163,14 +179,16 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="TrackRail" Property="Margin" Value="2,3"/>
                             <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
                             <Setter TargetName="PageDecrease" Property="Command" Value="{x:Static ScrollBar.PageLeftCommand}"/>
                             <Setter TargetName="PageIncrease" Property="Command" Value="{x:Static ScrollBar.PageRightCommand}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="TrackBackground"
-                                    Property="Background"
-                                    Value="{DynamicResource CardBackgroundColor}"/>
+                            <Setter TargetName="TrackRail" Property="Opacity" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="TrackBackground" Property="Opacity" Value="0.5"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -180,12 +198,48 @@
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="12.5"/>
+                <Setter Property="Height" Value="12"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+
+    <Style TargetType="ScrollViewer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
+                                                Margin="{TemplateBinding Padding}"
+                                                Content="{TemplateBinding Content}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Orientation="Vertical"
+                                   Maximum="{TemplateBinding ScrollableHeight}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Value="{Binding VerticalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                        <ScrollBar x:Name="PART_HorizontalScrollBar" Grid.Row="1" Orientation="Horizontal"
+                                   Maximum="{TemplateBinding ScrollableWidth}"
+                                   ViewportSize="{TemplateBinding ViewportWidth}"
+                                   Value="{Binding HorizontalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style x:Key="ItemImage" TargetType="Image">
         <Setter Property="Width" Value="50"/>

@@ -1,14 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Exceptions;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
+using EarningsTracker.Utilities;
+using EarningsTracker.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Controls;
+using EarningsTracker.Controls;
 
-namespace nerve_earnings_tracker.Views.Modals
+namespace EarningsTracker.Views.Modals
 {
     public partial class ImportPayoutsView : UserControl, IDisposable
     {

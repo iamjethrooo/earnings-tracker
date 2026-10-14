@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     internal sealed class PayoutParseResult
     {

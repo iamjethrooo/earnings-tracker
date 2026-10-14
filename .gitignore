@@ -463,3 +463,21 @@ DevelopmentBackups/
 *.key
 *.pem
 *.p12
+
+# Additional private-key containers and locally generated certificates.
+*.pvk
+*.snk
+*.jks
+*.keystore
+
+# Personal planning, audit, and implementation history (preserved locally).
+.local-docs/
+
+# Velopack release output (normally under artifacts/; cover custom local paths too).
+VelopackReleases/
+*.appinstaller
+
+# Local verification output and temporary diagnostics.
+test-results/
+*.dmp
+*.dump

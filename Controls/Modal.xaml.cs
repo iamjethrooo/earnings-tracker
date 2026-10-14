@@ -12,7 +12,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace nerve_earnings_tracker.Controls
+namespace EarningsTracker.Controls
 {
     /// <summary>
     /// Interaction logic for Modal.xaml

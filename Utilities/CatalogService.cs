@@ -2,10 +2,10 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 public sealed class CatalogSnapshot
 {

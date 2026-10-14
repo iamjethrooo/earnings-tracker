@@ -1,4 +1,4 @@
-namespace nerve_earnings_tracker.Exceptions
+namespace EarningsTracker.Exceptions
 {
     // Callers must treat this as a completed save and must not offer to repeat it.
     internal sealed class PostCommitRefreshException : Exception

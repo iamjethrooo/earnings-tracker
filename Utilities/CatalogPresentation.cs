@@ -1,7 +1,7 @@
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Models;
 using System.Globalization;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal static class CatalogPresentation
 {

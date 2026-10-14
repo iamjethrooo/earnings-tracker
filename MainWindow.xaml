@@ -1,14 +1,14 @@
-<Window x:Class="nerve_earnings_tracker.MainWindow"
+<Window x:Class="EarningsTracker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:nerve_earnings_tracker"
-        xmlns:enums="clr-namespace:nerve_earnings_tracker.Enums"
-        xmlns:controls="clr-namespace:nerve_earnings_tracker.Controls"
+        xmlns:local="clr-namespace:EarningsTracker"
+        xmlns:enums="clr-namespace:EarningsTracker.Enums"
+        xmlns:controls="clr-namespace:EarningsTracker.Controls"
         mc:Ignorable="d"
-        Title="Nerve Earnings Tracker" Height="720" Width="1200"
-        Icon="/nerve-earnings-tracker;component/Resources/App.ico"
+        Title="Earnings Tracker" Height="720" Width="1200"
+        Icon="/EarningsTracker;component/Resources/App.ico"
         FontFamily="{StaticResource AppFont}"
         xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         WindowStyle="None"
@@ -40,7 +40,7 @@
                 <ColumnDefinition Width="46"/>
                 <ColumnDefinition Width="46"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Nerve Earnings Tracker" VerticalAlignment="Center" Margin="12, 0" Foreground="{StaticResource DefaultTextColor}"/>
+            <TextBlock Grid.Column="0" Text="Earnings Tracker" VerticalAlignment="Center" Margin="12, 0" Foreground="{StaticResource DefaultTextColor}"/>
 
             <Button
                 Grid.Column="1"
@@ -140,11 +140,11 @@
                         <StackPanel Margin="16,20,16,0">
                             <DockPanel LastChildFill="True">
                                 <Border Width="32" Height="32" CornerRadius="{StaticResource CardCornerRadius}" Background="{StaticResource AccentBackgroundColor}" Margin="0,0,10,0">
-                                    <TextBlock Text="N" Foreground="{StaticResource AccentColor}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <TextBlock Text="E" Foreground="{StaticResource AccentColor}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="NERVE" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold"/>
-                                    <TextBlock Text="EARNINGS TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="9" FontWeight="SemiBold"/>
+                                    <TextBlock Text="EARNINGS" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold"/>
+                                    <TextBlock Text="TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="9" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </DockPanel>
                             <Border Height="1" Background="{StaticResource DefaultBorderColor}" Margin="0,18,0,0"/>
@@ -157,7 +157,7 @@
                             <ListBoxItem Content="Statistics" Tag="{x:Static enums:NavigationPage.Statistics}" Style="{StaticResource NavButton}" />
                         </ListBox>
                         <ListBox Grid.Row="2" x:Name="SettingsNav" SelectionChanged="SettingsNav_SelectionChanged" Margin="12,12,12,16" Background="Transparent" BorderThickness="0">
-                            <ListBoxItem Content="⚙ Settings" Tag="{x:Static enums:NavigationPage.Settings}" Style="{StaticResource NavButton}" />
+                            <ListBoxItem Content="Settings" Tag="{x:Static enums:NavigationPage.Settings}" Style="{StaticResource NavButton}" />
                         </ListBox>
                     </Grid>
                 </Border>

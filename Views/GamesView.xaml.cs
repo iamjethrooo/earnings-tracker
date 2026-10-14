@@ -1,9 +1,9 @@
-﻿using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.ViewModels;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Enums;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Exceptions;
+﻿using EarningsTracker.Models;
+using EarningsTracker.ViewModels;
+using EarningsTracker.Data;
+using EarningsTracker.Enums;
+using EarningsTracker.Utilities;
+using EarningsTracker.Exceptions;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
@@ -12,7 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 
-namespace nerve_earnings_tracker.Views
+namespace EarningsTracker.Views
 {
     /// <summary>
     /// Interaction logic for GamesView.xaml

@@ -1,12 +1,12 @@
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Exceptions;
-using nerve_earnings_tracker.ViewModels;
+using EarningsTracker.Models;
+using EarningsTracker.Utilities;
+using EarningsTracker.Exceptions;
+using EarningsTracker.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace nerve_earnings_tracker.Views
+namespace EarningsTracker.Views
 {
     public partial class SessionsView : UserControl
     {
@@ -15,7 +15,7 @@ namespace nerve_earnings_tracker.Views
 
         public SessionsView() : this(null) { }
 
-        internal SessionsView(Microsoft.EntityFrameworkCore.DbContextOptions<nerve_earnings_tracker.Data.AppDbContext>? databaseOptions)
+        internal SessionsView(Microsoft.EntityFrameworkCore.DbContextOptions<EarningsTracker.Data.AppDbContext>? databaseOptions)
         {
             InitializeComponent();
             DataContext = new SessionsViewModel(databaseOptions);
@@ -141,7 +141,7 @@ namespace nerve_earnings_tracker.Views
             try
             {
                 item.ApplySavedSession(edited!);
-                using (var db = new nerve_earnings_tracker.Data.AppDbContext())
+                using (var db = new EarningsTracker.Data.AppDbContext())
                     item.SetArtwork(item.Session.GameId is int gameId ? db.GameMetadata.Find(gameId) : null);
                 if (DataContext is SessionsViewModel viewModel)
                     UpdateEmptyState(viewModel);

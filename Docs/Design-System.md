@@ -1,4 +1,4 @@
-# Nerve UI design system
+# Earnings Tracker UI design system
 
 Keep the existing charcoal surfaces, Inter typography, purple actions and selection, cover artwork, and compact coloured badges. Prefer existing styles and templates when adding UI. This is a consolidation of the current design, not a new theme.
 
@@ -47,7 +47,7 @@ Apply `PageHost` explicitly to `MainContent`. Pages own their 20-DIP inset on al
 
 Preserve the shared focus visual, primary-button contrast, popup parts, accessible names, live feedback, modal keyboard containment, commit close protection, and virtualization established in Phases 1–3. A visual extraction must not remove a local trigger, hide an action, reset a binding context, or add an unintended tab stop.
 
-Editor focus must remain visible while hovered: `ModalTextBox` applies its keyboard-focus border after its hover border and uses the shared disabled-opacity treatment. Search hints use `SecondaryTextColor` without an extra opacity reduction. See [the application consistency audit](UI-Design-System-Audit.md) for remaining compatibility variants, contrast concerns, and manual regression checks.
+Editor focus must remain visible while hovered: `ModalTextBox` applies its keyboard-focus border after its hover border and uses the shared disabled-opacity treatment. Search hints use `SecondaryTextColor` without an extra opacity reduction. Preserve these behaviors when updating the shared styles and verify keyboard focus, contrast, and compact layouts as part of UI changes.
 
 Check resource lookup and trigger precedence in real WPF fixtures, not just XML compilation. Render minimum/default/wide layouts and inspect both loaded artwork and missing covers. Check final foregrounds explicitly when replacing a local style: an explicit TextBlock style does not automatically inherit the implicit one.
 
@@ -58,6 +58,8 @@ Use `EmptyStateText` for quiet empty-list guidance, with a clear distinction bet
 Settings feedback uses verified/success, pending/warning, rejected/error, and secondary/neutral tokens alongside descriptive text and polite announcements. Mixed update results retain their warning meaning. Keep prices, editions, availability, and stale-data warnings visible; reviewed provenance can use progressive disclosure.
 
 Sidebar routing uses `NavigationPage` identifiers rather than labels or list indices. Product versions must be explicit release metadata; default assembly versions remain diagnostic information.
+
+`NavButton` pairs each page label with a 20-DIP Fluent icon selected by its `NavigationPage` tag. Icons follow the row foreground and add no focus stop. Shared scrollbars use a 12-DIP interaction lane with an inset rounded thumb, a quiet charcoal rail on hover, and purple while dragging. Both orientations retain viewport sizing and native page-scroll commands, with a 48-DIP minimum thumb length for long documents. The shared ScrollViewer template preserves its named scrolling parts and content scrolling, with a transparent corner when both bars appear.
 
 ## Statistics charts
 

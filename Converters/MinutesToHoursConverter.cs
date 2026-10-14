@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace nerve_earnings_tracker.Converters;
+namespace EarningsTracker.Converters;
 
 public class MinutesToHoursConverter : IValueConverter
 {

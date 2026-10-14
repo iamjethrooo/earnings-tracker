@@ -12,11 +12,11 @@ if (-not $directory.StartsWith($scratch + [IO.Path]::DirectorySeparatorChar, [St
 if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) { throw 'Executable missing.' }
 New-Item -ItemType Directory -Force -Path $directory | Out-Null
 if ((Get-Item -LiteralPath $directory).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Test directory cannot redirect to another location.' }
-if (-not ('NerveLaunchWindow' -as [type])) {
+if (-not ('EarningsTrackerLaunchWindow' -as [type])) {
     Add-Type @'
 using System;
 using System.Runtime.InteropServices;
-public static class NerveLaunchWindow {
+public static class EarningsTrackerLaunchWindow {
     [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left, Top, Right, Bottom; }
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr window, out Rect rect);
 }
@@ -32,8 +32,8 @@ try {
     while ([DateTime]::UtcNow -lt $deadline) {
         $process.Refresh()
         if ($process.HasExited) { throw "Application exited before opening its main window ($($process.ExitCode))." }
-        $bounds = New-Object NerveLaunchWindow+Rect
-        if ($process.MainWindowHandle -ne [IntPtr]::Zero -and [NerveLaunchWindow]::GetWindowRect($process.MainWindowHandle, [ref]$bounds) -and
+        $bounds = New-Object EarningsTrackerLaunchWindow+Rect
+        if ($process.MainWindowHandle -ne [IntPtr]::Zero -and [EarningsTrackerLaunchWindow]::GetWindowRect($process.MainWindowHandle, [ref]$bounds) -and
             ($bounds.Right - $bounds.Left) -ge 1000 -and ($bounds.Bottom - $bounds.Top) -ge 600) { $ready = $true; break }
         Start-Sleep -Milliseconds 200
     }
@@ -41,7 +41,7 @@ try {
     if (-not $process.CloseMainWindow()) { throw 'Main window refused normal close.' }
     if (-not $process.WaitForExit(10000)) { throw 'Isolated launch did not shut down normally.' }
     if ($process.ExitCode -ne 0) { throw "Application exit code: $($process.ExitCode)" }
-    if (-not (Test-Path -LiteralPath (Join-Path $directory 'nerve_earnings_tracker.db'))) { throw 'Isolated database was not created.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $directory 'EarningsTracker.db'))) { throw 'Isolated database was not created.' }
     [ordered]@{ Executable = [IO.Path]::GetFullPath($Executable); DataDirectory = $directory; MainWindowReady = $ready;
         ExitCode = $process.ExitCode; DatabaseCreated = $true } | ConvertTo-Json |
         Set-Content -LiteralPath (Join-Path $directory 'launch-verification.json') -Encoding utf8

@@ -2,10 +2,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Data;
+using EarningsTracker.Utilities;
+using EarningsTracker.Data;
 
-namespace nerve_earnings_tracker.Views.Modals
+namespace EarningsTracker.Views.Modals
 {
     /// <summary>
     /// Interaction logic for ImportResultModal.xaml

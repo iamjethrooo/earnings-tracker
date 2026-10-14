@@ -1,15 +1,18 @@
-# Nerve Earnings Tracker — repository instructions
+# Earnings Tracker — repository instructions
 
 ## Project and documentation
 
-Windows desktop tracker for game sessions, verified earnings, payouts, adjustments, reconciliation, and game acquisition information. The application targets `net10.0-windows` with WPF, EF Core 10/SQLite, FluentIcons.Wpf, and bundled Inter. The solution is `nerve-earnings-tracker.slnx`; tests use xUnit v3 and real isolated SQLite databases. Catalog maintainer tools use Python 3.11+ and the standard library.
+Windows desktop tracker for game sessions, verified earnings, payouts, adjustments, reconciliation, and game acquisition information. The application targets `net10.0-windows` with WPF, EF Core 10/SQLite, FluentIcons.Wpf, and bundled Inter. The solution is `EarningsTracker.slnx`; tests use xUnit v3 and real isolated SQLite databases. Catalog maintainer tools use Python 3.11+ and the standard library.
 
 Read the relevant documentation instead of duplicating it:
 
 - [Design system](Docs/Design-System.md) — the established design document; there is no root `DESIGN_SYSTEM.md`.
+- [Database and storage](Docs/Database.md) — database locations, migration boundaries, and isolation rules.
+- [Build and release](Docs/Release.md) — development commands and Velopack release gates.
 - [Testing and financial invariants](Tests/README.md).
 - [Catalog maintenance and publication gates](Tools/CATALOG.md).
-- [UI phase notes](Docs/UI-Phase-3.md), [Phase 4](Docs/UI-Phase-4.md), and [Phase 5](Docs/UI-Phase-5.md) — implementation decisions and manual checks.
+
+Local-only Codex audits and Phase 1–4 implementation records are preserved under `.local-docs/` when available. They are historical context; maintained requirements belong in the tracked documents above.
 
 Architecture and conventions below describe the current implementation. Workflow and release recommendations are identified explicitly; they do not require a new architecture.
 
@@ -26,7 +29,7 @@ Architecture and conventions below describe the current implementation. Workflow
 
 ## C#, WPF, and asynchronous conventions
 
-- Nullable reference types and implicit usings are enabled. Use the `nerve_earnings_tracker` namespace, PascalCase types/members, and the local file's indentation/private-field conventions. Both block and file-scoped namespaces exist; avoid mass formatting or renaming. No repository-wide formatter configuration or `global.json` is checked in.
+- Nullable reference types and implicit usings are enabled. Use the `EarningsTracker` namespace, PascalCase types/members, and the local file's indentation/private-field conventions. Both block and file-scoped namespaces exist; avoid mass formatting or renaming. No repository-wide formatter configuration or `global.json` is checked in.
 - Preserve XAML names, binding contexts, dependent-property notifications, command availability, and local trigger precedence. Use the existing `RelayCommand` and observable-state mechanisms rather than adding an MVVM dependency.
 - Use `Task`-returning operations; reserve `async void` for WPF/event boundaries and handle failures there. Publish observable collections and UI objects on their dispatcher. Keep blocking reads, parsing, imports, and artwork decoding off the UI thread using the existing patterns.
 - Preserve coalesced/queued refreshes and stale-result checks. Publish complete snapshots after successful reads; on failure retain the previous snapshot, identify stale data, and expose retry. First-load failures must not present unavailable financial totals as zero.
@@ -37,7 +40,7 @@ Architecture and conventions below describe the current implementation. Workflow
 ## UI and design rules
 
 - Follow [Docs/Design-System.md](Docs/Design-System.md): charcoal surfaces, purple actions/selection, Inter typography, semantic status colors, and existing compact layouts. Reuse styles, components, tokens, and templates before adding local equivalents.
-- `Resources/Styles.xaml` is the compatibility merge entry point. Keep existing resource keys available. In shared dictionaries use `DynamicResource` for tokens from sibling dictionaries and keep `BasedOn` references within the dictionary; views can use loaded `StaticResource` keys. Preserve the assembly resource URI `nerve-earnings-tracker` (hyphens), distinct from the C# namespace.
+- `Resources/Styles.xaml` is the compatibility merge entry point. Keep existing resource keys available. In shared dictionaries use `DynamicResource` for tokens from sibling dictionaries and keep `BasedOn` references within the dictionary; views can use loaded `StaticResource` keys. Preserve the assembly resource URI `EarningsTracker`, matching the assembly name.
 - Prefer `PageHost`, panel/heading styles, `ArtworkPresenter`, status variants, and import/feedback styles. Pages own their inset; do not add duplicate host padding. Preserve deliberate status-trigger differences across history, Dashboard, and game details.
 - Keep keyboard focus, accessible names, live feedback, modal containment, and commit close protection. Bound list viewports must retain virtualization/recycling; do not wrap large lists in an unbounded outer scroller.
 - Distinguish empty, filtered-empty, loading, error, and stale states. Keep prices, editions, availability, and stale-data warnings visible when simplifying provenance. Settings backup/restore, game-view defaults, and display preferences remain placeholders unless explicitly in scope.
@@ -53,7 +56,7 @@ Architecture and conventions below describe the current implementation. Workflow
 
 ## SQLite and migrations
 
-- Production data is `%LOCALAPPDATA%\NerveEarningsTracker\nerve_earnings_tracker.db`. Default context creation can copy a legacy database from the executable directory using SQLite backup, including committed WAL data. Do not delete either database, replace it with a seed, or treat it as a test fixture.
+- Follow [Database and storage](Docs/Database.md) for protected profiles, explicit test storage, migration behavior, and persistence rules. Never delete or replace a user's database, import personal records into fixtures, or bypass the audited recovery paths.
 - Startup runs `Database.Migrate()` and seed initialization before constructing financial views. Seeds initialize an empty Games table; catalog import failure must not block access to financial history. Do not replace migrations with `EnsureCreated`/`EnsureDeleted` or suppress migration/model checks to make startup succeed.
 - Schema changes require an actual persistence requirement. Preserve legacy columns, relationships/delete behaviors, and the payout soft-delete query filter. Add an EF migration and update the snapshot consistently; do not rewrite applied migrations. Verify fresh initialization, synthetic legacy upgrades, repeated migrations, and model/snapshot agreement through the existing persistence tests.
 - EF Core Tools is referenced, but no local `dotnet-ef` tool manifest is present. Verify matching migration tooling is available rather than assuming a CLI installation or installing new tooling without considering scope.
@@ -72,14 +75,14 @@ Architecture and conventions below describe the current implementation. Workflow
 Run from the repository root on Windows with the .NET 10 SDK and Windows Desktop runtime:
 
 ```powershell
-dotnet restore nerve-earnings-tracker.slnx
-dotnet build nerve-earnings-tracker.slnx --no-restore
-dotnet test nerve-earnings-tracker.slnx --no-build --no-restore
-dotnet build nerve-earnings-tracker.slnx --configuration Release --no-restore
-dotnet test nerve-earnings-tracker.slnx --configuration Release --no-build --no-restore
+dotnet restore EarningsTracker.slnx
+dotnet build EarningsTracker.slnx --no-restore
+dotnet test EarningsTracker.slnx --no-build --no-restore
+dotnet build EarningsTracker.slnx --configuration Release --no-restore
+dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 ```
 
-Relevant subsets: `dotnet test nerve-earnings-tracker.slnx --no-restore --filter "Category=Regression"` or `--filter "FullyQualifiedName~PayoutAccountingTests"`. Save evidence with `--logger "trx;LogFileName=tests.trx" --results-directory Tests/TestResults`.
+Relevant subsets: `dotnet test EarningsTracker.slnx --no-restore --filter "Category=Regression"` or `--filter "FullyQualifiedName~PayoutAccountingTests"`. Save evidence with `--logger "trx;LogFileName=tests.trx" --results-directory Tests/TestResults`.
 
 If a running app locks the normal output, use `--property:OutputPath=artifacts/verification/` consistently on build and test commands. Only use `--no-build` after building the same configuration/output. Do not kill a user's running app to unblock verification.
 
@@ -93,3 +96,5 @@ WPF tests use the `Wpf` collection/`WpfTestHost` dispatcher and actual resources
 - No product release version is explicitly assigned in the project. Settings shows Development build unless assembly metadata `ReleaseVersion` is supplied; the default assembly version is diagnostic information. When a release is authorized, deliberately align product metadata and assembly/package versions rather than silently declaring 1.0.0.
 - Catalog snapshot versions and publication are separate from application releases. Keep the `CATALOG_PUBLISH_ENABLED` and provider/review approval gates in place; follow [Tools/CATALOG.md](Tools/CATALOG.md).
 - No application installer/signing/release pipeline or coverage-percentage gate is established here. Confirm release requirements with the user when needed; do not invent packaging policies or claim automated end-to-end coverage.
+
+Store temporary audits, phase verification reports, and implementation logs in .local-docs/. Keep only maintained technical and operational documentation in Docs/.

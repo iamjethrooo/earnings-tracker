@@ -1,5 +1,5 @@
-﻿using nerve_earnings_tracker.Exceptions;
-using nerve_earnings_tracker.Models;
+﻿using EarningsTracker.Exceptions;
+using EarningsTracker.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     public static class SessionTextParser
     {

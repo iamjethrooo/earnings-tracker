@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     internal static class CurrencyDisplay
     {

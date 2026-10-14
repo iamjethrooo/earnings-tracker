@@ -1,11 +1,11 @@
-﻿using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Windows;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace nerve_earnings_tracker
+namespace EarningsTracker
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -33,7 +33,8 @@ namespace nerve_earnings_tracker
             Views.StartupWindow? progress = null;
             try
             {
-                var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Utilities.AppDataPaths.DirectoryPath.ToUpperInvariant())));
+                Utilities.ApplicationUpdateConfiguration.EnsureTestDataIsolation();
+                var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Utilities.AppDataPaths.InstanceDirectoryPath.ToUpperInvariant())));
                 _instanceMutex = new Mutex(false, @"Local\Nerve.EarningsTracker-" + identity);
                 try { _ownsInstanceMutex = _instanceMutex.WaitOne(0); }
                 catch (AbandonedMutexException) { _ownsInstanceMutex = true; }
@@ -73,6 +74,8 @@ namespace nerve_earnings_tracker
                 System.Diagnostics.Trace.TraceError(ex.ToString());
                 MessageBox.Show($"The tracker could not start. Database initialization or window creation failed.\n\n{ex.GetBaseException().Message}\n\nClose other instances and check database/file permissions before trying again. Your database has not been deleted or recreated.",
                     "Unable to start tracker", MessageBoxButton.OK, MessageBoxImage.Error);
+                using var db = new AppDbContext();
+                //MessageBox.Show($"Database source: {db.Database.GetDbConnection().DataSource}");
                 Shutdown(1);
             }
             finally

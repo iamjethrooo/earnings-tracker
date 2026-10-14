@@ -1,12 +1,12 @@
-﻿using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+﻿using EarningsTracker.Data;
+using EarningsTracker.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace nerve_earnings_tracker.Utilities
+namespace EarningsTracker.Utilities
 {
     internal class SessionImporter
     {

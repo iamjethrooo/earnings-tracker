@@ -1,4 +1,4 @@
-"""Render the code-native N mark to a multi-size ICO using only the standard library."""
+"""Render the code-native E mark to a multi-size ICO using only the standard library."""
 import argparse
 from pathlib import Path
 import struct

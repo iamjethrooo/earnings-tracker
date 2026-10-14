@@ -1,4 +1,4 @@
-﻿namespace nerve_earnings_tracker.Exceptions
+﻿namespace EarningsTracker.Exceptions
 {
     public class InvalidSessionFormatException : Exception
     {

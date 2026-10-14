@@ -5,10 +5,10 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using nerve_earnings_tracker.Data;
-using nerve_earnings_tracker.Models;
+using EarningsTracker.Data;
+using EarningsTracker.Models;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 internal sealed class CatalogManifest
 {
@@ -19,7 +19,7 @@ internal sealed class CatalogManifest
 
 internal sealed class CatalogUpdates
 {
-    internal const string ManifestUrl = "https://github.com/iamjethrooo/nerve-earnings-tracker/releases/download/catalog-latest/manifest.json";
+    internal const string ManifestUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-latest/manifest.json";
     private readonly HttpClient _client;
     private readonly DbContextOptions<AppDbContext>? _options;
     private static readonly SemaphoreSlim RefreshLock = new(1);
@@ -51,7 +51,7 @@ internal sealed class CatalogUpdates
                 var manifest = JsonSerializer.Deserialize<CatalogManifest>(await GetBytesAsync(ManifestUrl, 65536), CatalogService.JsonOptions)
                     ?? throw new InvalidDataException("Empty update manifest.");
                 if (manifest.SchemaVersion != 1 || !CatalogService.IsHttps(manifest.CatalogUrl)
-                    || !manifest.CatalogUrl.StartsWith("https://github.com/iamjethrooo/nerve-earnings-tracker/releases/download/", StringComparison.Ordinal)
+                    || !manifest.CatalogUrl.StartsWith("https://github.com/iamjethrooo/earnings-tracker/releases/download/", StringComparison.Ordinal)
                     || manifest.Sha256.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit))
                     throw new InvalidDataException("Invalid catalog manifest.");
                 var bytes = await GetBytesAsync(manifest.CatalogUrl, 16 * 1024 * 1024);
@@ -101,7 +101,7 @@ internal sealed class CatalogUpdates
     }
     private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
     {
-        request.Headers.UserAgent.ParseAdd("NerveEarningsTracker/1.0");
+        request.Headers.UserAgent.ParseAdd("EarningsTracker/1.0");
         var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         if (!response.IsSuccessStatusCode)
         {

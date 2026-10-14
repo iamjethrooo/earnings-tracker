@@ -1,6 +1,6 @@
 using System.Windows.Media;
 
-namespace nerve_earnings_tracker.Utilities;
+namespace EarningsTracker.Utilities;
 
 // Value types can be used by both XAML resources and presentation work on background threads.
 public static class PresentationPalette

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace nerve_earnings_tracker.Models
+namespace EarningsTracker.Models
 {
     public class Game
     {

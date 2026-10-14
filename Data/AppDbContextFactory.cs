@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using System.IO;
 
-namespace nerve_earnings_tracker.Data;
+namespace EarningsTracker.Data;
 
 // EF tooling must never initialize or relocate the normal user's database.
 internal sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
@@ -14,7 +14,8 @@ internal sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbCon
             throw new ArgumentException("Specify an absolute scratch SQLite path: -- --database C:\\path\\design-time.db");
 
         var path = Path.GetFullPath(args[1]);
-        if (Path.GetFileName(path).Equals("nerve_earnings_tracker.db", StringComparison.OrdinalIgnoreCase))
+        if (Path.GetFileName(path).Equals(Utilities.AppDataPaths.LegacyDatabaseFileName, StringComparison.OrdinalIgnoreCase)
+            || Path.GetFileName(path).Equals(Utilities.AppDataPaths.DatabaseFileName, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("EF tooling cannot target the normal tracker database. Use a scratch database path.");
 
         var connection = new SqliteConnectionStringBuilder { DataSource = path, ForeignKeys = true }.ToString();

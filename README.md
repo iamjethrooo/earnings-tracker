@@ -1,20 +1,24 @@
-# nerve-earnings-tracker
+# Earnings Tracker
+
+> Storage: Debug uses `%LOCALAPPDATA%\EarningsTracker.Development\EarningsTracker.db`; ordinary Release uses `%LOCALAPPDATA%\EarningsTracker\EarningsTracker.db`. Packaged test builds require scratch storage. See [Database and storage](Docs/Database.md).
+
+Windows desktop earnings tracker, currently supporting only the Nerve gaming rewards platform. This is an independent project and is not affiliated with, endorsed by, or sponsored by Nerve or any other company, platform, organization, or rights holder.
 
 ## Build from source
 
-Windows with the .NET 10 SDK and Windows Desktop runtime is required. Open `nerve-earnings-tracker.slnx` or run from the repository root:
+Windows with the .NET 10 SDK and Windows Desktop runtime is required. Open `EarningsTracker.slnx` or run from the repository root:
 
 ```powershell
-dotnet restore nerve-earnings-tracker.slnx
-dotnet build nerve-earnings-tracker.slnx --no-restore
-dotnet test nerve-earnings-tracker.slnx --no-build --no-restore
+dotnet restore EarningsTracker.slnx
+dotnet build EarningsTracker.slnx --no-restore
+dotnet test EarningsTracker.slnx --no-build --no-restore
 ```
 
-The committed source includes the complete v1 baseline migration, bundled catalog/artwork, Inter font, and isolated tests. The historical development migration chain is preserved in commit `89feb15`. Local provider caches and credentials are not needed to build or run the offline tests. Maintainer tests use Python 3.11+ and its standard library: `python -m unittest discover -s Tools -p "test_*.py"`.
+The source includes the complete v1 baseline migration, bundled catalog/artwork, Inter font, and isolated tests. Local provider caches and credentials are not needed to build or run the tests. Maintainer tests use Python 3.11+ and its standard library: `python -m unittest discover -s Tools -p "test_*.py"`.
 
-Launching the application can migrate the current user's database. Use a disposable Windows profile for manual testing; do not launch it merely to verify a build. Phase 2 now integrates Velopack bootstrap/local packaging; automatic application-update checks and update UI are not implemented. See the [release plan](Docs/VELOPACK_PLAN.md) and [Phase 2 verification/manual steps](Docs/UI-Phase-2-Velopack.md).
+Launching the application can migrate the current user's database. Use explicitly isolated storage for manual testing; do not launch it merely to verify a build. Velopack bootstrap, update UI, and separate Local/RemoteTest/Production update sources are implemented. Ordinary builds default to Local with no GitHub application update source. See [Database and storage](Docs/Database.md) and [Build and release](Docs/Release.md) for the supported boundaries and Phase 5 gates.
 
-Fresh databases use `20261013055107_InitialCreate` and initialize bundled games/catalog plus default settings, with no personal records. Old development databases are archived rather than upgraded by this baseline; do not open an archived database with the rebased application or use an old development executable against the new database. See the [Phase 1 record](Docs/PHASE1_REBASELINE_APPROVAL.md).
+Fresh databases use `20261013055107_InitialCreate` and initialize bundled games/catalog plus default settings, with no personal records. See [Database and storage](Docs/Database.md) for migration boundaries. Detailed Phase 1–4 evidence and planning notes remain in the ignored local `.local-docs/` directory when available.
 
 For EF tooling, run `dotnet tool restore`, then supply an absolute scratch path, for example:
 
@@ -22,7 +26,7 @@ For EF tooling, run `dotnet tool restore`, then supply an absolute scratch path,
 dotnet ef migrations has-pending-model-changes -- --database C:\path\design-time.db
 ```
 
-The local EF tool is pinned to `10.0.11`. Design-time commands require an explicit path and reject the normal `nerve_earnings_tracker.db` filename; ordinary application startup continues to use per-user storage.
+The local EF tool is pinned to `10.0.11`. Design-time commands require an explicit path and reject both `EarningsTracker.db` and the former `nerve_earnings_tracker.db` filename; ordinary application startup continues to use per-user storage. See [Database and storage](Docs/Database.md).
 
 ## Local installer
 
@@ -30,7 +34,7 @@ The local EF tool is pinned to `10.0.11`. Design-time commands require an explic
 powershell -NoProfile -ExecutionPolicy Bypass -File Tools/Release.ps1 -Version 1.0.0 -UnsignedLocal
 ```
 
-This restores the pinned Velopack CLI/SDK `1.2.161`, publishes Windows x64 self-contained with runtime `10.0.12`, validates private-data exclusions, and creates unsigned limited-test artifacts under a new `artifacts` directory. It never publishes to GitHub or resets data. Broad public distribution requires signing and catalog review. The committed icon can be regenerated from its SVG with `python Tools/generate_icon.py`.
+This restores the pinned Velopack CLI/SDK `1.2.161`, publishes Windows x64 self-contained with runtime `10.0.12`, validates private-data exclusions, and creates unsigned limited-test artifacts under a new `artifacts` directory. It never publishes to GitHub or resets data. Broad public distribution requires signing and catalog review. The committed icon can be regenerated from its SVG with `python Tools/generate_icon.py`. See [Build and release](Docs/Release.md) for Phase 5 gates.
 
 ## Games catalog
 
@@ -46,4 +50,4 @@ Artwork appears in Games, Dashboard recordings, and Sessions. Games rows have a 
 
 ## Tests
 
-The solution includes an isolated xUnit test project for accounting, imports, reconciliation, migrations, and audit history. See [Tests/README.md](Tests/README.md) for setup, commands, coverage, and remaining manual checks.
+The solution includes an isolated xUnit test project for accounting, imports, reconciliation, migrations, and audit history. See [Tests/README.md](Tests/README.md) for setup, commands, coverage, and manual-check limits.

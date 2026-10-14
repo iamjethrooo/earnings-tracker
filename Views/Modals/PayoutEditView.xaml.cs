@@ -1,11 +1,11 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using nerve_earnings_tracker.Models;
-using nerve_earnings_tracker.Utilities;
-using nerve_earnings_tracker.Exceptions;
+using EarningsTracker.Models;
+using EarningsTracker.Utilities;
+using EarningsTracker.Exceptions;
 
-namespace nerve_earnings_tracker.Views.Modals
+namespace EarningsTracker.Views.Modals
 {
     public partial class PayoutEditView : UserControl
     {

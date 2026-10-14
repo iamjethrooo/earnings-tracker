@@ -1,6 +1,6 @@
 using System.Windows;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("nerve-earnings-tracker.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("EarningsTracker.Tests")]
 
 [assembly: ThemeInfo(
     ResourceDictionaryLocation.None,            //where theme specific resource dictionaries are located
