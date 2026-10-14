@@ -1,0 +1,95 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Content is the ImageSource, so callers keep their existing cover binding. -->
+    <Style x:Key="ArtworkPresenter" TargetType="ContentControl">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextColor}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid>
+                        <TextBlock Text="No cover" FontSize="10" TextAlignment="Center"
+                                   VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
+                        <Image x:Name="CoverImage" Source="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                               Stretch="UniformToFill"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Geometry shared by transaction type, status, and reconciliation labels.
+         Callers retain their own semantic palette and text bindings. -->
+    <Style x:Key="TransactionBadge" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+    <Style x:Key="TransactionBadgeText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSupporting}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- History keeps its Pending treatment; compact details preserve duration precedence. -->
+    <Style x:Key="SessionHistoryStatusBadge" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Background" Value="{DynamicResource NotUploadedBackgroundColor}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Verified"><Setter Property="Background" Value="{DynamicResource VerifiedBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Pending"><Setter Property="Background" Value="{DynamicResource PendingBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Rejected"><Setter Property="Background" Value="{DynamicResource RejectedBackgroundColor}"/></DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SessionHistoryStatusText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSupporting}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource NotUploadedTextColor}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Verified"><Setter Property="Foreground" Value="{DynamicResource VerifiedTextColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Pending"><Setter Property="Foreground" Value="{DynamicResource PendingTextColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Rejected"><Setter Property="Foreground" Value="{DynamicResource RejectedTextColor}"/></DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DashboardSessionStatusBadge" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource DefaultBorderColor}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Verified"><Setter Property="Background" Value="{DynamicResource VerifiedBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="Rejected"><Setter Property="Background" Value="{DynamicResource RejectedBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Duration}" Value="00:00:00"><Setter Property="Background" Value="{DynamicResource PendingBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Session.Status}" Value="NotUploaded"><Setter Property="Background" Value="{DynamicResource NotUploadedBackgroundColor}"/></DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DetailedSessionStatusBadge" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Background" Value="{DynamicResource ControlBackgroundColor}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Verified"><Setter Property="Background" Value="{DynamicResource VerifiedBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Rejected"><Setter Property="Background" Value="{DynamicResource RejectedBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Duration}" Value="00:00:00"><Setter Property="Background" Value="{DynamicResource PendingBackgroundColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="NotUploaded"><Setter Property="Background" Value="{DynamicResource NotUploadedBackgroundColor}"/></DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DetailedSessionStatusText" TargetType="TextBlock">
+        <Setter Property="Text" Value="{Binding Status}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Verified"><Setter Property="Foreground" Value="{DynamicResource VerifiedTextColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Rejected"><Setter Property="Foreground" Value="{DynamicResource RejectedTextColor}"/></DataTrigger>
+            <DataTrigger Binding="{Binding Duration}" Value="00:00:00">
+                <Setter Property="Text" Value="Below minimum time"/>
+                <Setter Property="Foreground" Value="{DynamicResource PendingTextColor}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="NotUploaded">
+                <Setter Property="Text" Value="Not Uploaded"/>
+                <Setter Property="Foreground" Value="{DynamicResource NotUploadedTextColor}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,29 @@
+{
+  "Version": "catalog-20261012T034024414899Z",
+  "Total": 579,
+  "Reviewed": 564,
+  "Artwork": 563,
+  "Genres": 564,
+  "Offers": 485,
+  "Subscriptions": 55,
+  "Active": 506,
+  "Archived": 73,
+  "Unresolved": [],
+  "ArchivedWithoutMetadata": [
+    "Elgato Game Capture",
+    "Unreal Engine",
+    "PS Remote Play",
+    "Yuzu",
+    "Cemu",
+    "mGBA",
+    "DeSmuME",
+    "Shadow PC",
+    "VTube Studio",
+    "ShadPS4",
+    "RetroArch",
+    "Azahar Emulator",
+    "Fire Alpaca",
+    "Legends of IdleOn",
+    "Deduction"
+  ]
+}

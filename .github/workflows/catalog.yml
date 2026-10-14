@@ -1,0 +1,37 @@
+name: Reviewed catalog snapshots
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: catalog-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    # Configure this repository variable only after approving provider permissions and mappings.
+    if: vars.CATALOG_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Use the committed initial catalog and prices
+        run: cp Data/catalog.json snapshot.json
+      - name: Build validated release assets and coverage report
+        run: python Tools/catalog.py package --catalog snapshot.json --output release
+      - name: Upload immutable version first
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json; print(json.load(open('snapshot.json'))['Version'])")
+          gh release create "$version" release/* --title "$version" --notes "Reviewed catalog snapshot. See coverage.json for unresolved entries and attribution." --prerelease
+      - name: Update catalog channel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view catalog-latest > /dev/null 2>&1; then
+            gh release create catalog-latest --title "Catalog updates" --notes "Reviewed catalog and price snapshots; see coverage.json." --prerelease
+          fi
+          gh release upload catalog-latest release/catalog.json release/artwork.zip release/coverage.json --clobber
+          gh release upload catalog-latest release/manifest.json --clobber

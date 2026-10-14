@@ -1,0 +1,443 @@
+<UserControl x:Class="EarningsTracker.Views.GamesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:EarningsTracker.Views"
+             xmlns:models="clr-namespace:EarningsTracker.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800"
+             xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             x:Name="Root">
+    <UserControl.Resources>
+        <Style x:Key="OwnershipButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSupporting}"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOwned}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource VerifiedBackgroundColor}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource VerifiedTextColor}"/>
+                    <Setter Property="Foreground" Value="{StaticResource VerifiedTextColor}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid Style="{StaticResource TabMainGrid}">
+        <Grid x:Name="GamesListView">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Available Games" Style="{StaticResource TabName}"/>
+
+                <WrapPanel x:Name="GamesToolbar" Grid.Row="1" Margin="0,8,0,0">
+                    <CheckBox Content="{Binding BookmarkText}" Checked="BookmarkFilter_Checked" Unchecked="BookmarkFilter_Unchecked" Foreground="{StaticResource DefaultTextColor}" Margin="0,0,8,8"/>
+                    <ComboBox AutomationProperties.Name="Sort games" MinWidth="120" SelectedIndex="2" SelectionChanged="SortComboBox_SelectionChanged" Margin="0,0,8,8">
+                        <ComboBoxItem Content="Highest Pay" />
+                        <ComboBoxItem Content="Game A-Z" />
+                        <ComboBoxItem Content="Newest" />
+                        <ComboBoxItem Content="Lowest price" />
+                    </ComboBox>
+                    <TextBox AutomationProperties.Name="Search games" x:Name="SearchBox" Style="{StaticResource SearchBar}" Tag="Search games..." Margin="0,0,0,8" TextChanged="SearchBox_TextChanged"/>
+                </WrapPanel>
+            </Grid>
+            <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                <TextBlock Text="{Binding AvailableGamesText}" Style="{StaticResource ItemSubtitle}"/>
+                <TextBlock x:Name="BookmarkErrorText" Text="{Binding BookmarkError}" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" Margin="0,8,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding BookmarkError}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Margin="0,0,0,8">
+                <WrapPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,8,8">
+                        <TextBlock Text="Genre" Style="{StaticResource FilterLabel}" Margin="0,0,8,0" Foreground="{StaticResource SecondaryTextColor}"/>
+                        <ComboBox AutomationProperties.Name="Filter games by genre" x:Name="GenreFilter" ItemsSource="{Binding GenreOptions}" SelectedItem="{Binding SelectedGenre, Mode=TwoWay}" MinWidth="160" MaxWidth="220" IsTextSearchEnabled="True" ToolTip="Filter games by genre"/>
+                    </StackPanel>
+                    <ComboBox AutomationProperties.Name="Filter games by store" ItemsSource="{Binding StoreOptions}" SelectedItem="{Binding SelectedStore}" MinWidth="120" MaxWidth="180" Margin="0,0,8,8" ToolTip="Store"/>
+                    <CheckBox Content="Free-to-play" IsChecked="{Binding FreeOnly}" Margin="0,0,8,8"/>
+                    <CheckBox Content="Owned" IsChecked="{Binding OwnedOnly}" Margin="0,0,8,8"/>
+                    <CheckBox Content="PC Game Pass" IsChecked="{Binding GamePassOnly}" Margin="0,0,8,8"/>
+                    <CheckBox Content="Playable now" IsChecked="{Binding PlayableOnly}" Margin="0,0,8,8"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Button Content="Settings" Style="{StaticResource SecondaryButton}" Click="CatalogSettings_Click" Margin="0,0,8,4"/>
+                    <Button x:Name="RefreshCatalogButton" Content="Refresh catalog" Style="{StaticResource SecondaryButton}" Click="RefreshCatalog_Click" Margin="0,0,8,4"/>
+                    <TextBlock Text="{Binding CatalogStatus}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" MaxWidth="560" VerticalAlignment="Center"/>
+                </WrapPanel>
+            </StackPanel>
+            <ListBox x:Name="GamesList"
+                    AutomationProperties.Name="Games"
+                    Grid.Row="3"
+                    ItemsSource="{Binding GamesView}"
+                    ItemContainerStyle="{StaticResource GameCardItem}"
+                    Background="Transparent"
+                    BorderThickness="0px"
+                    SelectionChanged="GamesList_SelectionChanged"
+                    PreviewMouseLeftButtonDown="GamesList_PreviewMouseLeftButtonDown"
+                    VirtualizingPanel.IsVirtualizing="True"
+                    VirtualizingPanel.VirtualizationMode="Recycling"
+                    VirtualizingPanel.ScrollUnit="Pixel"
+                    VirtualizingPanel.CacheLength="1"
+                    VirtualizingPanel.CacheLengthUnit="Page"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.CanContentScroll="True">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                </ListBox.Resources>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Width="48" Height="64" Background="{StaticResource SurfaceColor}" CornerRadius="{StaticResource ControlCornerRadius}" VerticalAlignment="Center">
+                                <ContentControl Style="{StaticResource ArtworkPresenter}" Content="{Binding Cover}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Game.Name}" Style="{StaticResource SectionHeading}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Game.Name}"/>
+                                    <Border Background="{StaticResource ArchivedBackgroundColor}"
+                                       Grid.Column="1"
+                                       BorderBrush="{StaticResource ArchivedTextColor}"
+                                       BorderThickness="1"
+                                       CornerRadius="{StaticResource ControlCornerRadius}"
+                                       Padding="8,0"
+                                       Margin="8,0,0,0"
+                                   >
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Game.IsArchived}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+
+                                        <TextBlock Text="Archived" Foreground="{StaticResource ArchivedTextColor}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}">
+                                    <Run Text="{Binding Game.MinutesCap, Mode=OneWay, Converter={StaticResource MinutesToHoursConverter}, StringFormat={}{0} hr cap}"/>
+                                    <Run Text=" · "/><Run Text="{Binding GenreText, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding SourceText}" FontSize="{StaticResource FontSizeSupporting}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourceText}" Foreground="{StaticResource SecondaryTextColor}"/>
+                                <TextBlock Text="{Binding PriceText}" Margin="0,2,0,0" FontSize="{StaticResource FontSizeCompactBody}" FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding PriceTooltip}" Foreground="{StaticResource DefaultTextColor}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Game.RatePerHour, StringFormat={}{0:C2}, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}"/>
+                                    <TextBlock Text=" / hr" FontSize="{StaticResource FontSizeSupporting}" Foreground="{StaticResource SecondaryTextColor}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button Command="{Binding ToggleOwnedCommand}" Style="{StaticResource OwnershipButton}" Margin="0,8,0,0" ToolTip="{Binding OwnershipTooltip}" AutomationProperties.Name="{Binding OwnershipButtonText}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                            <TextBlock.Style><Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="+"/>
+                                                <Style.Triggers><DataTrigger Binding="{Binding IsOwned}" Value="True"><Setter Property="Text" Value="✓"/></DataTrigger></Style.Triggers>
+                                            </Style></TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding OwnershipButtonText}" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    </StackPanel>
+                                </Button>
+                                <TextBlock Text="{Binding OwnershipError}" Style="{StaticResource InlineValidationText}" MaxWidth="120"/>
+                            </StackPanel>
+
+
+                            <Button Grid.Column="3" Command="{Binding ToggleBookmarkCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource BookmarkButton}">
+                                        <Setter Property="AutomationProperties.Name" Value="{Binding Game.Name, StringFormat=Bookmark {0}}"/>
+                                        <Setter Property="ToolTip" Value="Add bookmark"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBookmarked}" Value="True">
+                                                <Setter Property="AutomationProperties.Name" Value="{Binding Game.Name, StringFormat=Remove bookmark for {0}}"/>
+                                                <Setter Property="ToolTip" Value="Remove bookmark"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <fluent:FluentIcon Icon="Bookmark" IconSize="Size20"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                    <fluent:FluentIcon.Style>
+                                        <Style TargetType="{x:Type fluent:FluentIcon}">
+                                            <Setter Property="IconVariant" Value="Regular"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBookmarked}" Value="True">
+                                                    <Setter Property="IconVariant" Value="Filled"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fluent:FluentIcon.Style>
+                                </fluent:FluentIcon>
+
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock x:Name="GamesEmptyState" Grid.Row="3" Text="{Binding EmptyStateText}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding ShowEmptyState}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+
+        <Grid x:Name="GameDetailsView" Visibility="Collapsed" MaxWidth="960">
+          <!-- The header is the first item on the same finite, pixel-scrolling virtualized surface. -->
+          <ListBox x:Name="GameSessionsList" Background="Transparent" BorderThickness="0"
+                   HorizontalContentAlignment="Stretch"
+                   ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                   VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                   VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.CacheLength="1">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem" BasedOn="{StaticResource ItemButton}">
+                    <Setter Property="Margin" Value="0,0,12,0"/>
+                    <Setter Property="Padding" Value="12,8"/>
+                    <Setter Property="Background" Value="{StaticResource SurfaceColor}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DefaultBorderColor}"/>
+                    <Setter Property="BorderThickness" Value="1,0,1,1"/>
+                    <Setter Property="Template"><Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Border x:Name="SessionRowSurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Stretch"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="SessionRowSurface" Property="Background" Value="{StaticResource CardBackgroundColor}"/></Trigger>
+                                <Trigger Property="IsSelected" Value="True"><Setter TargetName="SessionRowSurface" Property="Background" Value="{StaticResource AccentBackgroundColor}"/></Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="SessionRowSurface" Property="BorderBrush" Value="{StaticResource AccentColor}"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value></Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.Resources>
+                <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                <DataTemplate DataType="{x:Type models:Session}">
+                    <Grid Margin="0 0 10 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="{Binding DateTimeText}" Style="{StaticResource GameSessionDetailsStyle}"/>
+                            <TextBlock Text="{Binding DurationText}" Style="{StaticResource GameSessionDetailsStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding EarningsText}" Style="{StaticResource SectionHeading}" HorizontalAlignment="Right"/>
+                            <Border Style="{StaticResource DetailedSessionStatusBadge}" Margin="0,8,0,0" HorizontalAlignment="Right">
+                                <TextBlock Style="{StaticResource DetailedSessionStatusText}" FontSize="{StaticResource FontSizeSupporting}"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.Resources>
+            <ListBox.ItemsSource>
+              <CompositeCollection>
+                <ListBoxItem Focusable="False" IsTabStop="False" Padding="0" Margin="0" HorizontalContentAlignment="Stretch">
+                  <ListBoxItem.Template>
+                    <ControlTemplate TargetType="ListBoxItem"><ContentPresenter/></ControlTemplate>
+                  </ListBoxItem.Template>
+                   <Grid Margin="0,0,12,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Button x:Name="DetailsBackButton" AutomationProperties.Name="Back to games" Grid.Row="0" Click="GameDetailsBackButton_Click" HorizontalAlignment="Left" Style="{StaticResource LinkButtonStyle}" Margin="0 0 0 20">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <fluent:FluentIcon
+                        Grid.Column="0"
+                        Icon="ArrowPrevious"
+                        Foreground="{StaticResource SecondaryTextColor}"
+                        Margin="0,0,0,0"/>
+
+                            <TextBlock
+                        Grid.Column="1"
+                        Text="Back to games"
+                        VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" FontWeight="SemiBold"/>
+                        </Grid>
+            </Button>
+            <!--Game Header-->
+            <Border Grid.Row="1" Style="{StaticResource GameDetailPanel}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.ColumnSpan="2">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <Border Width="60" Height="80" Background="{StaticResource ArchivedBackgroundColor}" Margin="0,0,12,0">
+                            <ContentControl Style="{StaticResource ArtworkPresenter}" Content="{Binding Catalog.Cover}"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Game.Name}" Style="{StaticResource TabName}" TextWrapping="Wrap"/>
+                            <WrapPanel Margin="0,8,0,0">
+                                <TextBlock Text="{Binding Game.RatePerHour, StringFormat={}{0:C2}/hr, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}" Margin="0,0,16,4"/>
+                                <TextBlock Text="{Binding Game.MinutesCap, StringFormat={}{0:0.##} min cap}" Style="{StaticResource ItemSubtitle}" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                        </StackPanel>
+                        <Button Grid.Column="2" DataContext="{Binding Catalog}" Command="{Binding ToggleBookmarkCommand}" Style="{StaticResource BookmarkButton}" Margin="8,0,0,0" AutomationProperties.Name="Toggle game bookmark" ToolTip="Toggle bookmark">
+                            <fluent:FluentIcon Icon="Bookmark" IconSize="Size20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <fluent:FluentIcon.Style><Style TargetType="fluent:FluentIcon">
+                                    <Setter Property="IconVariant" Value="Regular"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding IsBookmarked}" Value="True"><Setter Property="IconVariant" Value="Filled"/></DataTrigger></Style.Triggers>
+                                </Style></fluent:FluentIcon.Style>
+                            </fluent:FluentIcon>
+                        </Button>
+                    </Grid>
+                        <StackPanel x:Name="CatalogDetailsPanel" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding Catalog.GenreText}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Catalog.Summary}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeSupporting}" Margin="0,5,0,5"/>
+                            <Expander x:Name="CatalogProvenance" Header="Catalog source &amp; verification" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}">
+                                <Expander.Style>
+                                    <Style TargetType="Expander">
+                                        <Setter Property="IsExpanded" Value="True"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding Catalog.Metadata.Reviewed}" Value="True"><Setter Property="IsExpanded" Value="False"/></DataTrigger></Style.Triggers>
+                                    </Style>
+                                </Expander.Style>
+                                <TextBlock Text="{Binding Catalog.MetadataStatus}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            </Expander>
+                            <ItemsControl ItemsSource="{Binding Catalog.OfferDetails}">
+                                <ItemsControl.ItemTemplate><DataTemplate><Button Style="{StaticResource LinkButtonStyle}" Click="OpenCatalogLink_Click" Tag="{Binding Url}" ToolTip="{Binding Tooltip}" HorizontalAlignment="Left" Margin="0,8,0,0"><StackPanel><TextBlock Text="{Binding Text}" TextWrapping="Wrap" MaxWidth="620" FontSize="{StaticResource FontSizeCompactBody}" FontWeight="SemiBold"/><TextBlock Text="{Binding Details}" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,2,0,0"/></StackPanel></Button></DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Catalog.SubscriptionDetails}">
+                                <ItemsControl.ItemTemplate><DataTemplate><Button Style="{StaticResource LinkButtonStyle}" Click="OpenCatalogLink_Click" Tag="{Binding Url}" HorizontalAlignment="Left" Margin="0,4,0,0"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" MaxWidth="620" FontSize="{StaticResource FontSizeSupporting}"/></Button></DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding Catalog.AccessStatusText}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeSupporting}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Catalog.BreakEvenText}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeSupporting}" Margin="0,4,0,0"/>
+                            <Button Content="Ownership / purchase cost" Style="{StaticResource SecondaryButton}" Click="Ownership_Click" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                        </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--Progress-->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!--Game Progress-->
+                <Border Grid.Column="0" Style="{StaticResource GameDetailPanel}" Margin="0 4 4 4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Style="{StaticResource GameDetailPanelLabel}" Text="Verified play time"/>
+                        <TextBlock Grid.Row="1" Style="{StaticResource GameDetailPanelValue}" Text="{Binding TotalDurationText}"/>
+                        <ProgressBar Grid.Row="2" Style="{StaticResource MetricProgressBar}" Value="{Binding ProgressPercentage, Mode=OneWay}" Margin="0,4,0,12" AutomationProperties.Name="Verified minute cap utilization"/>
+                        <TextBlock Grid.Row="3" Style="{StaticResource GameDetailPanelDescription}" Text="{Binding MinutesDescription}" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="4" Style="{StaticResource GameDetailPanelDescription}" Text="{Binding ProgressDescription}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </Grid>
+                </Border>
+                <!--Earning Potential-->
+                <Border Grid.Column="1" Style="{StaticResource GameDetailPanel}" Margin="4 4 0 4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Style="{StaticResource GameDetailPanelLabel}" Text="Verified earnings"/>
+                        <TextBlock Grid.Row="1" Style="{StaticResource GameDetailPanelValue}" Text="{Binding TotalEarnings, StringFormat={}{0:C2}, ConverterCulture=en-US}"/>
+                        <TextBlock Grid.Row="2" Style="{StaticResource GameDetailPanelDescription}" Text="{Binding EarningsDescription}" TextWrapping="Wrap"/>
+                    </Grid>
+                </Border>
+                <!--TODO: Average session duration-->
+            </Grid>
+            <!--Cap reset tracking-->
+            <Border Grid.Row="3" Style="{StaticResource SurfacePanel}" Margin="0,8">
+                <WrapPanel>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,8">
+                        <TextBlock Text="Cap reset date" Style="{StaticResource GameDetailPanelLabel}"/>
+                        <TextBlock Text="No date uses all verified sessions" Style="{StaticResource GameDetailPanelDescription}"/>
+                    </StackPanel>
+                    <DatePicker AutomationProperties.Name="Cap reset date" x:Name="CapResetDatePicker" SelectedDate="{Binding Game.CapResetDate, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                    <Button Content="Save reset date" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" Click="SaveCapResetDateButton_Click"/>
+                </WrapPanel>
+            </Border>
+            <!--Add Session-->
+            <StackPanel Grid.Row="4" Margin="0,8">
+                <TextBlock Text="{Binding BookmarkError}" DataContext="{Binding DataContext, ElementName=Root}" Style="{StaticResource InlineValidationText}" Margin="0,0,0,8"/>
+                <Button Content="Add Session" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="AddSessionButton_Click"/>
+            </StackPanel>
+            <!--Sessions-->
+            <Border Grid.Row="5" Style="{StaticResource SurfacePanel}" CornerRadius="8,8,0,0" Margin="0 4 0 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Style="{StaticResource SectionHeading}" Text="{Binding FilteredSessionString}"/>
+                    <ItemsControl x:Name="SessionFilterList" Grid.Row="1" ItemsSource="{Binding StatusFilters}" Margin="0,12,0,0">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <RadioButton Content="{Binding DisplayText}" GroupName="GameDetailStatusFilters" IsChecked="{Binding IsSelected, Mode=OneWay}" Style="{StaticResource SessionFilterChip}" Checked="DetailSessionFilter_Checked"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Grid.Row="2" Text="{Binding SessionEmptyText}" AutomationProperties.LiveSetting="Polite">
+                        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                            <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
+                        </Style></TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </Border>
+           </Grid>
+                </ListBoxItem>
+                <CollectionContainer x:Name="SessionRowsCollection"/>
+              </CompositeCollection>
+            </ListBox.ItemsSource>
+          </ListBox>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,168 @@
+<UserControl x:Class="EarningsTracker.Views.PayoutsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1100">
+    <UserControl.Resources>
+        <Style x:Key="AmountColumnHeader" TargetType="GridViewColumnHeader" BasedOn="{StaticResource TableColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid Style="{StaticResource TabMainGrid}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Payments" Style="{StaticResource TabName}" Width="Auto" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="Add Payout" Click="AddPayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="18 10" Margin="0,0,8,0"/>
+                <Button Content="Import Payouts" Click="ImportPayoutsButton_Click" Style="{StaticResource PrimaryButton}" Padding="20 10" VerticalContentAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Margin="0,8,0,12" Padding="0,8"
+                Background="Transparent" BorderThickness="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Imported transactions and verified session earnings" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,16,8"/>
+                    <TextBlock Text="Select a payout to edit. Verified session rows are read-only here." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,0,16,0"/>
+                    <TextBlock x:Name="ReconciliationNotice" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,8,16,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+                    <TextBlock x:Name="UndatedSessionsNotice" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,8,16,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="EditButton" Content="Edit selected" Click="EditPayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" IsEnabled="False" Margin="0,0,8,0"/>
+                    <Button x:Name="DeleteButton" Content="Hide manual record" Click="DeletePayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="LoadStatusPanel" Grid.Row="2" Visibility="Collapsed" Style="{StaticResource FeedbackPanel}">
+            <DockPanel>
+                <Button x:Name="RetryLoadButton" DockPanel.Dock="Right" Content="Retry" Style="{StaticResource SecondaryButton}" Padding="12,7" Margin="12,0,0,0" Click="RetryLoadButton_Click"/>
+                <TextBlock x:Name="LoadStatusText" Foreground="{StaticResource SecondaryTextColor}" TextWrapping="Wrap" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+            </DockPanel>
+        </Border>
+        <Grid x:Name="TotalsPanel" Grid.Row="3" Visibility="Collapsed" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource VerifiedTextColor}" MinHeight="112">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Total earned" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TotalEarnedValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource VerifiedTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Verified sessions + eligible separate adjustments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource AccentTextColor}" MinHeight="112">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Total paid" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TotalPaidValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource AccentTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Payments with Paid or Processing status" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource PendingTextColor}" MinHeight="112">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Amount owed" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="AmountOwedValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource PendingTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Posted earnings after payment cutoff" ToolTip="Verified sessions posted after the latest Paid or Processing payment. Without a payment, all dated verified sessions count. Separate adjustments do not affect this balance." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border x:Name="HistoryPanel" Grid.Row="4" Visibility="Collapsed" Style="{StaticResource SurfacePanel}" Padding="12,0,12,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Transaction history" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" Margin="4,16,4,8"/>
+                <ListView Grid.Row="1" x:Name="PayoutList" ItemsSource="{Binding History}" SelectionChanged="PayoutList_SelectionChanged"
+                          ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                          ItemContainerStyle="{StaticResource TableRow}"
+                          GridViewColumnHeader.Click="PayoutList_ColumnHeaderClick"
+                          SizeChanged="PayoutList_SizeChanged"
+                          Background="Transparent" BorderThickness="0" Padding="0" FontSize="{StaticResource FontSizeCompactBody}" AutomationProperties.Name="Transaction history" SelectionMode="Single"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListView.Resources>
+                <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource TableColumnHeader}"/>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="POSTED" Width="100" DisplayMemberBinding="{Binding PostedText}"/>
+                    <GridViewColumn Header="RECORDED" Width="100" DisplayMemberBinding="{Binding RecordedText}"/>
+                    <GridViewColumn Header="TYPE" Width="130">
+                        <GridViewColumn.CellTemplate><DataTemplate>
+                            <Border Background="{Binding TypeBackground}" Style="{StaticResource TransactionBadge}">
+                                <TextBlock Text="{Binding Type}" Foreground="{Binding TypeForeground}" Style="{StaticResource TransactionBadgeText}" TextWrapping="Wrap"/>
+                            </Border>
+                        </DataTemplate></GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="DESCRIPTION" Width="200">
+                        <GridViewColumn.CellTemplate><DataTemplate>
+                            <StackPanel Margin="4">
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"/>
+                                <Border Background="{Binding ReconciliationBackground}" Margin="0,8,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource TransactionBadge}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ReconciliationText}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.ToolTip>
+                                        <ToolTip DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Background="{StaticResource DialogBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" Padding="12">
+                                            <TextBlock Text="{Binding ReconciliationExplanation}" TextWrapping="Wrap" MaxWidth="300" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeSupporting}"/>
+                                        </ToolTip>
+                                    </Border.ToolTip>
+                                    <TextBlock Text="{Binding ReconciliationText}" Foreground="{Binding ReconciliationForeground}" Style="{StaticResource TransactionBadgeText}" TextWrapping="Wrap"/>
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate></GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="STATUS" Width="110">
+                        <GridViewColumn.CellTemplate><DataTemplate>
+                            <Border Background="{Binding StatusBackground}" Style="{StaticResource TransactionBadge}">
+                                <TextBlock Text="{Binding Status}" Foreground="{Binding StatusForeground}" Style="{StaticResource TransactionBadgeText}"/>
+                            </Border>
+                        </DataTemplate></GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="AMOUNT" Width="125" HeaderContainerStyle="{StaticResource AmountColumnHeader}">
+                        <GridViewColumn.CellTemplate><DataTemplate>
+                            <TextBlock Text="{Binding AmountText}" Foreground="{Binding AmountForeground}" FontWeight="SemiBold" TextAlignment="Right" HorizontalAlignment="Stretch" Padding="4"/>
+                        </DataTemplate></GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+                </ListView>
+            <TextBlock x:Name="PayoutsViewEmptyState" Grid.Row="1" Text="No transactions yet. Import sessions or add a payout to get started.">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding History.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

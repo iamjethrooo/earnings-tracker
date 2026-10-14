@@ -1,0 +1,181 @@
+<Window x:Class="EarningsTracker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EarningsTracker"
+        xmlns:enums="clr-namespace:EarningsTracker.Enums"
+        xmlns:controls="clr-namespace:EarningsTracker.Controls"
+        mc:Ignorable="d"
+        Title="Earnings Tracker" Height="720" Width="1200"
+        Icon="/EarningsTracker;component/Resources/App.ico"
+        FontFamily="{StaticResource AppFont}"
+        xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{StaticResource DefaultBackgroundColor}"
+        SizeChanged="Window_SizeChanged"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        MinWidth="1000"
+        MinHeight="600"
+        >
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="0"
+            ResizeBorderThickness="6"
+            GlassFrameThickness="1"
+            UseAeroCaptionButtons="False"
+            NonClientFrameEdges="None"/>
+    </WindowChrome.WindowChrome>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="Transparent" x:Name="TitleBar" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" MouseMove="TitleBar_MouseMove" MouseLeftButtonUp="TitleBar_MouseLeftButtonUp">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="46"/>
+                <ColumnDefinition Width="46"/>
+                <ColumnDefinition Width="46"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Earnings Tracker" VerticalAlignment="Center" Margin="12, 0" Foreground="{StaticResource DefaultTextColor}"/>
+
+            <Button
+                Grid.Column="1"
+                AutomationProperties.Name="Minimize window" ToolTip="Minimize"
+                Style="{StaticResource WindowButtonStyle}"
+                Click="MinimizeButton_Click">
+                <!--<fluent:FluentIcon
+                    Icon="Subtract"/>-->
+                <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                    StrokeThickness="1"
+                    SnapsToDevicePixels="True"
+                    Data="M 0,0.5 L 10,0.5"/>
+            </Button>
+            <Button
+                Grid.Column="2"
+                Click="MaximizeButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+                        <Setter Property="AutomationProperties.Name" Value="Maximize window"/>
+                        <Setter Property="ToolTip" Value="Maximize"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                                <Setter Property="AutomationProperties.Name" Value="Restore window"/>
+                                <Setter Property="ToolTip" Value="Restore"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <Grid VerticalAlignment="Center">
+                    <!--<fluent:FluentIcon
+                    Icon="Square"/>-->
+                    <Path
+                        x:Name="MaximizeIcon"
+                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        StrokeThickness="1"
+                        SnapsToDevicePixels="True"
+                        Data="M 1.5,1.5 L 11.5,1.5 L 11.5,11.5 L 1.5,11.5 Z"/>
+                    <Path
+                        x:Name="RestoreIcon"
+                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        StrokeThickness="1"
+                        StrokeLineJoin="Miter"
+                        SnapsToDevicePixels="True"
+                        Data="M 3.5,5.5 L 11.5,5.5 L 11.5,13.5 L 3.5,13.5 Z M 5.5,3.5 L 13.5,3.5 L 13.5,11.5"
+                        Visibility="Collapsed"/>
+                </Grid>
+            </Button>
+            <Button
+                x:Name="WindowCloseButton"
+                Grid.Column="3"
+                AutomationProperties.Name="Close application" ToolTip="Close"
+                Click="CloseButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource CloseButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsBusy, ElementName=MainModal}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+
+                <!--<fluent:FluentIcon
+                    Icon="Dismiss"/>-->
+                <Path
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                    StrokeThickness="1"
+                    SnapsToDevicePixels="True"
+                    Data="M 1.5,1.5 L 11.5,11.5 M 11.5,1.5 L 1.5,11.5"/>
+            </Button>
+        </Grid>
+        <Grid Grid.Row="1">
+          <Grid x:Name="ApplicationContent">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Visibility, ElementName=MainModal}" Value="Visible">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--Sidebar-->
+            <Grid Grid.Column="0" Background="{StaticResource SidebarBackgroundColor}">
+                <Border BorderThickness="0 0 1 0" BorderBrush="{StaticResource DefaultBorderColor}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Margin="16,20,16,0">
+                            <DockPanel LastChildFill="True">
+                                <Border Width="32" Height="32" CornerRadius="{StaticResource CardCornerRadius}" Background="{StaticResource AccentBackgroundColor}" Margin="0,0,10,0">
+                                    <TextBlock Text="E" Foreground="{StaticResource AccentColor}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="EARNINGS" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold"/>
+                                    <TextBlock Text="TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="9" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Height="1" Background="{StaticResource DefaultBorderColor}" Margin="0,18,0,0"/>
+                        </StackPanel>
+                        <ListBox Grid.Row="1" x:Name="NavBar" SelectionChanged="NavBar_SelectionChanged" Margin="12,18,12,0" Background="Transparent" BorderThickness="0px" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBoxItem Content="Dashboard" Tag="{x:Static enums:NavigationPage.Dashboard}" Style="{StaticResource NavButton}" />
+                            <ListBoxItem Content="Sessions" Tag="{x:Static enums:NavigationPage.Sessions}" Style="{StaticResource NavButton}" />
+                            <ListBoxItem Content="Games" Tag="{x:Static enums:NavigationPage.Games}" Style="{StaticResource NavButton}" />
+                            <ListBoxItem Content="Payments" Tag="{x:Static enums:NavigationPage.Payments}" Style="{StaticResource NavButton}" />
+                            <ListBoxItem Content="Statistics" Tag="{x:Static enums:NavigationPage.Statistics}" Style="{StaticResource NavButton}" />
+                        </ListBox>
+                        <ListBox Grid.Row="2" x:Name="SettingsNav" SelectionChanged="SettingsNav_SelectionChanged" Margin="12,12,12,16" Background="Transparent" BorderThickness="0">
+                            <ListBoxItem Content="Settings" Tag="{x:Static enums:NavigationPage.Settings}" Style="{StaticResource NavButton}" />
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <!--Content-->
+            <DockPanel Grid.Column="1">
+                <Button x:Name="ApplicationUpdateNotice" DockPanel.Dock="Top" Content="{Binding Notice}" Click="ApplicationUpdateNotice_Click"
+                        Style="{StaticResource SecondaryButton}" Margin="20,12,20,0" HorizontalAlignment="Right"
+                        AutomationProperties.LiveSetting="Polite" ToolTip="Finish editing, then open Application updates in Settings">
+                    <Button.Visibility><Binding Path="HasNotice" FallbackValue="Collapsed" Converter="{StaticResource BooleanToVisibilityConverter}"/></Button.Visibility>
+                </Button>
+                <ContentControl x:Name="MainContent" Style="{StaticResource PageHost}"/>
+            </DockPanel>
+
+          </Grid>
+            <controls:Modal x:Name="MainModal" Visibility="Collapsed"/>
+        </Grid>
+    </Grid>
+</Window>

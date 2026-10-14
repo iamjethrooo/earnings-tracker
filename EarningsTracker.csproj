@@ -1,0 +1,88 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>EarningsTracker</RootNamespace>
+    <AssemblyName>EarningsTracker</AssemblyName>
+    <Product>Earnings Tracker</Product>
+    <Title>Earnings Tracker</Title>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <StartupObject>EarningsTracker.App</StartupObject>
+    <ApplicationIcon>Resources\App.ico</ApplicationIcon>
+    <Version Condition="'$(ReleaseVersion)' != ''">$(ReleaseVersion)</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <UpdateConfiguration Condition="'$(UpdateConfiguration)' == ''">Local</UpdateConfiguration>
+    <UpdateRepository Condition="'$(UpdateConfiguration)' == 'Production'">iamjethrooo/earnings-tracker</UpdateRepository>
+    <UpdateRepository Condition="'$(UpdateConfiguration)' == 'RemoteTest'">$(TestUpdateRepository)</UpdateRepository>
+    <UpdateRepository Condition="'$(UpdateConfiguration)' == 'Local'"></UpdateRepository>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**;artifacts\**;bin\**;obj\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+    <Resource Include="Resources\App.ico" />
+    <AssemblyMetadata Include="ReleaseVersion" Value="$(ReleaseVersion)" Condition="'$(ReleaseVersion)' != ''" />
+    <AssemblyMetadata Include="UpdateConfiguration" Value="$(UpdateConfiguration)" />
+    <AssemblyMetadata Include="UpdateRepository" Value="$(UpdateRepository)" />
+  </ItemGroup>
+
+  <Target Name="ValidateUpdateConfiguration" BeforeTargets="PrepareForBuild">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(UpdateConfiguration)', '^(Local|RemoteTest|Production)$'))" Text="Unknown UpdateConfiguration; use exact Local, RemoteTest or Production." />
+    <Error Condition="'$(UpdateConfiguration)' != 'RemoteTest' And '$(TestUpdateRepository)' != ''" Text="Test repositories are forbidden in Local and Production builds." />
+    <Error Condition="'$(UpdateConfiguration)' == 'RemoteTest' And (!$([System.Text.RegularExpressions.Regex]::IsMatch('$(TestUpdateRepository)', '^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')) Or '$(TestUpdateRepository)' == 'iamjethrooo/earnings-tracker' Or '$(TestUpdateRepository)' == 'iamjethrooo/nerve-earnings-tracker' Or $([System.Text.RegularExpressions.Regex]::IsMatch('$(TestUpdateRepository)', '(?i)\.git$')))" Text="RemoteTest requires a separate GitHub owner/repository." />
+    <Error Condition="'$(UpdateConfiguration)' == 'Production' And '$(UpdateRepository)' != 'iamjethrooo/earnings-tracker'" Text="Production repository override is forbidden." />
+    <Error Condition="'$(UpdateConfiguration)' == 'Local' And '$(UpdateRepository)' != ''" Text="Local builds cannot retain a GitHub update repository." />
+    <Error Condition="'$(UpdateConfiguration)' == 'RemoteTest' And '$(UpdateRepository)' != '$(TestUpdateRepository)'" Text="RemoteTest repository metadata mismatch." />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.161" />
+    <None Remove="Resources\Fonts\Inter-VariableFont_opsz,wght.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentIcons.Wpf" Version="2.1.339.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Fonts\Inter-VariableFont_opsz,wght.ttf" />
+    <None Update="Resources\Fonts\OFL.txt">
+      <TargetPath>Licenses\Inter-OFL.txt</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\games.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="Data\catalog.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="Data\Artwork\**\*.img">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="RejectPrivatePublishFiles" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <_PrivatePublishFile Include="@(ResolvedFileToPublish)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)(^|[\\/])(backups?|exports?|personaldata|credentials)([\\/]|$)|\.(db|db3|sqlite|sqlite3)(-|$)|\.(bak|backup|pfx|p12|pem|key|pvk|snk|jks|keystore)$|(^|[\\/])\.env($|\.)')) Or ($([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)(^|[\\/])Data[\\/]')) And !$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)(^|[\\/])Data[\\/](games\.json|catalog\.json|Artwork[\\/][a-f0-9]{64}\.img)$')))" />
+    </ItemGroup>
+    <Error Condition="'@(_PrivatePublishFile)' != ''" Text="Private data cannot be published: @(_PrivatePublishFile)" />
+  </Target>
+
+</Project>

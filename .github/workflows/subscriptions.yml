@@ -1,0 +1,36 @@
+name: Subscription catalog review
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: subscription-review
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test collector and import safeguards
+        run: python -m unittest discover -s Tools -p 'test_*.py'
+      - name: Collect official catalogs without account credentials
+        run: python Tools/subscriptions.py collect --output subscription-candidates.json
+      - name: Refresh previously reviewed identities only
+        run: python Tools/subscriptions.py reverify --collection subscription-candidates.json --output subscription-snapshot.json
+      - name: Summarize pending review
+        run: python Tools/subscriptions.py report --collection subscription-candidates.json --output subscription-report.md
+      - name: Export reviewable data
+        uses: actions/upload-artifact@v4
+        with:
+          name: subscription-review
+          path: |
+            subscription-candidates.json
+            subscription-candidates.review.json
+            subscription-snapshot.json
+            subscription-report.md
+          retention-days: 30

@@ -1,0 +1,252 @@
+<UserControl x:Class="EarningsTracker.Views.SessionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:enums="clr-namespace:EarningsTracker.Enums"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <!-- Create editor controls only for rows actively being edited. -->
+        <DataTemplate x:Key="SessionEditorTemplate">
+            <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}">
+                <StackPanel>
+                    <TextBlock FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Margin="0,0,0,10" TextWrapping="Wrap">
+                        <Run Text="Edit session · "/><Run Text="{Binding Session.GameName}"/>
+                    </TextBlock>
+                    <StackPanel Margin="0,0,0,12">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CanSelectGame}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Link to game" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                        <ComboBox AutomationProperties.Name="Session game" ItemsSource="{Binding DataContext.AvailableGames, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  SelectedItem="{Binding DraftGame, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                                  Margin="0,3,0,0" MaxDropDownHeight="300">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                                        <TextBlock Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeBadge}">
+                                            <Run Text="{Binding RatePerHour, StringFormat={}{0:C2}, ConverterCulture=en-US}"/>
+                                            <Run Text="/hour · "/><Run Text="{Binding MinutesCap}"/><Run Text=" min cap"/>
+                                        </TextBlock>
+                                        <TextBlock Text="Archived" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeBadge}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsArchived}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock Text="Choose a game and save to resolve this session's game link. Earnings stay unchanged."
+                                   Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeBadge}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Grid Margin="0,2,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,8">
+                            <TextBlock Text="Recorded date" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                            <DatePicker AutomationProperties.Name="Recorded date" SelectedDate="{Binding DraftRecordedDate, Mode=TwoWay}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,10,8">
+                            <TextBlock Text="Posted date" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                            <DatePicker AutomationProperties.Name="Posted date" SelectedDate="{Binding DraftPostedDate, Mode=TwoWay}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,8">
+                            <TextBlock Text="Duration (minutes)" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                            <TextBox AutomationProperties.Name="Duration (minutes)" Text="{Binding DraftDurationMinutes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModalTextBox}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,8">
+                            <TextBlock Text="Earnings (USD)" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                            <TextBox AutomationProperties.Name="Earnings (USD)" Text="{Binding DraftEarnings, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModalTextBox}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8">
+                            <TextBlock Text="Status" Style="{StaticResource FilterLabel}" FontSize="{StaticResource FontSizeBadge}"/>
+                            <ComboBox AutomationProperties.Name="Status" SelectedValuePath="Tag" SelectedValue="{Binding DraftStatus, Mode=TwoWay}" Margin="0,3,0,0">
+                                <ComboBoxItem Content="Verified" Tag="{x:Static enums:SessionStatus.Verified}"/>
+                                <ComboBoxItem Content="Pending" Tag="{x:Static enums:SessionStatus.Pending}"/>
+                                <ComboBoxItem Content="Rejected" Tag="{x:Static enums:SessionStatus.Rejected}"/>
+                                <ComboBoxItem Content="Not uploaded" Tag="{x:Static enums:SessionStatus.NotUploaded}"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <CheckBox Grid.Row="0" Grid.Column="2" Content="Force verified" IsChecked="{Binding DraftIsForceVerified, Mode=TwoWay}" VerticalAlignment="Bottom" Margin="0,0,0,14"/>
+                    </Grid>
+                    <TextBlock Text="{Binding EditError}" Style="{StaticResource InlineValidationText}" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="CancelSessionEditButton_Click"/>
+                        <Button Content="Save changes" Style="{StaticResource PrimaryButton}" Click="SaveSessionButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid Style="{StaticResource TabMainGrid}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Sessions" Style="{StaticResource TabName}"/>
+            <Button Grid.Column="1" Content="Import Sessions" Click="ImportSessionsButton_Click" Style="{StaticResource PrimaryButton}" Padding="20,10"/>
+        </Grid>
+
+        <TextBlock x:Name="SessionsSummary" Grid.Row="1" Text="{Binding SessionHistoryText}" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeCompactBody}" Margin="0,4,0,8"/>
+
+        <Border Grid.Row="2" Style="{StaticResource SurfacePanel}" Margin="0,4,0,12">
+            <StackPanel>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox AutomationProperties.Name="Search sessions" x:Name="SearchSessionsBox" Style="{StaticResource SearchBar}" Width="Auto"
+                             HorizontalAlignment="Stretch" Tag="Search by game name..."
+                             TextChanged="SearchSessionsBox_TextChanged" Margin="0,0,12,0"/>
+                    <ComboBox Grid.Column="1" AutomationProperties.Name="Sort sessions" ItemsSource="{Binding SortOptions}"
+                              SelectedIndex="{Binding SelectedSortIndex, Mode=TwoWay}" MinWidth="160" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="Clear filters" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                            Click="ClearSessionFilters_Click"/>
+                </Grid>
+                <WrapPanel VerticalAlignment="Center">
+                    <TextBlock Text="SHOW" Style="{StaticResource FilterLabel}" Margin="0,0,10,6" VerticalAlignment="Center"/>
+                    <ItemsControl ItemsSource="{Binding StatusFilters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton Content="{Binding DisplayText}" GroupName="SessionStatusFilters"
+                                             ToolTip="{Binding Description}"
+                                             IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                             Style="{StaticResource SessionFilterChip}"
+                                             Checked="SessionFilter_Checked"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="SessionsLoadPanel" Grid.Row="3" Style="{StaticResource FeedbackPanel}" Visibility="Collapsed" Margin="0,0,0,8">
+            <DockPanel>
+                <Button x:Name="RetrySessionsButton" DockPanel.Dock="Right" Content="Retry" Style="{StaticResource SecondaryButton}" Click="RetrySessions_Click" Margin="12,0,0,0"/>
+                <TextBlock x:Name="SessionsLoadStatus" TextWrapping="Wrap" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Row="4">
+            <ListBox x:Name="SessionsList" ItemsSource="{Binding SessionsView}" ItemContainerStyle="{StaticResource ItemButton}"
+                     ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                     VirtualizingPanel.ScrollUnit="Pixel" KeyboardNavigation.TabNavigation="Continue"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     Background="Transparent" BorderThickness="0" MouseDoubleClick="SessionsList_MouseDoubleClick" KeyDown="SessionsList_KeyDown"
+                     AutomationProperties.HelpText="Press Enter on a session row to open its game details. Press Escape in an editor to cancel changes.">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
+                </ListBox.Resources>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid x:Name="SessionViewMode" Margin="0,0,8,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <!-- Fixed summary/action columns align rows without shared-size measurement of the full list. -->
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="60" Height="72" Background="{StaticResource ArchivedBackgroundColor}" CornerRadius="5" VerticalAlignment="Center" ClipToBounds="True">
+                                    <ContentControl Style="{StaticResource ArtworkPresenter}" Content="{Binding Cover}"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                    <StackPanel VerticalAlignment="Center" Margin="0,2">
+                                        <TextBlock Text="{Binding Session.GameName}" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Session.GameName}"/>
+                                        <Border CornerRadius="9" Padding="8,3" Margin="0,4,0,0" HorizontalAlignment="Left" Background="{StaticResource VerifiedBackgroundColor}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Session.IsForceVerified}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="Force-verified" Foreground="{StaticResource VerifiedTextColor}" FontSize="{StaticResource FontSizeBadge}" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource GameSessionDetailsStyle}" Margin="0,4,0,0" TextWrapping="Wrap">
+                                        <Run Text="{Binding Session.RecordedDate, StringFormat='{}{0:MMM d, yyyy}'}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding Session.RecordedDate, StringFormat='{}{0:h:mm tt}'}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding Session.DurationText, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="8,0">
+                                    <TextBlock Text="{Binding Session.Earnings, StringFormat={}{0:C2}, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}" HorizontalAlignment="Right"/>
+                                    <Border Style="{StaticResource SessionHistoryStatusBadge}" HorizontalAlignment="Right" Margin="0,8,0,0">
+                                        <TextBlock Style="{StaticResource SessionHistoryStatusText}" Text="{Binding StatusText}"/>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <Button Content="Edit" Style="{StaticResource SecondaryButton}" Padding="12,8" Margin="0,0,8,0" Click="EditSessionButton_Click"/>
+                                    <Button Content="Delete" Style="{StaticResource SecondaryButton}" Padding="12,8" Click="DeleteSessionButton_Click"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <ContentControl x:Name="SessionEditMode" Visibility="Collapsed" Focusable="False" IsTabStop="False"/>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter TargetName="SessionViewMode" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="SessionEditMode" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="SessionEditMode" Property="Content" Value="{Binding}"/>
+                                <Setter TargetName="SessionEditMode" Property="ContentTemplate" Value="{StaticResource SessionEditorTemplate}"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel x:Name="SessionsEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                <TextBlock x:Name="SessionsEmptyState" Text="No sessions match these filters." Style="{StaticResource EmptyStateText}"/>
+                <Button x:Name="ClearSessionFiltersButton" Content="Clear filters" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Center" Click="ClearSessionFilters_Click"/>
+                <Button x:Name="EmptyImportSessionsButton" Content="Import Sessions" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" Click="ImportSessionsButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
