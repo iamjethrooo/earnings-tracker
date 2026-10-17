@@ -7,6 +7,7 @@ namespace EarningsTracker.Utilities
 {
     public class ImportResult
     {
+        internal Dictionary<int, SessionService.EditState> ExpectedSessionStates { get; } = [];
         public List<Session> NewSessions { get; } = [];
         public List<(int Id, Session Imported)> Updates { get; } = [];
         public List<Session> AmbiguousSessions { get; } = [];

@@ -51,10 +51,6 @@ namespace EarningsTracker.Data
             var appData = Utilities.AppDataPaths.DirectoryPath;
             Directory.CreateDirectory(appData);
             var path = Path.Combine(appData, Utilities.AppDataPaths.DatabaseFileName);
-            var legacyPath = Path.Combine(AppContext.BaseDirectory, Utilities.AppDataPaths.LegacyDatabaseFileName);
-            // Verified temporary copy includes committed WAL data; no existing database is replaced.
-            if (Utilities.AppDataPaths.UsesProductionStorage)
-                Utilities.DatabaseInitialization.CopyLegacyIfMissing(path, legacyPath);
             optionsBuilder.UseSqlite(new SqliteConnectionStringBuilder { DataSource = path }.ToString());
         }
 

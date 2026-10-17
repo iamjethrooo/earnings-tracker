@@ -128,7 +128,7 @@ namespace EarningsTracker.Views
                     e.Handled = true;
                     return;
                 }
-                SessionService.Update(item.Session.Id, edited);
+                SessionService.Update(item.Session.Id, edited, expectedState: item.EditState);
             }
             catch (PostCommitRefreshException ex) { refreshWarning = ex.Message; }
             catch (Exception ex)

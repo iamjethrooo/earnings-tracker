@@ -13,7 +13,7 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData(true, "EarningsTracker.Development")]
-    [InlineData(false, "EarningsTracker")]
+    [InlineData(false, "EarningsTracker.UserData")]
     public void BuildDefaultsAreSeparate(bool debug, string folder) =>
         Assert.Equal(Path.Combine(Profile, folder), AppDataPaths.ResolveDirectory(Profile, debug, null, false));
 
@@ -47,8 +47,13 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData(true, "EarningsTracker")]
+    [InlineData(true, "EarningsTracker.UserData")]
+    [InlineData(true, "EarningsTracker.App")]
     [InlineData(true, "NerveEarningsTracker")]
     [InlineData(false, "EarningsTracker.Development")]
+    [InlineData(false, "EarningsTracker")]
+    [InlineData(false, "NerveEarningsTracker")]
+    [InlineData(false, "EarningsTracker.App")]
     public void CrossEnvironmentOverridesAndBackupsAreRejected(bool debug, string folder)
     {
         foreach (var path in new[] { Path.Combine(Profile, folder), Path.Combine(Profile, folder.ToUpperInvariant(), "Backups") })
@@ -70,6 +75,8 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
     public void TestPackagesFailClosedWithoutScratchStorage(bool debug)
     {
         foreach (var path in new[] { null, "relative", Path.Combine(Profile, "EarningsTracker"),
+            Path.Combine(Profile, "EarningsTracker.UserData"), Path.Combine(Profile, "EarningsTracker.App"),
+            Path.Combine(Profile, "EarningsTracker.UserData.preparing-fixture", "Backups"),
             Path.Combine(Profile, "NerveEarningsTracker", "Backups"), Path.Combine(Profile, "EarningsTracker.Development") })
             Assert.Throws<InvalidOperationException>(() => AppDataPaths.ResolveDirectory(Profile, debug, path, true));
         var scratch = Path.Combine(Profile, "scratch");

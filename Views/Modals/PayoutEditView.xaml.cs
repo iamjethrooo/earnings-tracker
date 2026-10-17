@@ -10,6 +10,7 @@ namespace EarningsTracker.Views.Modals
     public partial class PayoutEditView : UserControl
     {
         private readonly Payout? _existing;
+        private readonly PayoutService.EditState? _expectedState;
         private bool _saveCompleted;
         public event EventHandler? Saved;
 
@@ -17,6 +18,7 @@ namespace EarningsTracker.Views.Modals
         {
             InitializeComponent();
             _existing = existing;
+            _expectedState = existing == null ? null : PayoutService.CaptureEditState(existing);
             PayoutType.ItemsSource = new[] { "Payment", "Bonus", "Earnings correction", "Other" };
             Status.ItemsSource = new[] { "Paid", "Processing", "Failed", "Pending", "Verified" };
             PayoutDate.SelectedDate = existing?.Date ?? DateTime.Today;
@@ -81,7 +83,7 @@ namespace EarningsTracker.Views.Modals
                 if (_existing == null)
                     PayoutService.Create(payout, Reason.Text);
                 else
-                    PayoutService.Update(_existing.Id, payout, Reason.Text);
+                    PayoutService.Update(_existing.Id, payout, Reason.Text, expectedState: _expectedState);
             }
             catch (PostCommitRefreshException ex) { refreshWarning = ex.Message; }
             catch (Exception ex)

@@ -31,9 +31,12 @@ namespace EarningsTracker.Utilities
                 importedSessions.Add(sessionKey, session);
                 var start = new DateTime(session.RecordedDate.Year, session.RecordedDate.Month, session.RecordedDate.Day, session.RecordedDate.Hour, session.RecordedDate.Minute, 0);
                 var end = start.AddMinutes(1);
-                var matches = _db.Sessions.Where(s => s.GameName == session.GameName && s.Date >= start && s.Date < end).ToList();
+                var matches = _db.Sessions.AsNoTracking().Where(s => s.GameName == session.GameName && s.Date >= start && s.Date < end).ToList();
                 if (matches.Count == 1)
+                {
                     result.ForceVerifiedSessionUpdates.Add((matches[0].Id, session));
+                    result.ExpectedSessionStates.Add(matches[0].Id, SessionService.CaptureEditState(matches[0]));
+                }
                 else if (matches.Count > 1)
                     result.AmbiguousForceVerifiedSessions.Add(session);
                 else
@@ -57,11 +60,11 @@ namespace EarningsTracker.Utilities
                 List<Payout> candidates;
                 if (payout.SourceId != null)
                 {
-                    candidates = _db.Payouts.Where(p => p.SourceId == payout.SourceId).ToList();
+                    candidates = _db.Payouts.AsNoTracking().Where(p => p.SourceId == payout.SourceId).ToList();
                     if (candidates.Count == 0)
                     {
                         // An export may add an identifier to a transaction imported without one.
-                        candidates = _db.Payouts.Where(p => p.SourceId == null).ToList()
+                        candidates = _db.Payouts.AsNoTracking().Where(p => p.SourceId == null).ToList()
                             .Where(p => p.Date.Date == payout.Date.Date
                                 && Normalize(p.Type) == Normalize(payout.Type)
                                 && Normalize(p.Description) == Normalize(payout.Description)).ToList();
@@ -74,7 +77,7 @@ namespace EarningsTracker.Utilities
                 }
                 else
                 {
-                    var sameType = _db.Payouts.Where(p => p.Type.ToLower() == payout.Type.ToLower()).ToList();
+                    var sameType = _db.Payouts.AsNoTracking().Where(p => p.Type.ToLower() == payout.Type.ToLower()).ToList();
                     var sameDate = sameType.Where(p => p.Date.Date == payout.Date.Date).ToList();
                     var sameDescription = sameType.Where(p => Normalize(p.Description) == Normalize(payout.Description)).ToList();
                     candidates = sameDescription.Count > 0 ? sameDescription : sameDate;
@@ -134,6 +137,8 @@ namespace EarningsTracker.Utilities
                 result.Updates.Remove(update);
                 result.AmbiguousPayoutMatches.Add((update.Imported, [update.Existing]));
             }
+            foreach (var update in result.Updates)
+                result.ExpectedPayoutStates.Add(update.Id, PayoutService.CaptureEditState(update.Existing));
             return result;
         }
 
@@ -148,6 +153,21 @@ namespace EarningsTracker.Utilities
                 SessionService.ValidateEarnings(update.Session.Earnings);
 
             using var transaction = _db.Database.BeginTransaction();
+            // Preview entities must not mask newer database values through EF identity resolution.
+            _db.ChangeTracker.Clear();
+            var applying = new PayoutParseResult();
+            applying.Payouts.AddRange(result.NewPayouts.Concat(result.Updates.Select(update => update.Imported)));
+            applying.ForceVerifiedSessions.AddRange(result.ForceVerifiedSessionUpdates.Select(update => update.Session));
+            var current = PreviewImport(applying);
+            if (!current.NewPayouts.SequenceEqual(result.NewPayouts)
+                || !current.Updates.Select(update => (update.Id, update.Imported))
+                    .SequenceEqual(result.Updates.Select(update => (update.Id, update.Imported)))
+                || !current.ForceVerifiedSessionUpdates.SequenceEqual(result.ForceVerifiedSessionUpdates)
+                || result.ExpectedPayoutStates.Any(pair =>
+                    !current.ExpectedPayoutStates.TryGetValue(pair.Key, out var state) || state != pair.Value)
+                || result.ExpectedSessionStates.Any(pair =>
+                    !current.ExpectedSessionStates.TryGetValue(pair.Key, out var state) || state != pair.Value))
+                throw new InvalidOperationException("Payouts or sessions changed after this preview. Return to input and preview again; no changes were committed.");
             foreach (var payout in result.NewPayouts)
             {
                 payout.ImportedAt = DateTime.Now;

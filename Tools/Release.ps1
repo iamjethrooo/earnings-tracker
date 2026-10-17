@@ -39,7 +39,7 @@ if ($UpdateConfiguration -ne 'Local') {
 if ($PreviousFullPackage) {
     $PreviousFullPackage = [IO.Path]::GetFullPath($PreviousFullPackage)
     if (-not $PreviousFullPackage.StartsWith($artifacts + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
-        -not (Test-Path -LiteralPath $PreviousFullPackage -PathType Leaf) -or [IO.Path]::GetFileName($PreviousFullPackage) -notmatch '^EarningsTracker-(\d+\.\d+\.\d+)-win-x64-stable-full\.nupkg$') { throw 'Previous package must be a known full stable package under artifacts.' }
+        -not (Test-Path -LiteralPath $PreviousFullPackage -PathType Leaf) -or [IO.Path]::GetFileName($PreviousFullPackage) -notmatch '^EarningsTracker\.App-(\d+\.\d+\.\d+)-win-x64-app-stable-full\.nupkg$') { throw 'Previous package must be a known full stable package under artifacts.' }
     if ([version]$Matches[1] -ge [version]$Version) { throw 'Delta base must have a lower version.' }
     $previousVersion = $Matches[1]
     $baseArguments = @((Join-Path $repository 'Tools/validate_release.py'), $artifacts, $previousVersion, $UpdateConfiguration, '--base', $PreviousFullPackage)
@@ -111,8 +111,8 @@ try {
     # Preparation never uploads, signs, commits or tags. Only Production installers
     # request a Start Menu shortcut; disposable test packages avoid shell integration.
     $shortcuts = if ($UpdateConfiguration -eq 'Production') { 'StartMenuRoot' } else { 'None' }
-    $packArguments = @('vpk', 'pack', '--packId', 'EarningsTracker', '--packVersion', $Version, '--packDir', $publish,
-        '--mainExe', 'EarningsTracker.exe', '--channel', 'win-x64-stable', '--runtime', 'win-x64', '--packTitle', 'Earnings Tracker',
+    $packArguments = @('vpk', 'pack', '--packId', 'EarningsTracker.App', '--packVersion', $Version, '--packDir', $publish,
+        '--mainExe', 'EarningsTracker.exe', '--channel', 'win-x64-app-stable', '--runtime', 'win-x64', '--packTitle', 'Earnings Tracker',
         '--icon', (Join-Path $repository 'Resources/App.ico'), '--outputDir', $packages, '--shortcuts', $shortcuts, '--delta', $delta,
         '--releaseNotes', (Join-Path $output 'RELEASE_NOTES.md'))
     if ($UpdateConfiguration -eq 'Local' -and -not $IncludePortable) { $packArguments += '--noPortable' }
@@ -126,11 +126,11 @@ try {
         finally { $zip.Dispose() }
     }
     if (-not (Get-ChildItem -LiteralPath $packages -File -Filter '*Setup.exe')) { throw 'Installer missing.' }
-    if (-not (Test-Path -LiteralPath (Join-Path $packages 'releases.win-x64-stable.json'))) { throw 'Stable update feed missing.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $packages 'releases.win-x64-app-stable.json'))) { throw 'Stable update feed missing.' }
     $reconstructed = $null
     if ($PreviousFullPackage) {
         $reconstructed = Join-Path $output 'delta-reconstructed.nupkg'
-        Invoke-CheckedDotnet @('vpk', 'delta', 'patch', '--base', $PreviousFullPackage, '--patch', (Join-Path $packages "EarningsTracker-$Version-win-x64-stable-delta.nupkg"), '--output', $reconstructed)
+        Invoke-CheckedDotnet @('vpk', 'delta', 'patch', '--base', $PreviousFullPackage, '--patch', (Join-Path $packages "EarningsTracker.App-$Version-win-x64-app-stable-delta.nupkg"), '--output', $reconstructed)
     }
     $validationArguments = @((Join-Path $repository 'Tools/validate_release.py'), $output, $Version, $UpdateConfiguration)
     if ($updateRepository) { $validationArguments += @('--repository', $updateRepository) }
@@ -144,7 +144,7 @@ try {
     $dirty = [bool](& git status --porcelain)
     $scopePath = Join-Path $repository '.release-source-scope.json'
     $scopeHash = if (Test-Path -LiteralPath $scopePath) { (Get-FileHash -LiteralPath $scopePath -Algorithm SHA256).Hash.ToLowerInvariant() } else { $null }
-    [ordered]@{ Version = $Version; PackageId = 'EarningsTracker'; Channel = 'win-x64-stable'; Runtime = 'win-x64'; SelfContained = $true;
+    [ordered]@{ Version = $Version; PackageId = 'EarningsTracker.App'; Channel = 'win-x64-app-stable'; Runtime = 'win-x64'; SelfContained = $true;
         UnsignedLocalOnly = $true; UpdateConfiguration = $UpdateConfiguration; UpdateRepository = $updateRepository; ExpectedTag = $Tag;
         ReviewedPhase3Commit = $ReviewedPhase3Commit; PreviousFullPackage = $(if ($PreviousFullPackage) { [IO.Path]::GetFileName($PreviousFullPackage) } else { $null });
         DeltaReconstructionVerified = [bool]$reconstructed;

@@ -8,8 +8,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path, PurePosixPath
 
-PACKAGE_ID = 'EarningsTracker'
-CHANNEL = 'win-x64-stable'
+PACKAGE_ID = 'EarningsTracker.App'
+CHANNEL = 'win-x64-app-stable'
 PRODUCTION = 'iamjethrooo/earnings-tracker'
 FORMER_PRODUCTION = 'iamjethrooo/nerve-earnings-tracker'
 PRIVATE = re.compile(r'(^|/)(backups?|exports?|personaldata|credentials|tools|tests|obj|igdbcache|subscriptioncache|remainingcache)(/|$)|\.(db|db3|sqlite|sqlite3)(-|$)|\.(bak|backup|pfx|p12|pem|key|pvk|snk|jks|keystore|tmp|log)$|(^|/)\.env($|\.)', re.I)

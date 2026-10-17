@@ -31,6 +31,7 @@ namespace EarningsTracker
             var shutdownMode = ShutdownMode;
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Views.StartupWindow? progress = null;
+            int? startupExitCode = null;
             try
             {
                 Utilities.ApplicationUpdateConfiguration.EnsureTestDataIsolation();
@@ -42,13 +43,17 @@ namespace EarningsTracker
                 {
                     MessageBox.Show("The tracker is already running for this data folder. Close the other instance before opening it again.",
                         "Tracker already running", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Shutdown();
+                    startupExitCode = 0;
                     return;
                 }
                 progress = new Views.StartupWindow();
                 progress.Show();
+                var copiedUserData = false;
+                string? restoredRecovery = null;
                 await InitializeBeforeOpeningAsync(() =>
                 {
+                    copiedUserData = Utilities.AppDataPaths.EnsureDataLocation();
+                    restoredRecovery = Utilities.ApplicationBackup.ApplyPendingRestore(Utilities.AppDataPaths.DirectoryPath);
                     using var db = new AppDbContext();
                     Utilities.DatabaseInitialization.Initialize(db);
                     // Catalog failure must not prevent access to the user's financial records.
@@ -68,20 +73,27 @@ namespace EarningsTracker
                     catch (Exception ex) { System.Diagnostics.Trace.TraceError($"Application updater is unavailable: {ex}"); }
                     MainWindow.Show();
                 });
+                if (copiedUserData)
+                    MessageBox.Show(MainWindow, $"Your saved data and backups were copied and verified in:\n{Utilities.AppDataPaths.DefaultDirectoryPath}\n\nThe former files were retained. Use this application from now on; changes made in the former application will not appear here. A recovery snapshot is in Backups\\BeforeInstallSeparation.",
+                        "Saved data preserved", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (restoredRecovery != null)
+                    MessageBox.Show(MainWindow, $"The selected backup was restored and verified. The previous database was preserved at:\n{restoredRecovery}",
+                        "Restore complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.TraceError(ex.ToString());
-                MessageBox.Show($"The tracker could not start. Database initialization or window creation failed.\n\n{ex.GetBaseException().Message}\n\nClose other instances and check database/file permissions before trying again. Your database has not been deleted or recreated.",
+                MessageBox.Show($"The tracker could not start. Database initialization, pending restore, or window creation failed.\n\n{ex.GetBaseException().Message}\n\nClose other instances and check database/file permissions before trying again. Preserve the data folder and its Backups for recovery. If you are upgrading, keep the former installation and data intact; do not uninstall or repair it until the new app starts successfully.",
                     "Unable to start tracker", MessageBoxButton.OK, MessageBoxImage.Error);
-                using var db = new AppDbContext();
-                //MessageBox.Show($"Database source: {db.Database.GetDbConnection().DataSource}");
-                Shutdown(1);
+                startupExitCode = 1;
             }
             finally
             {
                 if (progress != null) { progress.InitializationFinished = true; progress.Close(); }
                 ShutdownMode = shutdownMode;
+                // WPF rejects ShutdownMode changes once Shutdown has begun. Finish startup
+                // cleanup first so a handled initialization failure exits without a second crash.
+                if (startupExitCode.HasValue) Shutdown(startupExitCode.Value);
             }
             if (_applicationUpdates != null && MainWindow?.IsVisible == true)
             {

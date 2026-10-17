@@ -71,12 +71,12 @@ public class ApplicationUpdateConfigurationTests(WpfTestHost host)
                     Release("app", false, "2026-10-13T00:00:00Z") }));
             if (url.Contains("catalog")) throw new InvalidOperationException("Prerelease must be excluded");
             return Task.FromResult(BrokenFeed ?? JsonSerializer.Serialize(new { Assets = new[] {
-                new { PackageId = "EarningsTracker", Version, Type = "Full", FileName = "app-full.nupkg", SHA1 = new string('A',40), SHA256 = new string('B',64), Size = 100 } } }));
+                new { PackageId = "EarningsTracker.App", Version, Type = "Full", FileName = "app-full.nupkg", SHA1 = new string('A',40), SHA256 = new string('B',64), Size = 100 } } }));
         }
         private static object Release(string name, bool prerelease, string published) => new {
             id = prerelease ? 2 : 1, name, tag_name = name, prerelease, published_at = published,
             assets = new[] {
-                new { name = "releases.win-x64-stable.json", browser_download_url = $"https://github.com/test/updates/releases/download/{name}/releases.win-x64-stable.json", url = $"https://api.github.com/assets/{name}-feed" },
+                new { name = "releases.win-x64-app-stable.json", browser_download_url = $"https://github.com/test/updates/releases/download/{name}/releases.win-x64-app-stable.json", url = $"https://api.github.com/assets/{name}-feed" },
                 new { name = "app-full.nupkg", browser_download_url = $"https://github.com/test/updates/releases/download/{name}/app-full.nupkg", url = $"https://api.github.com/assets/{name}-package" } } };
         public async Task<byte[]> DownloadBytes(string url, IDictionary<string,string>? headers = null, double timeout = 30) =>
             Encoding.UTF8.GetBytes(await DownloadString(url, headers, timeout));
@@ -86,7 +86,7 @@ public class ApplicationUpdateConfigurationTests(WpfTestHost host)
 
     private static UpdateManager Manager(GithubResponses responses) => new(new GithubSource("https://github.com/test/updates", null, false, responses),
         new UpdateOptions { ExplicitChannel = ApplicationUpdateConfiguration.Channel, AllowVersionDowngrade = false },
-        new TestVelopackLocator("EarningsTracker", "1.0.0", Path.GetTempPath()));
+        new TestVelopackLocator("EarningsTracker.App", "1.0.0", Path.GetTempPath()));
 
     [Fact]
     public async Task PinnedSdkDiscoversStablePublicAssetsAndSkipsCatalogPrerelease()

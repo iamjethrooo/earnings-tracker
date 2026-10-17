@@ -26,6 +26,8 @@ The first restore downloads test packages; subsequent runs can use `--no-restore
 
 Tests do not start `App.OnStartup`, open the user's database, call `EnsureDeleted`, or disable migration checks. Persistence and migration tests use synthetic fixtures only. See [Database and storage](../Docs/Database.md) for profile isolation and migration rules.
 
+`UserDataMigrationTests` uses GUID-owned synthetic filesystem profiles to cover the copy-only install/data separation, full-table fingerprints, EF migration IDs, SQLite integrity/FKs, frozen committed WAL, existing-backup bytes, verified snapshot recovery, retry, conflicts, locks and linked backup rejection. Its synthetic install-folder deletion tests filesystem containment only; it does not execute Velopack install/update/repair/uninstall. Native lifecycle validation must use a disposable Windows profile/VM with the old data-bearing install layout, as specified in [Build and release](../Docs/Release.md).
+
 ## Scope and limits
 
 Session imports preserve explicit game selection and unique name matches. Duplicate names can be resolved from positive Verified earnings only when exactly one rate agrees with the source duration precision and monetary rounding. Minute-only durations allow one minute of uncertainty in either direction; explicit seconds remain exact. Matching assumes Nerve pays the full recording when it crosses a cap, so positive earnings are compared against the full duration without clipping to remaining cap minutes. Missing/zero earnings, unknown rates, overlapping evidence and historical amounts that disagree with every rate remain unlinked. Reported earnings are never recalculated.
@@ -36,4 +38,12 @@ At a minute-only timestamp, a zero-duration, zero-earnings NotUploaded recording
 
 Automated coverage includes accounting and reconciliation, import parsing and idempotence, audit history, SQLite migrations and recovery, reporting, settings, update configuration, and offscreen WPF presentation. Passing tests do not verify visible interaction, OS-level durability, installed-package behavior, every legacy schema, or full startup against a real user profile.
 
+`ApplicationBackupTests` uses GUID-owned synthetic file-backed profiles for standalone backup, committed WAL, preferences and audit preservation, restore recovery, incompatible files, locks, and interrupted retry. `ApplicationBackupViewTests` checks the Settings actions at narrow and wide widths with offscreen renderings. Manual keyboard, confirmation, close/reopen, and OS-level interruption checks still require an isolated application profile; do not rehearse restore against a personal database.
+
 For UI or release changes, add the relevant manual keyboard, DPI, scrolling, dialog, package lifecycle, and isolated-storage checks. Do not launch the default application just to verify a build.
+
+## Concurrent editing and imports
+
+`ImportConcurrencyTests` uses GUID-owned, file-backed synthetic databases with separate connections. It covers competing previews/parallel commits, stale manual edits, force-verification changes, deleted targets, newly ambiguous matches, writer-lock failure/retry and unrelated writes. `InstanceIdentityTests` covers equivalent folder spellings, production compatibility identity and independent scratch profiles. `SessionsPresentationTests.ImportWhileInlineDraftIsOpenRejectsStaleSaveAndCanRestartEditing` exercises retained drafts, refreshed source data, rendered conflict feedback and restarting an edit through the actual view model. Existing import, audit, accounting, source-precision, rollback and lifetime cases remain the regression baseline.
+
+PRO-11's local-only two-process harness bypasses application startup deliberately to reproduce writers outside the mutex. It verifies one save per competing import identity, rejected stale editors, accounting, SQLite integrity and foreign keys. Normal same-profile startup refusal reuses PRO-10's actual-app evidence; the equivalent-folder mutex bypass has separate before/after process receipts. See `.local-docs/PRO-11-CONCURRENCY.md` and `artifacts/pro11/evidence` when available. This is representative concurrency coverage, not exhaustive scheduling, multiple Windows-session certification, cross-process live refresh or visible keyboard/DPI testing.

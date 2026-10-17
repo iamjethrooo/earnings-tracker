@@ -24,6 +24,10 @@ The Game Details session importer (**Games → game details → Add Session**) i
 
 `Tools/Release.ps1` is the supported local packaging entry point. It pins the Velopack SDK and CLI, publishes a self-contained Windows x64 build, validates package inputs and privacy exclusions, and creates a local release manifest and checksums.
 
+Package identity is `EarningsTracker.App`; channel is `win-x64-app-stable`. The default install root is `%LOCALAPPDATA%\EarningsTracker.App`; persistent data/backups use the sibling `%LOCALAPPDATA%\EarningsTracker.UserData`. Executable/assembly names remain `EarningsTracker`. See [storage transition and recovery](Database.md). The identity and channel change prevents a manual repair from replacing the former data-bearing install root and keeps old clients off new-identity updates. Do not reuse old full packages as delta bases, publish on `win-x64-stable`, or imply that old clients can cross this identity through an in-app update. Users install alongside the former app and complete first launch before any old uninstall/repair; no manual data movement is required.
+
+PRO-21 release gate: rehearse the old `EarningsTracker` installed layout with synthetic data at its install root, transition automatically, then test new-identity in-app A-to-B, same-version repair, and old/new uninstall/reinstall in a disposable Windows profile/VM. Record installer hashes, actual install/data paths, migration IDs, every-table fingerprints, integrity/FK results, and existing/recovery-backup hashes at every stage. Also rehearse a failed copy and recovery to a new scratch database. An override that starts with data already outside the old root does not validate this transition. Old packages remain unsafe before successful transition; do not remove them as part of unattended upgrade. Native lifecycle acceptance remains required before release.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File Tools/Release.ps1 -Version 1.0.0 -UnsignedLocal
 ```
@@ -40,7 +44,7 @@ The owner approved planning an unsigned v1.0.0 for personal use and trusted frie
 
 Mandatory requirements for this audience:
 
-- Review the complete source, including renamed/untracked tests, storage guards and UI changes. Obtain commit approval, then prepare the final candidate from a clean reviewed commit. Align product/package/assembly/file versions, package ID `EarningsTracker`, intended tag `v1.0.0`, runtime `win-x64`, and channel `win-x64-stable`. Tag creation remains a separate authorized step.
+- Review the complete source, including renamed/untracked tests, storage guards and UI changes. Obtain commit approval, then prepare the final candidate from a clean reviewed commit. Align product/package/assembly/file versions, package ID `EarningsTracker.App`, intended tag `v1.0.0`, runtime `win-x64`, and channel `win-x64-app-stable`. Tag creation remains a separate authorized step.
 - Resolve the production connection and record-preservation discrepancy through read-only inspection of the actual native connection. Record assembly/configuration, resolved data path, `DataSource`, `PRAGMA database_list`, migration IDs, integrity/FKs and a comparison against the reviewed recovery evidence. Never reset, move, replace or repair personal data as a release check. A tool shell's textual path alone does not prove live connection identity.
 - Reuse applicable Debug/Release suite and migration/import/recovery evidence. Rerun only checks invalidated by source changes, configuration or final packaging. Validate exact final setup/full/delta/portable feeds, bytes and checksums, privacy exclusions and deployed dependencies.
 - Verify isolated install/first launch/offline use, update/download/restart, invalid/corrupt source recovery, uninstall/reinstall preservation and Start Menu shortcut. Complete the clean-Windows checklist below. Live cancellation/interruption, post-exit apply failure, lock/disk-full recovery and uninstaller/credential retention remain requirements unless specifically accepted as bounded exceptions.
@@ -67,7 +71,7 @@ Use a disposable Windows x64 VM with a fresh standard user, no SDK/runtime/devel
 
 ## New-identity GitHub rehearsal preparation
 
-Use `iamjethrooo/nerve-earnings-tracker-updates-test`, never production. Reserve fresh disposable versions after reading its releases; the completion plan uses `0.0.120` and `0.0.121`, subject to a fresh collision check. Both use package ID `EarningsTracker` and stable channel `win-x64-stable`. Existing former-identity releases are historical evidence only.
+Use `iamjethrooo/nerve-earnings-tracker-updates-test`, never production. Reserve fresh disposable versions after reading its releases; the completion plan uses `0.0.120` and `0.0.121`, subject to a fresh collision check. Both use package ID `EarningsTracker.App` and stable channel `win-x64-app-stable`. Existing former-identity releases are historical evidence only.
 
 After the reviewed source prerequisite is available, run `Tools/Release.ps1` twice with `-UnsignedLocal -UpdateConfiguration RemoteTest -TestUpdateRepository iamjethrooo/nerve-earnings-tracker-updates-test -ReviewedPhase3Commit <reviewed SHA>`, distinct new artifacts directories and matching version/tag inputs. Supply A's validated full package as B's `-PreviousFullPackage`. Review manifests, exact upload sets, compiled metadata, checksums and delta reconstruction before requesting publication approval. Do not silently replace a missing historical reviewed SHA with HEAD.
 

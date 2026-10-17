@@ -68,6 +68,28 @@ public class DatabaseInitializationTests
     }
 
     [Fact]
+    public void InterruptedMigrationLockFailsBeforeSeedingAndPreservesLockAndHistory()
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        db.Games.Add(new Game { Name = "Preserved after interrupted upgrade" });
+        db.SaveChanges();
+        db.Database.ExecuteSqlRaw("INSERT INTO __EFMigrationsLock (Id, Timestamp) VALUES (1, '2026-10-17T00:00:00Z')");
+        var history = db.Database.GetAppliedMigrations().ToArray();
+
+        var error = Assert.Throws<InvalidOperationException>(() => DatabaseInitialization.Initialize(db));
+
+        Assert.Contains("migration lock", error.Message);
+        Assert.Contains("reviewed recovery", error.Message);
+        Assert.Equal(history, db.Database.GetAppliedMigrations());
+        Assert.Equal("Preserved after interrupted upgrade", Assert.Single(db.Games).Name);
+        Assert.Empty(db.CatalogSettings);
+        using var command = db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "SELECT Timestamp FROM __EFMigrationsLock WHERE Id=1";
+        Assert.Equal("2026-10-17T00:00:00Z", command.ExecuteScalar());
+    }
+
+    [Fact]
     public void LegacyCopyIncludesWalAndDoesNotReplaceAnExistingDestination()
     {
         var directory = Path.Combine(Path.GetTempPath(), "earnings-tracker-relocation-" + Guid.NewGuid().ToString("N"));

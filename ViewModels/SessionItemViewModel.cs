@@ -87,6 +87,7 @@ namespace EarningsTracker.ViewModels
 
         public void BeginEdit()
         {
+            EditState = Utilities.SessionService.CaptureEditState(Session);
             DraftRecordedDate = Session.RecordedDate == default ? Session.Date : Session.RecordedDate;
             DraftPostedDate = Session.PostedDate;
             DraftDurationMinutes = Session.Duration.TotalMinutes.ToString("0.##", CultureInfo.CurrentCulture);
@@ -117,6 +118,8 @@ namespace EarningsTracker.ViewModels
         {
             edited = new Session();
             error = string.Empty;
+            if (EditState != null && Utilities.SessionService.CaptureEditState(Session) != EditState)
+                return Fail("This session changed while you were editing. Cancel the draft and edit the refreshed session again.", out error);
             if (!DraftRecordedDate.HasValue)
                 return Fail("Choose the date the session was recorded.", out error);
             if (!decimal.TryParse(DraftDurationMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes) || minutes < 0)
@@ -165,6 +168,8 @@ namespace EarningsTracker.ViewModels
         }
 
         public void ShowEditError(string message) => EditError = message;
+
+        internal Utilities.SessionService.EditState? EditState { get; private set; }
 
         public void ApplySavedSession(Session session)
         {

@@ -25,6 +25,17 @@ internal static class DatabaseInitialization
             command.CommandText = "SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__EF%'";
             if (applied.Length == 0 && Convert.ToInt64(command.ExecuteScalar()) != 0)
                 throw new InvalidOperationException("This database contains existing tables without the supported migration baseline. It has been preserved; review it before starting the tracker.");
+
+            // SQLite's EF migration lock survives an interrupted process. Synchronous Migrate
+            // otherwise retries indefinitely, leaving startup at the progress window forever.
+            // Never clear it automatically: it may belong to another migration tool.
+            command.CommandText = "SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name='__EFMigrationsLock'";
+            if (Convert.ToInt64(command.ExecuteScalar()) != 0)
+            {
+                command.CommandText = "SELECT COUNT(*) FROM __EFMigrationsLock WHERE Id=1";
+                if (Convert.ToInt64(command.ExecuteScalar()) != 0)
+                    throw new InvalidOperationException("A database migration lock is still present. Close all tracker instances and migration tools. If an upgrade was interrupted, preserve the complete data folder and request reviewed recovery before clearing the lock. The database has not been reset.");
+            }
         }
         finally { if (!wasOpen) connection.Close(); }
 

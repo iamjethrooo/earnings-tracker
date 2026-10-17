@@ -31,24 +31,24 @@ class ReleaseValidationTests(unittest.TestCase):
     def test_release_preparation_checks_actual_binary_nuspec_feed_and_upload_selection(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary); packages = output/'packages'; packages.mkdir()
-            package = packages/'EarningsTracker-1.0.0-win-x64-stable-full.nupkg'
+            package = packages/'EarningsTracker.App-1.0.0-win-x64-app-stable-full.nupkg'
             with zipfile.ZipFile(package,'w') as archive:
                 archive.writestr('lib/app/EarningsTracker.dll', metadata(ReleaseVersion='1.0.0',UpdateConfiguration='Local',UpdateRepository=''))
-                archive.writestr('EarningsTracker.nuspec','<package><metadata><id>EarningsTracker</id><version>1.0.0</version></metadata></package>')
+                archive.writestr('EarningsTracker.App.nuspec','<package><metadata><id>EarningsTracker.App</id><version>1.0.0</version></metadata></package>')
             data=package.read_bytes()
-            asset={'PackageId':'EarningsTracker','Version':'1.0.0','Type':'Full','FileName':package.name,'SHA256':hashlib.sha256(data).hexdigest(),'SHA1':hashlib.sha1(data).hexdigest(),'Size':len(data)}
-            (packages/'EarningsTracker-win-x64-stable-Setup.exe').write_bytes(b'test-installer')
-            (packages/'releases.win-x64-stable.json').write_text(json.dumps({'Assets':[asset]}))
-            (packages/'assets.win-x64-stable.json').write_text(json.dumps([{'Type':'Full','RelativeFileName':package.name},{'Type':'Installer','RelativeFileName':'EarningsTracker-win-x64-stable-Setup.exe'}]))
+            asset={'PackageId':'EarningsTracker.App','Version':'1.0.0','Type':'Full','FileName':package.name,'SHA256':hashlib.sha256(data).hexdigest(),'SHA1':hashlib.sha1(data).hexdigest(),'Size':len(data)}
+            (packages/'EarningsTracker.App-win-x64-app-stable-Setup.exe').write_bytes(b'test-installer')
+            (packages/'releases.win-x64-app-stable.json').write_text(json.dumps({'Assets':[asset]}))
+            (packages/'assets.win-x64-app-stable.json').write_text(json.dumps([{'Type':'Full','RelativeFileName':package.name},{'Type':'Installer','RelativeFileName':'EarningsTracker.App-win-x64-app-stable-Setup.exe'}]))
             (output/'RELEASE_NOTES.md').write_text('Synthetic test notes')
             with self.assertRaises(ValueError): validate_bundle(package,'1.0.1','Local','')
             with self.assertRaises(ValueError): validate_bundle(package,'1.0.0','Production','iamjethrooo/earnings-tracker')
-            asset['Size']+=1; (packages/'releases.win-x64-stable.json').write_text(json.dumps({'Assets':[asset]}))
+            asset['Size']+=1; (packages/'releases.win-x64-app-stable.json').write_text(json.dumps({'Assets':[asset]}))
             with self.assertRaises(ValueError): prepare(output,'1.0.0','Local','')
             self.assertFalse((output/'upload').exists())
-            asset['Size']-=1; (packages/'releases.win-x64-stable.json').write_text(json.dumps({'Assets':[asset]}))
+            asset['Size']-=1; (packages/'releases.win-x64-app-stable.json').write_text(json.dumps({'Assets':[asset]}))
             records=prepare(output,'1.0.0','Local','')
-            self.assertIn('releases.win-x64-stable.json',[row['File'] for row in records])
+            self.assertIn('releases.win-x64-app-stable.json',[row['File'] for row in records])
             self.assertTrue((output/'upload/SHA256SUMS').exists())
             with self.assertRaises(FileExistsError): prepare(output,'1.0.0','Local','')
 

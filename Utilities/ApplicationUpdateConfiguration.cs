@@ -11,7 +11,7 @@ internal static class ApplicationUpdateConfiguration
     internal const string ProductionRepository = "iamjethrooo/earnings-tracker";
     // GitHub redirects the former production name after a rename; it is never a test source.
     internal const string FormerProductionRepository = "iamjethrooo/nerve-earnings-tracker";
-    internal const string Channel = "win-x64-stable";
+    internal const string Channel = "win-x64-app-stable";
 
     internal static bool RequiresIsolatedStorage
     {
@@ -43,6 +43,7 @@ internal static class ApplicationUpdateConfiguration
         {
             var production = Path.TrimEndingDirectorySeparator(Path.GetFullPath(productionDirectory));
             if (data.Equals(production, StringComparison.OrdinalIgnoreCase)
+                || data.StartsWith(production + ".preparing-", StringComparison.OrdinalIgnoreCase)
                 || data.StartsWith(production + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Remote test builds cannot use production storage or its backups.");
         }

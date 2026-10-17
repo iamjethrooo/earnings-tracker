@@ -17,6 +17,39 @@ namespace EarningsTracker.Tests;
 public class SessionsPresentationTests(WpfTestHost host)
 {
     [Fact]
+    [Trait("Category", "Regression")]
+    public Task ImportWhileInlineDraftIsOpenRejectsStaleSaveAndCanRestartEditing() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var recorded = new DateTime(2026, 6, 5, 12, 0, 0);
+        var importer = new SessionImporter(database.Options);
+        importer.ImportSessions(importer.PreviewImport([new Session { GameName = "Synthetic concurrency",
+            Date = recorded, RecordedDate = recorded, Duration = TimeSpan.FromMinutes(1), Status = SessionStatus.Pending }]));
+        var view = new SessionsView(database.Options) { Width = 740, Height = 680 };
+        var model = (SessionsViewModel)view.DataContext;
+        await view.RefreshSessionsAsync();
+        var item = Assert.Single(model.Sessions);
+        item.BeginEdit();
+        item.DraftDurationMinutes = "2";
+        using (var payouts = new PayoutImporter(database.CreateContext()))
+            payouts.ImportPayouts(payouts.PreviewImport(PayoutTextParser.ParseDetailed(
+                "|6/6/2026|6/5/2026 12:00|Earning|Synthetic concurrency — 1 min recording (force-verified)|Verified|+$1.50|")));
+        await view.RefreshSessionsAsync();
+        Assert.Same(item, Assert.Single(model.Sessions));
+        Assert.Equal("2", item.DraftDurationMinutes);
+        Assert.False(item.TryCreateEditedSession(out _, out var error));
+        item.ShowEditError(error);
+        await Layout(view, 740, 680);
+        Assert.Contains(Descendants<TextBlock>(view), text => text.Text.Contains("changed while you were editing"));
+        Save(view, "session-stale-draft");
+        item.CancelEdit(); item.BeginEdit();
+        Assert.True(item.TryCreateEditedSession(out var edited, out error), error);
+        Assert.True(edited.IsForceVerified);
+        Assert.Equal(1.50m, edited.Earnings);
+        Assert.Equal(new DateTime(2026, 6, 6), edited.PostedDate);
+    });
+
+    [Fact]
     public Task LargeSessionsListKeepsBoundedContainersAcrossSortingFilteringAndScrolling() => host.RunAsync(async () =>
     {
         using var database = new TestDatabase();

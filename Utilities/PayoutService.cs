@@ -48,12 +48,15 @@ namespace EarningsTracker.Utilities
             return payout;
         }
 
-        public static void Update(int id, Payout edited, string? reason = null, DbContextOptions<AppDbContext>? options = null)
+        public static void Update(int id, Payout edited, string? reason = null, DbContextOptions<AppDbContext>? options = null, EditState? expectedState = null)
         {
             Validate(edited);
             using var db = options == null ? new AppDbContext() : new AppDbContext(options);
             using var tx = db.Database.BeginTransaction();
-            var existing = db.Payouts.Single(p => p.Id == id);
+            var existing = db.Payouts.SingleOrDefault(p => p.Id == id)
+                ?? throw new InvalidOperationException("This payout no longer exists. Reopen Payments before editing again.");
+            if (expectedState != null && CaptureEditState(existing) != expectedState)
+                throw new InvalidOperationException("This payout changed while you were editing. Close the editor and reopen Payments before editing again.");
             var before = Snapshot(existing);
             existing.Date = edited.Date;
             existing.Type = edited.Type.Trim();
@@ -136,6 +139,15 @@ namespace EarningsTracker.Utilities
                 throw error;
             }
         }
+
+        internal sealed record EditState(DateTime Date, DateTime StartDate, DateTime EndDate, string Type,
+            string Description, string Status, decimal Amount, string? SourceId, string? SourceRow,
+            string? SourceValuesJson, DateTime? ImportedAt, bool IsAdjustmentIncludedInSessionEarnings,
+            string ReconciliationState, bool IsDeleted, DateTime? DeletedAt);
+
+        internal static EditState CaptureEditState(Payout p) => new(p.Date, p.StartDate, p.EndDate, p.Type,
+            p.Description, p.Status, p.Amount, p.SourceId, p.SourceRow, p.SourceValuesJson, p.ImportedAt,
+            p.IsAdjustmentIncludedInSessionEarnings, p.ReconciliationState, p.IsDeleted, p.DeletedAt);
 
         internal static string Snapshot(Payout p) => JsonSerializer.Serialize(new
         {

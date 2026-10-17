@@ -81,6 +81,55 @@ public partial class SettingsView : UserControl
         try { File.WriteAllText(dialog.FileName, model.Diagnostics()); ShowFeedback("Diagnostics exported.", FeedbackTone.Success); }
         catch { ShowFeedback("Diagnostics could not be exported. Choose another location or retry.", FeedbackTone.Error); }
     }
+    private async void Backup_Click(object sender, RoutedEventArgs e)
+    {
+        var directory = Path.Combine(AppDataPaths.DirectoryPath, "Backups");
+        var dialog = new SaveFileDialog
+        {
+            FileName = $"EarningsTracker-{DateTime.Now:yyyyMMdd-HHmmss}.db",
+            Filter = "Earnings Tracker backup (*.db)|*.db",
+            InitialDirectory = directory
+        };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+        BackupButton.IsEnabled = RestoreButton.IsEnabled = false;
+        ShowFeedback("Creating and verifying backup…");
+        try
+        {
+            var path = await Task.Run(() => ApplicationBackup.Create(AppDataPaths.DirectoryPath, dialog.FileName));
+            ShowFeedback($"Backup verified and saved: {path}", FeedbackTone.Success);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError(ex.ToString());
+            ShowFeedback($"Backup failed. Your database is unchanged. {ex.GetBaseException().Message}", FeedbackTone.Error);
+        }
+        finally { BackupButton.IsEnabled = RestoreButton.IsEnabled = true; }
+    }
+    private async void Restore_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Filter = "Earnings Tracker backup (*.db)|*.db", CheckFileExists = true };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+        BackupButton.IsEnabled = RestoreButton.IsEnabled = false;
+        ShowFeedback("Validating selected backup…");
+        try
+        {
+            await Task.Run(() => ApplicationBackup.Validate(dialog.FileName));
+            var confirmation = MessageBox.Show(Window.GetWindow(this),
+                "Restore this backup? On the next launch it will replace all current sessions, payouts, audit history, and saved settings with the selected backup. The current database will first be copied to a verified recovery file in Backups\\BeforeUserRestore. Cached artwork and your saved API key are unaffected. The application will close; reopen it to finish the restore.",
+                "Confirm data replacement", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (confirmation != MessageBoxResult.Yes) { ShowFeedback("Restore cancelled. Current data is unchanged."); return; }
+            await Task.Run(() => ApplicationBackup.ScheduleRestore(AppDataPaths.DirectoryPath, dialog.FileName));
+            MessageBox.Show(Window.GetWindow(this), "The backup is validated and ready. Reopen Earnings Tracker to complete the restore. If recovery protection or replacement fails, startup will stop and retain the current data and recovery files.",
+                "Restore ready", MessageBoxButton.OK, MessageBoxImage.Information);
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError(ex.ToString());
+            ShowFeedback($"Restore could not be prepared. Current data is unchanged. {ex.GetBaseException().Message}", FeedbackTone.Error);
+        }
+        finally { BackupButton.IsEnabled = RestoreButton.IsEnabled = true; }
+    }
     internal void ShowFeedback(string message, FeedbackTone tone = FeedbackTone.Neutral)
     {
         var resource = tone switch

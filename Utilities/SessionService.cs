@@ -8,12 +8,15 @@ namespace EarningsTracker.Utilities
 {
     internal static class SessionService
     {
-        public static void Update(int id, Session edited, DbContextOptions<AppDbContext>? options = null)
+        public static void Update(int id, Session edited, DbContextOptions<AppDbContext>? options = null, EditState? expectedState = null)
         {
             Validate(edited);
             using var db = options == null ? new AppDbContext() : new AppDbContext(options);
             using var transaction = db.Database.BeginTransaction();
-            var existing = db.Sessions.Single(session => session.Id == id);
+            var existing = db.Sessions.SingleOrDefault(session => session.Id == id)
+                ?? throw new InvalidOperationException("This session no longer exists. Reload sessions before editing again.");
+            if (expectedState != null && CaptureEditState(existing) != expectedState)
+                throw new InvalidOperationException("This session changed while you were editing. Cancel the draft and edit the refreshed session again.");
             var before = Snapshot(existing);
 
             // Historical recordings may be unlinked. Link explicitly without recalculating
@@ -75,6 +78,14 @@ namespace EarningsTracker.Utilities
             transaction.Commit();
             PayoutService.NotifyDataChanged();
         }
+
+        // Value equality avoids false conflicts from decimal scale changes after SQLite reloads.
+        internal sealed record EditState(int? GameId, string GameName, int? PayoutId, DateTime Date,
+            DateTime RecordedDate, DateTime? PostedDate, TimeSpan Duration, SessionStatus Status,
+            decimal Earnings, bool IsForceVerified);
+
+        internal static EditState CaptureEditState(Session s) => new(s.GameId, s.GameName, s.PayoutId,
+            s.Date, s.RecordedDate, s.PostedDate, s.Duration, s.Status, s.Earnings, s.IsForceVerified);
 
         internal static string Snapshot(Session session) => JsonSerializer.Serialize(new
         {

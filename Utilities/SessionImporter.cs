@@ -75,6 +75,15 @@ namespace EarningsTracker.Utilities
             using var db = _options == null ? new AppDbContext() : new AppDbContext(_options);
             using var transaction = db.Database.BeginTransaction();
 
+            // SQLite's immediate write transaction keeps matching and saving under one writer lock.
+            // Reuse preview matching so a new collision/ambiguity cannot bypass its safeguards.
+            var current = PreviewImport(db, result.NewSessions.Concat(result.Updates.Select(update => update.Imported)));
+            if (!current.NewSessions.SequenceEqual(result.NewSessions)
+                || !current.Updates.SequenceEqual(result.Updates)
+                || result.ExpectedSessionStates.Any(pair =>
+                    !current.ExpectedSessionStates.TryGetValue(pair.Key, out var state) || state != pair.Value))
+                throw new InvalidOperationException("Sessions changed after this preview. Return to input and preview again; no changes were committed.");
+
             foreach (var session in result.NewSessions)
             {
                 if (session.Status == Enums.SessionStatus.Verified && !session.IsForceVerified && session.PostedDate == null)
@@ -127,8 +136,13 @@ namespace EarningsTracker.Utilities
 
         public ImportResult PreviewImport(IEnumerable<Session> importedSessions)
         {
-            var result = new ImportResult();
             using var db = _options == null ? new AppDbContext() : new AppDbContext(_options);
+            return PreviewImport(db, importedSessions);
+        }
+
+        private static ImportResult PreviewImport(AppDbContext db, IEnumerable<Session> importedSessions)
+        {
+            var result = new ImportResult();
             var targetedExistingIds = new HashSet<int>();
             var disputedExistingIds = new HashSet<int>();
 
@@ -195,6 +209,8 @@ namespace EarningsTracker.Utilities
                 result.Updates.Remove(update);
                 result.AmbiguousSessions.Add(update.Imported);
             }
+            foreach (var update in result.Updates)
+                result.ExpectedSessionStates.Add(update.Id, SessionService.CaptureEditState(db.Sessions.Find(update.Id)!));
             return result;
         }
 
