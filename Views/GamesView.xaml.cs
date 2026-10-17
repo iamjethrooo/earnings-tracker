@@ -4,7 +4,6 @@ using EarningsTracker.Data;
 using EarningsTracker.Enums;
 using EarningsTracker.Utilities;
 using EarningsTracker.Exceptions;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +42,9 @@ namespace EarningsTracker.Views
             InitializeComponent();
 
             DataContext = new GamesViewModel(databaseOptions, loadImmediately: databaseOptions != null);
+            var preferences = (GamesViewModel)DataContext;
+            BookmarkFilter.IsChecked = preferences.BookmarkedOnly;
+            SortComboBox.SelectedIndex = preferences.DefaultSortIndex;
             ((GamesViewModel)DataContext).Games.CollectionChanged += (_, _) => UpdateSelectedCatalog();
             GameDetailsView.DataContext = null;
             if (databaseOptions == null) Loaded += GamesView_Loaded;
@@ -58,32 +60,7 @@ namespace EarningsTracker.Views
             if (sender is not ComboBox comboBox)
                 return;
 
-            switch (comboBox.SelectedIndex)
-            {
-                case 0:
-                    viewModel.SortGames(
-                        nameof(GameItemViewModel.Game) + "." + nameof(Game.RatePerHour),
-                        ListSortDirection.Descending
-                    );
-                    break;
-
-                case 1:
-                    viewModel.SortGames(
-                        nameof(GameItemViewModel.Game) + "." + nameof(Game.Name),
-                        ListSortDirection.Ascending
-                    );
-                    break;
-
-                case 2:
-                    viewModel.SortGames(
-                        nameof(GameItemViewModel.Game) + "." + nameof(Game.Id),
-                        ListSortDirection.Descending
-                    );
-                    break;
-                case 3:
-                    viewModel.SortGames(nameof(GameItemViewModel.PriceSortValue), ListSortDirection.Ascending);
-                    break;
-            }
+            viewModel.ApplySortChoice(comboBox.SelectedIndex);
         }
 
         private void SearchBox_TextChanged(

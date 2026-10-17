@@ -174,6 +174,30 @@ public class UxPolishTests(WpfTestHost host)
         return Task.CompletedTask;
     });
     [Fact]
+    public Task GamesPreferencesHaveAccessibleSettingsControls() => host.RunAsync(() =>
+    {
+        using var database = new TestDatabase();
+        var view = new SettingsView(database.Options);
+        var sort = (ComboBox)view.FindName("GamesDefaultSort");
+        var bookmarks = (CheckBox)view.FindName("GamesBookmarksOnly");
+        var archived = (CheckBox)view.FindName("GamesShowArchived");
+        Assert.Equal("Default Games sort", System.Windows.Automation.AutomationProperties.GetName(sort));
+        Assert.Equal(2, sort.SelectedIndex);
+        Assert.False(bookmarks.IsChecked);
+        Assert.True(archived.IsChecked);
+        using (var db = database.CreateContext())
+            Assert.DoesNotContain(db.CatalogSettings, setting => setting.Key.StartsWith("games."));
+        sort.SelectedIndex = 1;
+        bookmarks.IsChecked = true; bookmarks.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        archived.IsChecked = false; archived.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        var reopened = new SettingsView(database.Options);
+        Assert.Equal(1, ((ComboBox)reopened.FindName("GamesDefaultSort")).SelectedIndex);
+        Assert.True(((CheckBox)reopened.FindName("GamesBookmarksOnly")).IsChecked);
+        Assert.False(((CheckBox)reopened.FindName("GamesShowArchived")).IsChecked);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task SettingsSaveFailureRetainsPreferenceAndShowsError() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();

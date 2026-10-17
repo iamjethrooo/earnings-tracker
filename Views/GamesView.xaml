@@ -39,8 +39,8 @@
                 <TextBlock Text="Available Games" Style="{StaticResource TabName}"/>
 
                 <WrapPanel x:Name="GamesToolbar" Grid.Row="1" Margin="0,8,0,0">
-                    <CheckBox Content="{Binding BookmarkText}" Checked="BookmarkFilter_Checked" Unchecked="BookmarkFilter_Unchecked" Foreground="{StaticResource DefaultTextColor}" Margin="0,0,8,8"/>
-                    <ComboBox AutomationProperties.Name="Sort games" MinWidth="120" SelectedIndex="2" SelectionChanged="SortComboBox_SelectionChanged" Margin="0,0,8,8">
+                    <CheckBox x:Name="BookmarkFilter" Content="{Binding BookmarkText}" Checked="BookmarkFilter_Checked" Unchecked="BookmarkFilter_Unchecked" Foreground="{StaticResource DefaultTextColor}" Margin="0,0,8,8"/>
+                    <ComboBox x:Name="SortComboBox" AutomationProperties.Name="Sort games" MinWidth="120" SelectionChanged="SortComboBox_SelectionChanged" Margin="0,0,8,8">
                         <ComboBoxItem Content="Highest Pay" />
                         <ComboBoxItem Content="Game A-Z" />
                         <ComboBoxItem Content="Newest" />

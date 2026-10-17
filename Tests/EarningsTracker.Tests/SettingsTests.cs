@@ -30,6 +30,27 @@ public class SettingsTests
     }
 
     [Fact]
+    public void GamesPreferencesKeepLegacyDefaultsUntilChangedAndPersist()
+    {
+        using var database = new TestDatabase();
+        var model = new SettingsViewModel(database.Options);
+        Assert.Equal(2, model.GamesDefaultSort);
+        Assert.False(model.GamesBookmarksOnly);
+        Assert.True(model.GamesShowArchived);
+        using (var db = database.CreateContext())
+            Assert.DoesNotContain(db.CatalogSettings, setting => setting.Key.StartsWith("games."));
+
+        model.SetGamesDefaultSort(1);
+        model.SetGamesBookmarksOnly(true);
+        model.SetGamesShowArchived(false);
+        var reopened = new SettingsViewModel(database.Options);
+        Assert.Equal(1, reopened.GamesDefaultSort);
+        Assert.True(reopened.GamesBookmarksOnly);
+        Assert.False(reopened.GamesShowArchived);
+        Assert.Throws<ArgumentOutOfRangeException>(() => model.SetGamesDefaultSort(4));
+    }
+
+    [Fact]
     public void SettingsPersistAndDiagnosticsExcludeUnrecognizedSensitiveData()
     {
         using var database = new TestDatabase();

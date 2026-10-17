@@ -10,6 +10,7 @@ using FluentIcons.Wpf;
 using EarningsTracker.Models;
 using EarningsTracker.ViewModels;
 using EarningsTracker.Views;
+using EarningsTracker.Utilities;
 
 namespace EarningsTracker.Tests;
 
@@ -77,6 +78,34 @@ public class GamesRefinementTests(WpfTestHost host)
         Assert.Same(item, Assert.Single(model.GamesView.Cast<GameItemViewModel>()));
         item.ToggleOwnedCommand.Execute(null);
         Assert.Equal(0, model.AvailableGamesCount);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task SavedGamesPreferencesApplyOnReopenWithoutChangingDefaults() => host.RunAsync(() =>
+    {
+        using var database = new TestDatabase();
+        Seed(database);
+        var settings = new AppSettings(database.Options);
+        Assert.Equal(2, settings.GamesDefaultSort);
+        Assert.False(settings.GamesBookmarksOnly);
+        Assert.True(settings.GamesShowArchived);
+        var initial = new GamesViewModel(database.Options);
+        Assert.Equal(3, initial.AvailableGamesCount);
+        settings.GamesDefaultSort = 0;
+        settings.GamesBookmarksOnly = true;
+        settings.GamesShowArchived = false;
+        var reopened = new GamesViewModel(database.Options);
+        Assert.Equal(0, reopened.DefaultSortIndex);
+        Assert.True(reopened.BookmarkedOnly);
+        Assert.False(reopened.ShowArchived);
+        Assert.Equal("Game.RatePerHour", reopened.GamesView.SortDescriptions[1].PropertyName);
+        Assert.Equal("Bookmarked game", Assert.Single(reopened.GamesView.Cast<GameItemViewModel>()).Game.Name);
+        reopened.FilterBookmarked(false);
+        Assert.Equal(2, reopened.AvailableGamesCount);
+        Assert.DoesNotContain(reopened.GamesView.Cast<GameItemViewModel>(), x => x.Game.IsArchived);
+        settings.Set("games.defaultSort", "invalid");
+        Assert.Equal(2, new GamesViewModel(database.Options).DefaultSortIndex);
         return Task.CompletedTask;
     });
 

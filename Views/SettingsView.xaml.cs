@@ -13,12 +13,17 @@ public partial class SettingsView : UserControl
 {
     private readonly SettingsViewModel model;
     private readonly DbContextOptions<AppDbContext>? options;
+    private bool loadingPreferences = true;
     public SettingsView() : this(null) { }
     internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions, ApplicationUpdates? applicationUpdates = null)
     {
         options = databaseOptions;
         InitializeComponent(); model = new(options, applicationUpdates); DataContext = model;
         GamePass.IsChecked = model.GamePass; Automatic.IsChecked = model.AutomaticUpdates;
+        GamesDefaultSort.SelectedIndex = model.GamesDefaultSort;
+        GamesBookmarksOnly.IsChecked = model.GamesBookmarksOnly;
+        GamesShowArchived.IsChecked = model.GamesShowArchived;
+        loadingPreferences = false;
         UpdateKeyStatus(); Unloaded += (_, _) => ApiKey.Clear();
     }
     private void UpdateKeyStatus()
@@ -46,6 +51,22 @@ public partial class SettingsView : UserControl
     {
         try { model.SetAutomaticUpdates(Automatic.IsChecked == true); ShowFeedback("Update preference saved.", FeedbackTone.Success); }
         catch { Automatic.IsChecked = Automatic.IsChecked != true; ShowFeedback("Update preference could not be saved. Retry.", FeedbackTone.Error); }
+    }
+    private void GamesDefaultSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (loadingPreferences || GamesDefaultSort.SelectedIndex < 0) return;
+        try { model.SetGamesDefaultSort(GamesDefaultSort.SelectedIndex); ShowFeedback("Games default sort saved.", FeedbackTone.Success); }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceError(ex.ToString()); loadingPreferences = true; GamesDefaultSort.SelectedIndex = model.GamesDefaultSort; loadingPreferences = false; ShowFeedback("Games default sort could not be saved. Retry.", FeedbackTone.Error); }
+    }
+    private void GamesBookmarksOnly_Click(object sender, RoutedEventArgs e)
+    {
+        try { model.SetGamesBookmarksOnly(GamesBookmarksOnly.IsChecked == true); ShowFeedback("Games bookmark default saved.", FeedbackTone.Success); }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceError(ex.ToString()); GamesBookmarksOnly.IsChecked = model.GamesBookmarksOnly; ShowFeedback("Games bookmark default could not be saved. Retry.", FeedbackTone.Error); }
+    }
+    private void GamesShowArchived_Click(object sender, RoutedEventArgs e)
+    {
+        try { model.SetGamesShowArchived(GamesShowArchived.IsChecked == true); ShowFeedback("Archived games display saved.", FeedbackTone.Success); }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceError(ex.ToString()); GamesShowArchived.IsChecked = model.GamesShowArchived; ShowFeedback("Archived games display could not be saved. Retry.", FeedbackTone.Error); }
     }
     private void SaveKey_Click(object sender, RoutedEventArgs e)
     {

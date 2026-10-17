@@ -5,6 +5,13 @@ namespace EarningsTracker.Utilities;
 
 internal sealed class AppSettings(DbContextOptions<AppDbContext>? options = null)
 {
+    internal int GamesDefaultSort
+    {
+        get => int.TryParse(Get("games.defaultSort"), out var value) && value is >= 0 and <= 3 ? value : 2;
+        set { if (value is < 0 or > 3) throw new ArgumentOutOfRangeException(nameof(value)); Set("games.defaultSort", value.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
+    }
+    internal bool GamesBookmarksOnly { get => Get("games.bookmarksOnly") == "true"; set => Set("games.bookmarksOnly", value ? "true" : "false"); }
+    internal bool GamesShowArchived { get => Get("games.showArchived") != "false"; set => Set("games.showArchived", value ? "true" : "false"); }
     internal static void InitializeDefaults(AppDbContext db)
     {
         if (db.CatalogSettings.Find("updates.automatic") == null)

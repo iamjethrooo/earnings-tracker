@@ -21,6 +21,12 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         .FirstOrDefault(attribute => attribute.Key == "ReleaseVersion")?.Value is { Length: > 0 } release
             ? $"Version {release}" : "Development build";
     public string DataFolder => AppDataPaths.DirectoryPath;
+    public int GamesDefaultSort => settings.GamesDefaultSort;
+    public bool GamesBookmarksOnly => settings.GamesBookmarksOnly;
+    public bool GamesShowArchived => settings.GamesShowArchived;
+    internal void SetGamesDefaultSort(int value) => settings.GamesDefaultSort = value;
+    internal void SetGamesBookmarksOnly(bool value) => settings.GamesBookmarksOnly = value;
+    internal void SetGamesShowArchived(bool value) => settings.GamesShowArchived = value;
     public ApplicationUpdates? ApplicationUpdates { get; }
     public bool CheckApplicationOnStartup => settings.Get("applicationUpdates.startup") != "false";
     internal void SetApplicationStartup(bool value) => settings.Set("applicationUpdates.startup", value ? "true" : "false");

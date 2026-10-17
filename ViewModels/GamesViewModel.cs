@@ -18,6 +18,10 @@ namespace EarningsTracker.ViewModels
         public ICollectionView GamesView { get; }
         private string _searchText = "";
         private bool _bookmarkedOnly = false;
+        private bool _showArchived = true;
+        public bool BookmarkedOnly => _bookmarkedOnly;
+        public bool ShowArchived => _showArchived;
+        public int DefaultSortIndex { get; }
         public string BookmarkError { get; private set; } = "";
         public event PropertyChangedEventHandler? PropertyChanged;
         private readonly DbContextOptions<AppDbContext>? _databaseOptions;
@@ -102,8 +106,11 @@ namespace EarningsTracker.ViewModels
         {
             _databaseOptions = databaseOptions;
             GamesView = CollectionViewSource.GetDefaultView(Games);
-
-            SortGames(nameof(GameItemViewModel.Game) + "." + nameof(Game.Id), ListSortDirection.Descending);
+            var settings = new AppSettings(databaseOptions);
+            DefaultSortIndex = settings.GamesDefaultSort;
+            _bookmarkedOnly = settings.GamesBookmarksOnly;
+            _showArchived = settings.GamesShowArchived;
+            ApplySortChoice(DefaultSortIndex);
             if (loadImmediately)
             {
                 var snapshot = ReadGames();
@@ -196,6 +203,17 @@ namespace EarningsTracker.ViewModels
             );
         }
 
+        public void ApplySortChoice(int choice)
+        {
+            switch (choice)
+            {
+                case 0: SortGames("Game.RatePerHour", ListSortDirection.Descending); break;
+                case 1: SortGames("Game.Name", ListSortDirection.Ascending); break;
+                case 3: SortGames(nameof(GameItemViewModel.PriceSortValue), ListSortDirection.Ascending); break;
+                default: SortGames("Game.Id", ListSortDirection.Descending); break;
+            }
+        }
+
         public void SearchGames(string searchText)
         {
             if (_searchText == searchText) return;
@@ -216,6 +234,7 @@ namespace EarningsTracker.ViewModels
             {
                 if (item is not GameItemViewModel gameItem)
                     return false;
+                if (!_showArchived && gameItem.Game.IsArchived) return false;
 
                 // Search filter
                 if (!string.IsNullOrWhiteSpace(_searchText) &&

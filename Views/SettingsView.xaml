@@ -64,6 +64,16 @@
     </StackPanel></Border>
    </Grid>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="Games display" Style="{StaticResource CompactSectionHeading}"/>
+    <TextBlock Text="Starting choices when you open Games. You can still change sorting and filters on the page." Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock Text="Default sort" Style="{StaticResource FilterLabel}"/>
+    <ComboBox x:Name="GamesDefaultSort" AutomationProperties.Name="Default Games sort" SelectionChanged="GamesDefaultSort_SelectionChanged" HorizontalAlignment="Left" MinWidth="160" Margin="0,0,0,8">
+     <ComboBoxItem Content="Highest Pay"/><ComboBoxItem Content="Game A-Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest price"/>
+    </ComboBox>
+    <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarks only" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
+    <CheckBox x:Name="GamesShowArchived" Content="Show archived games" Click="GamesShowArchived_Click" ToolTip="Include archived games in the Games list. Archived game history remains available."/>
+   </StackPanel></Border>
+   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Backup &amp; restore" Style="{StaticResource CompactSectionHeading}"/>
     <TextBlock Text="A backup includes sessions, payouts, adjustments, audit history, games, and saved settings. Cached artwork and the API key in Windows Credential Manager are excluded." Foreground="{StaticResource SecondaryTextColor}"/>
     <WrapPanel Margin="0,4,0,0">
