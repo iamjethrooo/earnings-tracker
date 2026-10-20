@@ -1,0 +1,235 @@
+<UserControl x:Class="EarningsTracker.Prototypes.Sessions.SessionExplorerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:EarningsTracker.Prototypes.Sessions"
+             SizeChanged="View_SizeChanged" FontSize="13">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="Show"/>
+        <Style x:Key="SmallText" TargetType="TextBlock" BasedOn="{StaticResource DashboardStatDescription}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource DashboardStatDescription}">
+            <Setter Property="Margin" Value="0,14,0,6"/>
+        </Style>
+        <Style x:Key="GameLink" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentTextColor}"/>
+            <Setter Property="Padding" Value="0,3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="ContentTemplate"><Setter.Value><DataTemplate>
+                <TextBlock Text="{Binding}" Foreground="{StaticResource AccentTextColor}" TextTrimming="CharacterEllipsis"/>
+            </DataTemplate></Setter.Value></Setter>
+        </Style>
+        <Style x:Key="FilterLabel" TargetType="TextBlock" BasedOn="{StaticResource DashboardStatDescription}">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style x:Key="Editor" TargetType="TextBox" BasedOn="{StaticResource ModalTextBox}">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid x:Name="ExplorerRoot">
+        <Grid x:Name="ExplorerContent">
+            <Grid.Style><Style TargetType="Grid"><Style.Triggers><DataTrigger Binding="{Binding IsImportOpen}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Grid.Style>
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <Border Style="{StaticResource SurfacePanel}" Padding="12" Margin="0,0,0,12">
+                <WrapPanel IsEnabled="{Binding CanBrowse}">
+                    <StackPanel Width="220" Margin="0,0,12,4">
+                        <TextBlock Text="Search recordings" Style="{StaticResource FilterLabel}"/>
+                        <TextBox x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchBar}" Height="34" Tag="Game or source ID" AutomationProperties.Name="Search sessions by game or source ID"/>
+                    </StackPanel>
+                    <StackPanel Width="138" Margin="0,0,12,4">
+                        <TextBlock Text="Verification" Style="{StaticResource FilterLabel}"/>
+                        <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Height="34" AutomationProperties.Name="Filter by verification status"/>
+                    </StackPanel>
+                    <StackPanel Width="160" Margin="0,0,12,4">
+                        <TextBlock Text="Game" Style="{StaticResource FilterLabel}"/>
+                        <ComboBox ItemsSource="{Binding Games}" SelectedItem="{Binding GameFilter}" Height="34" AutomationProperties.Name="Filter by game"/>
+                    </StackPanel>
+                    <StackPanel Width="148" Margin="0,0,12,4">
+                        <TextBlock Text="Recording date" Style="{StaticResource FilterLabel}"/>
+                        <ComboBox ItemsSource="{Binding Dates}" SelectedItem="{Binding DateFilter}" Height="34" AutomationProperties.Name="Filter by recording date"/>
+                    </StackPanel>
+                    <StackPanel Width="166" Margin="0,0,12,4">
+                        <TextBlock Text="Sort" Style="{StaticResource FilterLabel}"/>
+                        <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" Height="34" AutomationProperties.Name="Sort sessions"/>
+                    </StackPanel>
+                    <Button Content="Clear" Command="{Binding ClearFiltersCommand}" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Margin="0,0,0,4" Height="34"/>
+                </WrapPanel>
+            </Border>
+            <DockPanel Grid.Row="1" Margin="0,0,0,12">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" IsEnabled="{Binding CanBrowse}">
+                    <TextBlock Text="Example" Style="{StaticResource SmallText}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="ExampleSelector" ItemsSource="{Binding Examples}" SelectedItem="{Binding Example}" Width="140" AutomationProperties.Name="Sessions example state"/>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding CountLabel}" FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="{Binding BasisLabel}" Style="{StaticResource SmallText}" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+            <StackPanel Grid.Row="2">
+                <Border Style="{StaticResource FeedbackPanel}" Visibility="{Binding IsStale, Converter={StaticResource Show}}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Retry" Command="{Binding RetryCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"/>
+                        <TextBlock Text="Refresh failed. Showing the previous synthetic snapshot from Oct 19, 23:59." Foreground="{StaticResource PendingTextColor}" TextWrapping="Wrap" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+                    </DockPanel>
+                </Border>
+                <Border x:Name="PageFeedback" Style="{StaticResource FeedbackPanel}" Visibility="Collapsed">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Retry refresh" Command="{Binding RetryCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0" Visibility="{Binding ShowRefreshRetry, Converter={StaticResource Show}}"/>
+                        <TextBlock Text="{Binding Feedback}" Foreground="{Binding FeedbackBrush}" TextWrapping="Wrap" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+            <!-- The table remains in this star-sized row at every width. Only the details host changes placement. -->
+            <Grid x:Name="Body" Grid.Row="3" SizeChanged="Body_SizeChanged">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition x:Name="DetailsGap" Width="16"/><ColumnDefinition x:Name="DetailsColumn" Width="336"/></Grid.ColumnDefinitions>
+                <Border x:Name="TableHost" Style="{StaticResource SurfacePanel}" Padding="0">
+                    <Grid>
+                        <ListView x:Name="SessionTable" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedSession, Mode=TwoWay}"
+                                  SelectionMode="Single" Background="Transparent" BorderThickness="0" IsEnabled="{Binding CanBrowse}" SizeChanged="Table_SizeChanged"
+                                  ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel"
+                                  VirtualizingPanel.CacheLength="1" AutomationProperties.Name="Synthetic sessions table"
+                                  AutomationProperties.HelpText="Select a row to inspect it. Game title links open a separate preview. Edit is available in the details panel.">
+                            <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TableRow}"><Setter Property="Height" Value="44"/><Setter Property="Padding" Value="8,4"/><Setter Property="FontSize" Value="13"/></Style></ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView AllowsColumnReorder="False">
+                                    <GridView.ColumnHeaderContainerStyle><Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource TableColumnHeader}"><Setter Property="FontSize" Value="12"/><Setter Property="FontWeight" Value="Medium"/></Style></GridView.ColumnHeaderContainerStyle>
+                                    <GridViewColumn x:Name="GameColumn" Header="Game" Width="190">
+                                        <GridViewColumn.CellTemplate><DataTemplate>
+                                            <Button Content="{Binding Game}" ToolTip="{Binding Game}" Command="{Binding DataContext.GameCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding Game}" Style="{StaticResource GameLink}" Click="GameLink_Click" AutomationProperties.Name="{Binding Game, StringFormat=Open synthetic game preview for {0}}"/>
+                                        </DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Recorded" Width="154" DisplayMemberBinding="{Binding RecordedText}"/>
+                                    <GridViewColumn Header="Duration" Width="80" DisplayMemberBinding="{Binding Duration}"/>
+                                    <GridViewColumn Header="USD" Width="88">
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Amount}" TextAlignment="Right" FontWeight="SemiBold" Width="64"/></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Verification" Width="128">
+                                        <GridViewColumn.CellTemplate><DataTemplate><Border Width="104" Style="{StaticResource TransactionBadge}" Background="{Binding StatusBackground}"><TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" Style="{StaticResource TransactionBadgeText}"/></Border></DataTemplate></GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Source" Width="92" DisplayMemberBinding="{Binding Source}"/>
+                                    <GridViewColumn Header="Source ID" Width="110" DisplayMemberBinding="{Binding SourceId}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <Border Background="{StaticResource SurfaceColor}" Visibility="{Binding ShowState, Converter={StaticResource Show}}">
+                            <StackPanel MaxWidth="380" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+                                <TextBlock Text="{Binding StateTitle}" Style="{StaticResource SectionHeading}" TextAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+                                <TextBlock Text="{Binding StateDescription}" Style="{StaticResource EmptyStateText}"/>
+                                <Button Content="Clear filters" Command="{Binding ClearFiltersCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Center" Visibility="{Binding StateCanClear, Converter={StaticResource Show}}"/>
+                                <Button Content="Retry snapshot" Command="{Binding RetryCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Center" Visibility="{Binding StateCanRetry, Converter={StaticResource Show}}"/>
+                                <Button Content="Preview import" Command="{Binding ImportCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" Visibility="{Binding StateCanImport, Converter={StaticResource Show}}"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+                <Border x:Name="DetailsPanel" Grid.Column="2" Style="{StaticResource SurfacePanel}" Padding="0" Visibility="{Binding ShowDetails, Converter={StaticResource Show}}"
+                        KeyboardNavigation.TabNavigation="Continue" AutomationProperties.Name="Selected session details">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Border BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,0,0,1" Padding="16">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="×" Style="{StaticResource SecondaryButton}" Padding="9,3" Command="{Binding CloseDetailsCommand}" AutomationProperties.Name="Close session details"/>
+                                <StackPanel>
+                                    <TextBlock Text="Session details" Style="{StaticResource SectionHeading}"/>
+                                    <TextBlock Text="{Binding SelectedSession.Identifier}" Style="{StaticResource SmallText}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <ScrollViewer x:Name="DetailsScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="16">
+                                <Button Content="{Binding SelectedSession.Game}" Command="{Binding GameCommand}" CommandParameter="{Binding SelectedSession.Game}" Style="{StaticResource GameLink}" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                                <Border x:Name="PanelFeedback" Style="{StaticResource FeedbackPanel}" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Feedback}" Foreground="{Binding FeedbackBrush}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+                                        <Button Content="Retry refresh" Command="{Binding RetryCommand}" Style="{StaticResource SecondaryButton}" Margin="0,12,0,0" Visibility="{Binding ShowRefreshRetry, Converter={StaticResource Show}}"/>
+                                    </StackPanel>
+                                </Border>
+                                <StackPanel Visibility="{Binding ShowReadDetails, Converter={StaticResource Show}}">
+                                    <Border Background="{Binding SelectedSession.StatusBackground}" Style="{StaticResource TransactionBadge}"><TextBlock Text="{Binding SelectedSession.Status}" Foreground="{Binding SelectedSession.StatusBrush}" Style="{StaticResource TransactionBadgeText}"/></Border>
+                                    <TextBlock Text="Recording date / time" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding SelectedSession.RecordedText}"/>
+                                    <Grid Margin="0,16,0,0">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <StackPanel><TextBlock Text="Duration" Style="{StaticResource SmallText}"/><TextBlock Text="{Binding SelectedSession.Duration}" FontSize="18" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel>
+                                        <StackPanel Grid.Column="1"><TextBlock Text="Earnings · USD" Style="{StaticResource SmallText}"/><TextBlock Text="{Binding SelectedSession.Amount}" FontSize="18" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel>
+                                    </Grid>
+                                    <TextBlock Text="Posted date" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding SelectedSession.PostedText}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="Change reason" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding SelectedSession.NoteText}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource Show}}">
+                                    <TextBlock Text="{Binding DraftLabel}" Foreground="{StaticResource PendingTextColor}" FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite"/>
+                                    <TextBlock Text="Recording time and source evidence stay read-only in this iteration." Style="{StaticResource SmallText}" Margin="0,8,0,0"/>
+                                    <StackPanel IsEnabled="{Binding CanEditFields}">
+                                        <StackPanel x:Name="DurationField">
+                                            <TextBlock Text="Duration · minutes" Style="{StaticResource FieldLabel}"/>
+                                            <TextBox x:Name="MinutesEditor" Text="{Binding DraftMinutes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Editor}" AutomationProperties.Name="Draft duration in minutes" AutomationProperties.HelpText="{Binding DurationValidation}"/>
+                                            <TextBlock x:Name="DurationError" Text="{Binding DurationValidation}" Style="{StaticResource InlineValidationText}"/>
+                                        </StackPanel>
+                                        <StackPanel x:Name="EarningsField">
+                                            <TextBlock Text="Earnings · USD" Style="{StaticResource FieldLabel}"/>
+                                            <TextBox x:Name="EarningsEditor" Text="{Binding DraftEarnings, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Editor}" AutomationProperties.Name="Draft earnings in USD" AutomationProperties.HelpText="{Binding EarningsValidation}"/>
+                                            <TextBlock x:Name="EarningsError" Text="{Binding EarningsValidation}" Style="{StaticResource InlineValidationText}"/>
+                                        </StackPanel>
+                                        <StackPanel x:Name="VerificationField">
+                                            <TextBlock Text="Verification" Style="{StaticResource FieldLabel}"/>
+                                            <ComboBox x:Name="StatusEditor" ItemsSource="{Binding EditStatuses}" SelectedItem="{Binding DraftStatus}" AutomationProperties.Name="Draft verification status" AutomationProperties.HelpText="{Binding VerificationValidation}"/>
+                                            <TextBlock x:Name="VerificationError" Text="{Binding VerificationValidation}" Style="{StaticResource InlineValidationText}"/>
+                                        </StackPanel>
+                                        <StackPanel x:Name="ReasonField">
+                                            <TextBlock Text="Change reason · required" Style="{StaticResource FieldLabel}"/>
+                                            <TextBox x:Name="ReasonEditor" Text="{Binding DraftNote, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Editor}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="70" MaxLength="241" AutomationProperties.Name="Reason for the sample change" AutomationProperties.HelpText="{Binding ReasonValidation}"/>
+                                            <TextBlock x:Name="ReasonError" Text="{Binding ReasonValidation}" Style="{StaticResource InlineValidationText}"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Synthetic save result" Style="{StaticResource FieldLabel}"/>
+                                        <ComboBox ItemsSource="{Binding SaveResults}" SelectedItem="{Binding SaveResult}" AutomationProperties.Name="Synthetic save result"/>
+                                    </StackPanel>
+                                    <ProgressBar IsIndeterminate="True" Height="3" Margin="0,14,0,0" Foreground="{StaticResource AccentColor}" Visibility="{Binding IsBusy, Converter={StaticResource Show}}" AutomationProperties.Name="Sample save in progress"/>
+                                </StackPanel>
+                                <Border Style="{StaticResource SurfacePanel}" Margin="0,20,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Source evidence" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding SelectedSession.Source}" Style="{StaticResource SmallText}" Margin="0,8,0,4"/>
+                                        <TextBlock Text="{Binding SelectedSession.SourceId}" Foreground="{StaticResource AccentTextColor}"/>
+                                        <TextBlock Text="{Binding SelectedSession.SourceValues}" Style="{StaticResource SmallText}" Margin="0,12,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                        <Border Grid.Row="2" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,1,0,0" Padding="16">
+                            <Grid>
+                                <Button Content="Edit session" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Visibility="{Binding ShowReadDetails, Converter={StaticResource Show}}"/>
+                                <DockPanel Visibility="{Binding IsEditing, Converter={StaticResource Show}}">
+                                    <Button DockPanel.Dock="Right" Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                                    <Button x:Name="SaveButton" Content="Save sample" Click="Save_Click" IsEnabled="{Binding CanEditFields}" Style="{StaticResource PrimaryButton}"/>
+                                </DockPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+            <TextBlock Grid.Row="4" Text="Select a row to inspect · game titles open separately · all changes are temporary" Style="{StaticResource SmallText}" Margin="0,10,0,0"/>
+        </Grid>
+        <Grid x:Name="DrawerLayer" Background="#90000000" Visibility="Collapsed" MouseLeftButtonDown="Scrim_MouseLeftButtonDown"/>
+        <Grid x:Name="ImportPreview" Background="#B0000000" Visibility="{Binding IsImportOpen, Converter={StaticResource Show}}" KeyboardNavigation.TabNavigation="Cycle">
+            <Border Style="{StaticResource SurfacePanel}" Width="460" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="IMPORT / SYNTHETIC PREVIEW" Foreground="{StaticResource AccentTextColor}" FontSize="12"/>
+                    <TextBlock Text="Review before importing" Style="{StaticResource SectionHeading}" Margin="0,12,0,12"/>
+                    <TextBlock Text="3 sample recordings · source: Recordings&#10;2 new · 1 already present" TextWrapping="Wrap"/>
+                    <Border Style="{StaticResource SurfacePanel}" Margin="0,16">
+                        <TextBlock Text="Orbital Drift          72 min      $6.80&#10;Neon Circuit         105 min      $9.20&#10;Mosslight Valley    48 min      Duplicate" Style="{StaticResource SmallText}"/>
+                    </Border>
+                    <TextBlock Text="Preview only. No clipboard, file, parser or importer is accessed; no records are added." Style="{StaticResource SmallText}"/>
+                    <Button x:Name="CloseImportButton" Content="Close preview" Command="{Binding CloseImportCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,20,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -16,9 +16,30 @@ internal static class CatalogPresentation
             || ((offer.Kind == AcquisitionKind.FreeToPlay || (offer.Kind == AcquisitionKind.Giveaway && offer.ExpiresAt > now))
                 && (offer.ExpiresAt == null || offer.ExpiresAt > now)));
 
-    internal static bool Current(SubscriptionAvailability sub, DateTime now) => sub.Included && sub.Region == "PH"
+    internal static bool VerificationCurrent(SubscriptionAvailability sub, DateTime now) => sub.Region == "PH"
         && sub.Platform == "PC" && sub.VerifiedAt <= now && sub.VerifiedAt >= now.AddDays(-7)
         && (sub.ExpiresAt == null || sub.ExpiresAt > now);
+
+    internal static bool Current(SubscriptionAvailability sub, DateTime now) => sub.Included && VerificationCurrent(sub, now);
+
+    internal static SubscriptionAvailability? GamePassEntry(IEnumerable<SubscriptionAvailability> entries) => entries
+        .Where(entry => entry.Service == "PC Game Pass" && entry.Platform == "PC" && entry.Region == "PH")
+        .OrderByDescending(entry => entry.VerifiedAt).ThenByDescending(entry => entry.Id).FirstOrDefault();
+
+    internal static bool PreviouslyIncluded(SubscriptionAvailability sub, DateTime now) => sub.Included
+        && sub.Region == "PH" && sub.Platform == "PC" && sub.VerifiedAt > DateTime.MinValue && sub.VerifiedAt <= now;
+
+    internal static string SubscriptionText(SubscriptionAvailability sub, DateTime now)
+    {
+        var date = sub.VerifiedAt == default ? "verification date not recorded"
+            : $"last verified {sub.VerifiedAt:yyyy-MM-dd HH:mm}{(sub.VerifiedAt.Kind == DateTimeKind.Utc ? " UTC" : "")}";
+        var state = Current(sub, now) ? "Availability verified"
+            : !sub.Included && VerificationCurrent(sub, now) ? "Not included · verification current"
+            : sub.Included ? "Stale / unverified availability" : "Last recorded as not included · verification outdated";
+        return $"{sub.Service} · {state} · {sub.Platform}/{sub.Region} · {date}"
+            + (sub.ExpiresAt.HasValue ? $" · recorded expiry {sub.ExpiresAt:yyyy-MM-dd HH:mm}" : "")
+            + (!VerificationCurrent(sub, now) && sub.Service == "PC Game Pass" ? ". Game Pass availability may have changed." : "");
+    }
 
     internal static decimal? ToUsd(decimal amount, string currency, IReadOnlyDictionary<string, ExchangeRate> rates)
         => currency == "USD" ? amount : rates.TryGetValue(currency, out var rate) && rate.PerUsd > 0 ? amount / rate.PerUsd : null;

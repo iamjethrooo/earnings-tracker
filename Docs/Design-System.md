@@ -60,7 +60,138 @@ Settings feedback uses verified/success, pending/warning, rejected/error, and se
 
 Sidebar routing uses `NavigationPage` identifiers rather than labels or list indices. Product versions must be explicit release metadata; default assembly versions remain diagnostic information.
 
+## Shared navigation and editing (PRO-46)
+
+The approved PRO-19 shell uses a compact 188-DIP sidebar, the restrained E mark, and the existing
+`NavButton` icons, purple selected background and selection marker. Production keeps Settings at the
+bottom and preserves all six destinations. `MainWindow` owns routing and game-detail entry; pages
+recreate on navigation, without a page cache.
+
+Page headings use `TabName` with a short, wrapping `PageDescription` beneath it. Existing page
+actions sit to the right where present. Use `PrimaryButton` for the main action (such as import or
+Save changes), and `SecondaryButton` for alternatives (such as Add payout or Cancel). Do not invent
+an action to fill a header. Payments and Settings retain their existing workflows. Dashboard,
+Sessions and Games content redesigns remain separate work.
+
+Session editing retains an isolated draft and all supported fields in the selected-session panel. One draft can be opened
+through the UI at a time; filters are disabled until it finishes. Navigation, game-detail entry,
+imports, deleting a row and window close retain an open draft and show Save/Cancel guidance.
+Cancel and Escape discard the draft without writing; focus returns to the read action inside a narrow drawer, or its row beside a wide details panel. Closing the drawer returns focus to the row. Save validates without
+normalizing input, then uses `SessionService` with the captured edit state. Reentrant/queued saves
+cannot submit a busy or completed draft. Existing modal focus containment, close guards, preview
+confirmation and importer disposal remain in place.
+
+Recorded date, posted date, duration and earnings validation appears beside the corresponding input,
+with accessible help text and polite feedback. A failed save focuses/reveals that field and its
+message. Production rules remain authoritative: for example, zero-duration recordings are valid;
+the prototype's duration cap and required change-reason demonstration are not production rules.
+Unchanged values retain their original precision and timestamp details.
+
+A conflict keeps the draft and explains how to Cancel, inspect the refreshed record and edit again.
+A committed save retires the draft before display notifications. A refresh failure shows an explicit
+saved warning and a separate **Retry refresh** action that only reloads; it never repeats the write.
+PRO-47 hosts the editor in the bounded details scroll area with Save/Cancel pinned below it.
+The session rows remain compact while editing.
+
+Verification uses isolated synthetic databases, real resources and offscreen WPF layouts. Programmatic
+focus and modal traversal assertions are not native input certification. Physical keyboard/focus,
+wheel behavior, screen-reader announcements and actual monitor-DPI transitions remain unverified;
+owner-operated checks are not required for this integration.
+
 `NavButton` pairs each page label with a 20-DIP Fluent icon selected by its `NavigationPage` tag. Icons follow the row foreground and add no focus stop. Shared scrollbars use a 12-DIP interaction lane with an inset rounded thumb, a quiet charcoal rail on hover, and purple while dragging. Both orientations retain viewport sizing and native page-scroll commands, with a 48-DIP minimum thumb length for long documents. The shared ScrollViewer template preserves its named scrolling parts and content scrolling, with a transparent corner when both bars appear.
+
+## Compact Sessions explorer (PRO-47)
+
+Sessions uses the approved compact table with 44-DIP recycling rows. Game, recording date/time,
+duration, USD earnings, verification, source and source ID remain separate columns. Column widths
+have readable minima; native horizontal scrolling exposes overflow. The toolbar controls sorting;
+column headings do not imply click sorting. The table occupies a bounded star-sized Grid row with
+native pixel scrolling, a recycling VirtualizingStackPanel and a one-page cache. There is no outer
+table scroller or expanded editor inside a row.
+
+Search matches game names, recorded source IDs and the internal `Session #id` identifier. Verification
+includes the existing Ambiguous/unlinked choice. Game filters distinguish saved game IDs (including
+duplicate names/rate versions); unlinked historical names have their own choices. Recording-date
+filters use All recording dates, Last 7 days and Last 30 days, inclusive through the current local day.
+All dates remains the production default so historical rows are visible. Clear resets search,
+verification, game and date filters while retaining sorting. Verification counts describe the complete
+loaded snapshot; the summary reports matching versus total sessions.
+
+Selecting a row inspects it without entering edit mode. Enter on a table row opens/focuses its details.
+The separate game-title button routes through MainWindow to Game Details without changing row
+selection. Unlinked records have no game-navigation target. At page-region widths below 1,150 DIPs,
+the 336-DIP adjacent panel becomes a 360-DIP drawer spanning the page. The covered page is disabled
+and Tab cycles within the drawer. Close, Escape in read mode and the scrim return to browsing;
+a draft blocks dismissal with Save/Cancel guidance. Escape while editing cancels the draft. Open
+ComboBoxes/calendars consume their own Escape first. Reparenting across the breakpoint retains the
+draft and restores editor focus. Read/edit content scrolls while actions stay pinned.
+
+Production fields remain available: recording and posted dates, duration, earnings, status,
+force-verification and explicit game linking for unlinked sessions. No prototype-only reason field,
+positive-duration rule or sample duration cap is introduced. Original timestamp components and
+monetary/duration precision are retained when a displayed value is unchanged. History status colors
+continue to use SessionHistoryStatusBadge/Text, including labeled Not Uploaded; details expose
+force-verification separately.
+
+Source labels come from recorded import audit types. Source IDs are linked payout IDs when recorded;
+they are not invented session-provider identifiers. Unknown historical IDs/posting dates remain
+explicit. Source evidence and audit history load only for the selected record, with stale-result
+checks and retry. Expandable, read-only fields retain raw session source, before/after audit JSON and
+linked payout source values. The audit viewport is bounded and recycles its entries. Snapshot and
+evidence reads are serialized in the view so they also work with isolated shared-connection fixtures.
+
+A successful refresh publishes the completed read and preserves selected wrappers/drafts. A deleted
+target can retain its draft for explicit Cancel or a rejected stale save; it still blocks navigation
+and application restart. Cancel then removes the missing details context. Failed refreshes retain
+previous rows, identify them as potentially stale with the last successful read time, and offer Retry.
+First-load failure and loading do not show an empty-success count. Empty history offers Import;
+filtered-empty offers Clear filters. Recovery feedback stays visible inside the narrow drawer and
+repeated validation/conflict attempts reveal the relevant field/message. Retry refresh after a
+committed save reloads without repeating the audited mutation.
+
+Offscreen fixtures cover narrow/default/wide layouts, a 144-DPI export, keyboard focus/selection,
+resizing, evidence, conflict recovery and a persisted synthetic 10,000-session history. These checks
+do not certify native mouse/wheel behavior, screen readers or actual monitor-DPI transitions.
+Owner-operated checks are not required; those limits remain recorded.
+
+## Compact Games library and details (PRO-48)
+
+Games uses compact recycling rows with artwork, title, genre, ownership, acquisition evidence,
+rate, cycle cap and full-cycle potential. Below 1,050 DIPs of page-region width the comparison
+fields move beneath the title. Missing artwork has a readable fallback. Selecting a row keeps
+the library open; its title or Enter opens details. Returning to Library retains filters,
+selection and scroll position and restores focus when the original item is still available.
+
+Search, sorting, genre/store and combinable access filters remain production filters. Clear
+resets search and filters, retaining sorting and the current archived visibility choice.
+Settings still supplies the saved starting sort, bookmarks-only and archived preferences;
+temporary browsing choices do not overwrite them. Lowest price retains the existing comparison
+of saved PH offers across editions using saved exchange rates. Outdated purchase prices remain
+visible with checked dates; the prototype's synthetic price assumptions do not replace these rules.
+
+Details has a pinned Library action and a bounded, recycling session-history viewport. Its finite
+header places earnings/cap and personal ownership beside acquisition/editions and subscription
+evidence, stacking below 900 DIPs of page-region width. Archived opportunities are labeled
+historical. Saved same-name rate identities and cap-reset audit values are read-only disclosures.
+Existing audited cap-reset and ownership dialogs remain authoritative. Steam ownership and
+installation are explicitly unconnected placeholders; no account or local Steam library is read.
+
+The PC Game Pass filter includes previously verified PH/PC inclusion even after seven days or
+recorded expiry. Rows and details show the actual saved verification date and **Game Pass
+availability may have changed.** Stale evidence uses warning text/color and never claims current
+availability. A newer recorded not-included result replaces older inclusion in this filter.
+Settings separately counts current inclusion, stale/expired inclusion, currently verified
+not-included and other unverified records; stale verification does not confirm removal.
+
+Playable now retains its existing ownership/free-access and subscription-membership rules.
+Subscription access still requires verification within seven days and an unexpired record.
+Browsing does not write timestamps, extend validity or refresh subscription evidence implicitly.
+Catalog failures retain saved data and explain retry and stale-price/availability uncertainty.
+Initial loading/failure, empty library and filtered-empty remain distinct.
+
+Isolated fixtures cover narrow/default/wide rendering, keyboard entry/focus return, a 144-DPI
+bitmap export, 1,200-game recycling and 10,000-session detail scrolling. These do not certify
+physical keyboard/mouse/wheel input, screen-reader announcements or real monitor-DPI transitions.
 
 ## Statistics charts
 

@@ -42,11 +42,15 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     {
         using var db = settings.Context();
         var activeIds = db.Games.Where(g => !g.IsArchived).Select(g => g.Id).ToHashSet();
-        var entries = db.SubscriptionAvailability.AsNoTracking().ToList()
-            .Where(s => activeIds.Contains(s.GameId) && s.Service == "PC Game Pass" && s.Included).ToList();
-        var current = entries.Where(s => CatalogPresentation.Current(s, DateTime.UtcNow)).Select(s => s.GameId).Distinct().Count();
-        var stale = entries.Where(s => !CatalogPresentation.Current(s, DateTime.UtcNow)).Select(s => s.GameId).Distinct().Count();
-        SubscriptionStatus = $"{current} verified games · {stale} expired or stale entries";
+        var entries = db.SubscriptionAvailability.AsNoTracking().ToList().Where(s => activeIds.Contains(s.GameId))
+            .GroupBy(s => s.GameId).Select(group => CatalogPresentation.GamePassEntry(group)).OfType<EarningsTracker.Models.SubscriptionAvailability>().ToList();
+        var now = DateTime.UtcNow;
+        var current = entries.Count(s => CatalogPresentation.Current(s, now));
+        var stale = entries.Count(s => CatalogPresentation.PreviouslyIncluded(s, now) && !CatalogPresentation.Current(s, now));
+        var removed = entries.Count(s => !s.Included && CatalogPresentation.VerificationCurrent(s, now));
+        var unverified = entries.Count - current - stale - removed;
+        SubscriptionStatus = $"{current} currently verified available · {stale} previously included, verification stale/expired · {removed} currently verified not included · {unverified} other unverified records. "
+            + "Stale verification does not confirm removal. Previously verified games remain in the PC Game Pass filter; stale entries do not grant Playable now. Game Pass availability may have changed.";
         UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog checked: {Date(settings.Get("updates.catalogSuccess"))}\nLive prices checked: {Date(settings.Get("updates.pricesSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nCatalog snapshot: {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
         var rate = db.ExchangeRates.AsNoTracking().SingleOrDefault(r => r.Currency == "PHP");
         RateStatus = rate == null ? "No saved PHP exchange rate. Refresh to check rates."

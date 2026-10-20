@@ -14,9 +14,37 @@ namespace EarningsTracker.ViewModels
         private string? _editError;
         private string _initialDurationText = string.Empty;
         private string _initialEarningsText = string.Empty;
+        private bool _isSaving;
+        public bool IsSaving
+        {
+            get => _isSaving;
+            private set { _isSaving = value; OnPropertyChanged(); }
+        }
+        public string? RecordedDateError { get; private set; }
+        public string? PostedDateError { get; private set; }
+        public string? DurationError { get; private set; }
+        public string? EarningsError { get; private set; }
+        public string? InvalidField { get; private set; }
+
+        public bool TryBeginSave()
+        {
+            if (!IsEditing || IsSaving) return false;
+            IsSaving = true;
+            return true;
+        }
+
+        public void EndSave() => IsSaving = false;
 
         public Session Session { get; private set; }
         public Game? Game => Session.Game;
+        public bool CanNavigate => Game != null;
+        public string Identifier => $"Session #{Session.Id}";
+        public string SourceId => Session.Payout?.SourceId ?? "Not recorded";
+        public string SourceLabel { get; private set; } = "Not recorded";
+        public string PostedText => Session.PostedDate?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown — no posting date recorded";
+        public IReadOnlyList<SessionChange> Evidence { get; private set; } = [];
+        internal void SetSource(string source) { SourceLabel = source; OnPropertyChanged(nameof(SourceLabel)); OnPropertyChanged(nameof(SourceId)); }
+        internal void SetEvidence(IReadOnlyList<SessionChange> evidence) { Evidence = evidence; OnPropertyChanged(nameof(Evidence)); }
         private GameMetadata? _artworkMetadata;
         private ImageSource? _cover;
         private bool _coverRequested;
@@ -76,7 +104,11 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(Session));
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(Game));
+            OnPropertyChanged(nameof(CanNavigate));
             OnPropertyChanged(nameof(CanSelectGame));
+            OnPropertyChanged(nameof(Identifier));
+            OnPropertyChanged(nameof(SourceId));
+            OnPropertyChanged(nameof(PostedText));
         }
 
         internal void RestoreDraftGame(Game? game)
@@ -87,6 +119,8 @@ namespace EarningsTracker.ViewModels
 
         public void BeginEdit()
         {
+            if (IsEditing || IsSaving) return;
+            ClearValidation();
             EditState = Utilities.SessionService.CaptureEditState(Session);
             DraftRecordedDate = Session.RecordedDate == default ? Session.Date : Session.RecordedDate;
             DraftPostedDate = Session.PostedDate;
@@ -110,6 +144,8 @@ namespace EarningsTracker.ViewModels
 
         public void CancelEdit()
         {
+            if (IsSaving) return;
+            ClearValidation();
             EditError = null;
             IsEditing = false;
         }
@@ -118,23 +154,24 @@ namespace EarningsTracker.ViewModels
         {
             edited = new Session();
             error = string.Empty;
+            ClearValidation();
             if (EditState != null && Utilities.SessionService.CaptureEditState(Session) != EditState)
                 return Fail("This session changed while you were editing. Cancel the draft and edit the refreshed session again.", out error);
             if (!DraftRecordedDate.HasValue)
-                return Fail("Choose the date the session was recorded.", out error);
+                return FieldError(nameof(DraftRecordedDate), "Choose the date the session was recorded.", out error);
             if (!decimal.TryParse(DraftDurationMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes) || minutes < 0)
-                return Fail("Enter a valid non-negative duration in minutes.", out error);
+                return FieldError(nameof(DraftDurationMinutes), "Enter a valid non-negative duration in minutes.", out error);
             if (!decimal.TryParse(DraftEarnings, NumberStyles.Number, CultureInfo.CurrentCulture, out var earnings) || earnings < 0)
-                return Fail("Enter valid non-negative session earnings.", out error);
+                return FieldError(nameof(DraftEarnings), "Enter valid non-negative session earnings.", out error);
             if (DraftStatus == SessionStatus.Verified && DraftIsForceVerified && !DraftPostedDate.HasValue)
-                return Fail("Choose a posted date for a force-verified session.", out error);
+                return FieldError(nameof(DraftPostedDate), "Choose a posted date for a force-verified session.", out error);
 
             // Display rounding must not change stored precision when another field is edited.
             var duration = Session.Duration;
             if (DraftDurationMinutes != _initialDurationText)
             {
                 if (minutes > TimeSpan.MaxValue.Ticks / (decimal)TimeSpan.TicksPerMinute)
-                    return Fail("Enter a duration within the supported range.", out error);
+                    return FieldError(nameof(DraftDurationMinutes), "Enter a duration within the supported range.", out error);
                 duration = TimeSpan.FromTicks((long)decimal.Round(minutes * TimeSpan.TicksPerMinute));
             }
             if (DraftEarnings == _initialEarningsText)
@@ -173,14 +210,18 @@ namespace EarningsTracker.ViewModels
 
         public void ApplySavedSession(Session session)
         {
+            // Persistence has committed. Retire the draft before any display notification can fail.
+            IsEditing = false;
             if (Session.GameId != session.GameId) SetArtwork(null);
             Session = session;
             EditError = null;
-            IsEditing = false;
+            ClearValidation();
             OnPropertyChanged(nameof(Session));
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(Game));
+            OnPropertyChanged(nameof(CanNavigate));
             OnPropertyChanged(nameof(CanSelectGame));
+            OnPropertyChanged(nameof(PostedText));
         }
 
         // Calendar edits change the day, not the recording/verification time or timestamp kind.
@@ -191,6 +232,34 @@ namespace EarningsTracker.ViewModels
         {
             error = message;
             return false;
+        }
+
+        private bool FieldError(string field, string message, out string error)
+        {
+            InvalidField = field;
+            switch (field)
+            {
+                case nameof(DraftRecordedDate): RecordedDateError = message; break;
+                case nameof(DraftPostedDate): PostedDateError = message; break;
+                case nameof(DraftDurationMinutes): DurationError = message; break;
+                case nameof(DraftEarnings): EarningsError = message; break;
+            }
+            NotifyValidation();
+            return Fail(message, out error);
+        }
+
+        private void ClearValidation()
+        {
+            InvalidField = RecordedDateError = PostedDateError = DurationError = EarningsError = null;
+            NotifyValidation();
+        }
+
+        private void NotifyValidation()
+        {
+            OnPropertyChanged(nameof(RecordedDateError));
+            OnPropertyChanged(nameof(PostedDateError));
+            OnPropertyChanged(nameof(DurationError));
+            OnPropertyChanged(nameof(EarningsError));
         }
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

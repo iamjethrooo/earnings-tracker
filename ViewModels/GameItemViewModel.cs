@@ -36,7 +36,7 @@ namespace EarningsTracker.ViewModels
             _cover = cover; OnPropertyChanged(nameof(Cover));
         }
         public bool IsOwned => Ownership?.IsOwned == true;
-        public string OwnershipButtonText => IsOwned ? "Owned" : "Mark as owned";
+        public string OwnershipButtonText => IsOwned ? "Owned · remove" : "Mark owned";
         public string OwnershipTooltip => IsOwned ? "Remove from owned games. Saved purchase cost is kept."
             : "Add to owned games. Edit purchase cost in game details.";
         public string OwnershipError { get; private set; } = "";
@@ -76,11 +76,27 @@ namespace EarningsTracker.ViewModels
                 .ThenBy(x => CatalogPresentation.EffectivePrice(x, DateTime.UtcNow) is decimal price ? CatalogPresentation.ToPhp(price, x.Currency, Rates) ?? decimal.MaxValue : decimal.MaxValue)
                 .ThenByDescending(x => x.VerifiedAt).First())
             .Select(x => new OfferDisplay(x.Url, $"{x.Source}  ·  {CatalogPresentation.CompactPrice(x, DateTime.UtcNow)}",
-                $"Checked {x.VerifiedAt:MMM d, yyyy}"
-                + (x.Edition == "Base game" ? "" : $" · {x.Edition}"), CatalogPresentation.OfferText(x, Rates, DateTime.UtcNow))).ToList();
+                $"{x.Edition} · {x.Region} · checked {x.VerifiedAt:yyyy-MM-dd}"
+                + ((x.SalePrice ?? x.RegularPrice) is decimal quote ? $" · saved quote {CatalogPresentation.Money(quote, x.Currency)}" : " · no recorded price")
+                + (x.Region != "PH" ? " · not a PH offer" : "")
+                + (x.ExpiresAt.HasValue ? $" · offer validity {x.ExpiresAt:yyyy-MM-dd HH:mm}" : ""), CatalogPresentation.OfferText(x, Rates, DateTime.UtcNow))).ToList();
         public List<OfferDisplay> SubscriptionDetails => Subscriptions.Select(x => new OfferDisplay(x.Url,
-            $"{x.Service} · {(x.Included ? "Included" : "Not included")} · {x.Platform}/{x.Region} · checked {x.VerifiedAt:MMM d, yyyy}"
-            + (CatalogPresentation.Current(x, DateTime.UtcNow) ? "" : " · expired, stale, or unavailable"))).ToList();
+            CatalogPresentation.SubscriptionText(x, DateTime.UtcNow), x.Provenance, IsWarning: !CatalogPresentation.VerificationCurrent(x, DateTime.UtcNow))).ToList();
+        public string GamePassStatus => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
+            ? CatalogPresentation.SubscriptionText(entry, DateTime.UtcNow) : "";
+        public bool GamePassNeedsVerification => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
+            && !CatalogPresentation.VerificationCurrent(entry, DateTime.UtcNow);
+        public bool GamePassCurrentlyAvailable => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
+            && CatalogPresentation.Current(entry, DateTime.UtcNow);
+        public string PurchaseEvidence => $"{(IsOwned ? "Personally owned" : "Not marked owned")} · "
+            + (Ownership?.PurchaseAmount is decimal amount ? $"saved cost {CatalogPresentation.Money(amount, Ownership.Currency)} · {Ownership.Source}" : "purchase cost not recorded");
+        public string RateBasis => Game.IsArchived ? "Historical rate" : "Current rate";
+        public string CycleCapText => $"{Game.MinutesCap / 60m:0.##} hours";
+        public string PotentialText => Game.IsArchived ? "History only" : CurrencyDisplay.FormatUsd(Game.RatePerHour * Game.MinutesCap / 60m);
+        public string PotentialBasis => Game.IsArchived ? "Archived earning opportunity" : "Rate × full cycle cap";
+        public string PriceEvidence => BestOffer is { } offer
+            ? $"{offer.Source} · {offer.Edition} · {offer.Region} · checked {offer.VerifiedAt:yyyy-MM-dd}"
+            : "No current comparable purchase offer. See acquisition details.";
 
         internal void SetCatalog(GameMetadata? metadata, List<string> genres, List<StoreOffer> offers,
             List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates)
@@ -94,14 +110,14 @@ namespace EarningsTracker.ViewModels
             foreach (var property in new[] { nameof(Metadata), nameof(Genres), nameof(Offers), nameof(Subscriptions), nameof(Rates),
                 nameof(GenreText), nameof(SourceText), nameof(Summary), nameof(MetadataStatus), nameof(FreeToPlay),
                 nameof(PriceSortValue), nameof(LowestPrice), nameof(PriceText), nameof(PriceTooltip), nameof(AccessStatusText),
-                nameof(OfferDetails), nameof(SubscriptionDetails) }) OnPropertyChanged(property);
+                nameof(OfferDetails), nameof(SubscriptionDetails), nameof(GamePassStatus), nameof(GamePassNeedsVerification), nameof(GamePassCurrentlyAvailable), nameof(PriceEvidence) }) OnPropertyChanged(property);
             NotifyOwnership();
         }
 
         private void NotifyOwnership()
         {
             foreach (var property in new[] { nameof(Ownership), nameof(IsOwned), nameof(OwnershipButtonText),
-                nameof(OwnershipTooltip), nameof(BreakEvenText) }) OnPropertyChanged(property);
+                nameof(OwnershipTooltip), nameof(BreakEvenText), nameof(PurchaseEvidence) }) OnPropertyChanged(property);
         }
 
         internal void SaveOwnership(bool owned, string source, decimal? amount, string currency)
@@ -200,5 +216,5 @@ namespace EarningsTracker.ViewModels
             IsBookmarked = isBookmarked;
         }
     }
-    public record OfferDisplay(string Url, string Text, string Details = "", string Tooltip = "");
+    public record OfferDisplay(string Url, string Text, string Details = "", string Tooltip = "", bool IsWarning = false);
 }

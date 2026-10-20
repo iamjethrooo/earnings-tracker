@@ -15,7 +15,10 @@
   <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
  <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
   <StackPanel Margin="20" MaxWidth="760" HorizontalAlignment="Stretch">
-   <TextBlock Text="Settings" Style="{StaticResource TabName}" Margin="0,0,0,14"/>
+   <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="Settings" Style="{StaticResource TabName}"/>
+                <TextBlock Text="Manage catalog access, preferences and application data." Style="{StaticResource PageDescription}"/>
+            </StackPanel>
    <TextBlock x:Name="Feedback" Foreground="{StaticResource SecondaryTextColor}" AutomationProperties.LiveSetting="Polite">
     <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
      <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
@@ -27,7 +30,7 @@
     <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Subscriptions" Style="{StaticResource CompactSectionHeading}"/>
      <CheckBox x:Name="GamePass" Content="PC Game Pass" Click="Subscription_Click" MinHeight="32" VerticalContentAlignment="Center" ToolTip="Select if your membership is active. Changes save automatically."/>
-     <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" ToolTip="Verified Philippine PC games are added to Playable now. Availability expires after seven days without verification."/></Expander>
+     <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" ToolTip="Playable now requires current Philippine PC availability and an active membership. The PC Game Pass filter retains previously verified inclusion with a stale warning after seven days or expiry."/></Expander>
     </StackPanel></Border>
     <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Catalog updates" Style="{StaticResource CompactSectionHeading}"/>

@@ -20,6 +20,29 @@ namespace EarningsTracker.Views
     {
         private Game? _selectedGame;
         private readonly DbContextOptions<AppDbContext>? _databaseOptions;
+        private double _libraryOffset;
+        private GameItemViewModel? _returnItem;
+        private IInputElement? _returnFocus;
+        private GameItemViewModel? _returnFocusItem;
+        public bool IsCompactLibrary { get => (bool)GetValue(IsCompactLibraryProperty); private set => SetValue(IsCompactLibraryProperty, value); }
+        public static readonly DependencyProperty IsCompactLibraryProperty = DependencyProperty.Register(nameof(IsCompactLibrary), typeof(bool), typeof(GamesView), new PropertyMetadata(false));
+        public bool StackGameDetails { get => (bool)GetValue(StackGameDetailsProperty); private set => SetValue(StackGameDetailsProperty, value); }
+        public static readonly DependencyProperty StackGameDetailsProperty = DependencyProperty.Register(nameof(StackGameDetails), typeof(bool), typeof(GamesView), new PropertyMetadata(false));
+
+        private void View_SizeChanged(object sender, SizeChangedEventArgs e)
+            => UpdateResponsiveLayout();
+
+        private void UpdateResponsiveLayout()
+        {
+            IsCompactLibrary = ActualWidth - 40 < 1050;
+            StackGameDetails = ActualWidth - 40 < 900;
+            if (DetailRight == null || DetailLeft == null) return;
+            // The finite header is hosted in a CompositeCollection; place its two panels explicitly.
+            Grid.SetColumnSpan(DetailLeft, StackGameDetails ? 3 : 1);
+            Grid.SetColumn(DetailRight, StackGameDetails ? 0 : 2);
+            Grid.SetRow(DetailRight, StackGameDetails ? 1 : 0);
+            Grid.SetColumnSpan(DetailRight, StackGameDetails ? 3 : 1);
+        }
 
         public Game? SelectedGame
         {
@@ -91,12 +114,23 @@ namespace EarningsTracker.Views
         {
             SessionRowsCollection.Collection = null;
             GameDetailsView.DataContext = null;
-            GamesList.SelectedItem = null;
+            var model = (GamesViewModel)DataContext;
+            GamesList.SelectedItem = _returnItem != null && model.GamesView.Contains(_returnItem) ? _returnItem : null;
             currentGame = null;
             _selectedGame = null;
 
             GamesListView.Visibility = Visibility.Visible;
             GameDetailsView.Visibility = Visibility.Collapsed;
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+            {
+                FindScrollViewer(GamesList)?.ScrollToVerticalOffset(_libraryOffset);
+                if (_returnFocus is FrameworkElement { IsVisible: true, IsEnabled: true, Focusable: true } target
+                    && _returnFocusItem != null && ReferenceEquals(target.DataContext, _returnFocusItem)
+                    && model.GamesView.Contains(_returnFocusItem)) target.Focus();
+                else GamesList.Focus();
+                _returnFocus = null;
+                _returnFocusItem = null;
+            }));
         }
 
         public void OpenGameDetails(Game game)
@@ -108,11 +142,20 @@ namespace EarningsTracker.Views
 
         private void LoadGameDetails(Game game)
         {
+            if (_selectedGame == null)
+            {
+                _libraryOffset = FindScrollViewer(GamesList)?.VerticalOffset ?? 0;
+                _returnItem = GamesList.SelectedItem as GameItemViewModel;
+                _returnFocus = Keyboard.FocusedElement;
+                _returnFocusItem = (_returnFocus as FrameworkElement)?.DataContext as GameItemViewModel;
+            }
             var offset = _selectedGame?.Id == game.Id ? DetailsScroll?.VerticalOffset ?? 0 : 0;
             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
 
             var sessions = db.Sessions.Where(s => s.GameId == game.Id).OrderByDescending(g => g.Date).ToList();
-            currentGame = new GameDetailsViewModel(game, sessions);
+            var identities = db.Games.AsNoTracking().Where(candidate => candidate.Name == game.Name).OrderBy(candidate => candidate.Id).ToList();
+            var changes = db.GameChanges.AsNoTracking().Where(change => change.GameId == game.Id).OrderByDescending(change => change.ChangedAt).ThenByDescending(change => change.Id).ToList();
+            currentGame = new GameDetailsViewModel(game, sessions, identities, changes);
             currentGame.Catalog = (DataContext as GamesViewModel)?.Games.FirstOrDefault(x => x.Game.Id == game.Id);
             _selectedGame = game;
             GameDetailsView.DataContext = currentGame;
@@ -120,8 +163,14 @@ namespace EarningsTracker.Views
 
             GamesListView.Visibility = Visibility.Collapsed;
             GameDetailsView.Visibility = Visibility.Visible;
+            UpdateResponsiveLayout();
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
-                new Action(() => { if (_selectedGame?.Id == game.Id) DetailsScroll?.ScrollToVerticalOffset(offset); }));
+                new Action(() =>
+                {
+                    if (_selectedGame?.Id != game.Id) return;
+                    DetailsScroll?.ScrollToVerticalOffset(offset);
+                    DetailsBackButton.Focus();
+                }));
         }
 
         public void RefreshSelectedGameSessions()
@@ -187,7 +236,7 @@ namespace EarningsTracker.Views
             catch (Exception ex)
             {
                 Trace.TraceError($"Catalog refresh failed ({ex.GetType().Name}).");
-                model.SetStatus("Update failed. Saved catalog and personal data are still available.");
+                model.SetStatus("Update failed. Showing the saved catalog; prices and availability may be out of date. Personal data is still available. Retry Refresh catalog.");
             }
             finally { RefreshCatalogButton.IsEnabled = true; GamesList.IsEnabled = true; }
         }
@@ -218,21 +267,35 @@ namespace EarningsTracker.Views
                 currentGame.FilterSessions(filter.Status);
         }
 
-        private void GamesList_SelectionChanged(
-        object sender,
-        SelectionChangedEventArgs e)
+        private void GameTitle_Click(object sender, RoutedEventArgs e)
         {
-            if (GamesList.SelectedItem is GameItemViewModel gameItem)
+            if (sender is FrameworkElement { DataContext: GameItemViewModel item }) TryOpenDetails(item.Game);
+            e.Handled = true;
+        }
+
+        private void GamesList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter || e.OriginalSource is not ListBoxItem { DataContext: GameItemViewModel item }) return;
+            TryOpenDetails(item.Game);
+            e.Handled = true;
+        }
+
+        private void TryOpenDetails(Game game)
+        {
+            try { OpenGameDetails(game); }
+            catch (Exception ex)
             {
-                try { OpenGameDetails(gameItem.Game); }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.ToString());
-                    GamesList.SelectedItem = null;
-                    MessageBox.Show($"Game details could not be loaded. Select the game again to retry.\n{ex.GetBaseException().Message}",
-                        "Unable to open game details", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                Trace.TraceError(ex.ToString());
+                MessageBox.Show($"Game details could not be loaded. Open the title again to retry.\n{ex.GetBaseException().Message}",
+                    "Unable to open game details", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void ClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not GamesViewModel model) return;
+            SearchBox.Clear();
+            model.ClearFilters();
         }
 
         private void GamesList_PreviewMouseLeftButtonDown(

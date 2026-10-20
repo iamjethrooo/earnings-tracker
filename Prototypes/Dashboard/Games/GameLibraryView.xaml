@@ -1,0 +1,365 @@
+<UserControl x:Class="EarningsTracker.Prototypes.Games.GameLibraryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" SizeChanged="View_SizeChanged" FontSize="13">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="Show" />
+        <Style x:Key="Small" TargetType="TextBlock" BasedOn="{StaticResource DashboardStatDescription}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock" BasedOn="{StaticResource DashboardStatDescription}">
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Panel" TargetType="Border" BasedOn="{StaticResource MetricPanel}">
+            <Setter Property="BorderBrush" Value="{StaticResource DefaultBorderColor}" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style x:Key="TitleLink" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource AccentTextColor}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=Button}}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OwnedButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="FontSize" Value="12" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOwned}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource VerifiedTextColor}" />
+                    <Setter Property="Background" Value="{StaticResource VerifiedBackgroundColor}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="GameArtwork" TargetType="ContentControl" BasedOn="{StaticResource ArtworkPresenter}">
+            <Style.Triggers>
+                <Trigger Property="Content" Value="{x:Null}">
+                    <Setter Property="AutomationProperties.Name" Value="Artwork unavailable" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ContentControl">
+                                <Border BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" CornerRadius="6" Padding="4">
+                                    <TextBlock Text="No&#10;artwork" FontSize="12" TextAlignment="Center" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid x:Name="Root">
+        <Grid x:Name="LibraryPage" Visibility="{Binding ShowLibrary, Converter={StaticResource Show}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border Style="{StaticResource SurfacePanel}" Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <WrapPanel>
+                        <StackPanel Width="236" Margin="0,0,12,8">
+                            <TextBlock Text="Find a game" Style="{StaticResource Label}" />
+                            <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchBar}" Tag="Search your PC library" Height="34" AutomationProperties.Name="Search synthetic games" />
+                        </StackPanel>
+                        <StackPanel Width="184" Margin="0,0,12,8">
+                            <TextBlock Text="Access &amp; availability" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding AccessOptions}" SelectedItem="{Binding Access}" Height="34" AutomationProperties.Name="Filter games by access" />
+                        </StackPanel>
+                        <StackPanel Width="156" Margin="0,0,12,8">
+                            <TextBlock Text="Sort" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" Height="34" AutomationProperties.Name="Sort games" ToolTip="{Binding PriceSortHelp}" />
+                        </StackPanel>
+                        <Button Content="Clear" Command="{Binding ClearCommand}" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Height="34" Margin="0,0,0,8" />
+                    </WrapPanel>
+                    <WrapPanel Margin="0,4,0,0">
+                        <StackPanel Width="236" Margin="0,0,12,0">
+                            <TextBlock Text="Genre" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Genres}" SelectedItem="{Binding Genre}" Height="34" AutomationProperties.Name="Filter games by genre" />
+                        </StackPanel>
+                        <StackPanel Width="184" Margin="0,0,12,0">
+                            <TextBlock Text="Store" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Stores}" SelectedItem="{Binding Store}" Height="34" AutomationProperties.Name="Filter games by store" />
+                        </StackPanel>
+                        <CheckBox Content="Bookmarks only" IsChecked="{Binding BookmarksOnly}" Margin="0,20,12,0" VerticalAlignment="Center" />
+                        <CheckBox Content="Show archived" IsChecked="{Binding ShowArchived}" Margin="0,20,0,0" VerticalAlignment="Center" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding PriceSortHelp}" Style="{StaticResource Small}" Margin="0,8,0,0" Visibility="{Binding ShowPriceSortHelp, Converter={StaticResource Show}}" />
+                </StackPanel>
+            </Border>
+            <DockPanel Grid.Row="1" Margin="0,0,0,12">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Example" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <ComboBox Width="166" ItemsSource="{Binding Examples}" SelectedItem="{Binding Example}" AutomationProperties.Name="Games example state" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding CountLabel}" FontSize="14" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding BasisLabel}" Style="{StaticResource Small}" Margin="0,4,0,0" />
+                </StackPanel>
+            </DockPanel>
+            <Border Grid.Row="2" Style="{StaticResource FeedbackPanel}" Visibility="{Binding IsStale, Converter={StaticResource Show}}">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Retry snapshot" Style="{StaticResource SecondaryButton}" Command="{Binding RetryCommand}" Margin="12,0,0,0" />
+                    <TextBlock Text="Refresh failed · showing the previous sample library from Oct 19, 2026. Individual stale offers remain labeled." Foreground="{StaticResource PendingTextColor}" TextWrapping="Wrap" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+                </DockPanel>
+            </Border>
+            <Grid Grid.Row="3">
+                <ListBox x:Name="GamesList" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame, Mode=TwoWay}" Background="Transparent" BorderThickness="0" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" KeyDown="List_KeyDown" AutomationProperties.Name="Synthetic PC game library" AutomationProperties.HelpText="Select a row, then press Enter or open its title for game details. Bookmark and ownership controls are separate actions.">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource GameCardItem}">
+                            <Setter Property="MinHeight" Value="88" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="64" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="40" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.RowSpan="2" Width="52" Height="72" HorizontalAlignment="Left" VerticalAlignment="Top" Background="{StaticResource ControlBackgroundColor}" CornerRadius="6" ClipToBounds="True">
+                                    <ContentControl Style="{StaticResource GameArtwork}" Content="{Binding Cover}" />
+                                </Border>
+                                <StackPanel x:Name="Title" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Right" Style="{StaticResource TransactionBadge}" Background="{StaticResource ArchivedBackgroundColor}" Margin="8,0,0,0" Visibility="{Binding IsArchived, Converter={StaticResource Show}}">
+                                            <TextBlock Text="Archived" Foreground="{StaticResource ArchivedTextColor}" FontSize="12" />
+                                        </Border>
+                                        <Button Content="{Binding Name}" Style="{StaticResource TitleLink}" ToolTip="{Binding Name}" Command="{Binding DataContext.DetailsCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name, StringFormat=Open details for {0}}" />
+                                    </DockPanel>
+                                    <WrapPanel VerticalAlignment="Center" Margin="0,8,0,0">
+                                        <TextBlock Text="{Binding Metadata}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                        <Button Content="{Binding OwnershipAction}" ToolTip="{Binding OwnershipHint}" Style="{StaticResource OwnedButton}" Command="{Binding DataContext.ToggleOwnedCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" Margin="0,0,8,0" AutomationProperties.Name="{Binding Name, StringFormat=Toggle personal ownership for {0}}" />
+                                        <TextBlock x:Name="AccessLabel" Text="{Binding AccessText}" Foreground="{Binding AccessBrush}" FontSize="12" VerticalAlignment="Center" />
+                                    </WrapPanel>
+                                </StackPanel>
+                                <Grid x:Name="Comparisons" Grid.Column="2" Width="596" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="104" />
+                                        <ColumnDefinition Width="136" />
+                                        <ColumnDefinition Width="148" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.ColumnSpan="3" Background="{StaticResource InputBackgroundColor}" CornerRadius="6" Margin="-6,-4,8,-4" />
+                                    <StackPanel Margin="0,0,12,0">
+                                        <TextBlock Text="Rate · USD/h" Style="{StaticResource Small}" />
+                                        <TextBlock Text="{Binding RateText}" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,4" />
+                                        <TextBlock Text="{Binding RateBasis}" Style="{StaticResource Small}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                                        <TextBlock Text="Cycle cap" Style="{StaticResource Small}" />
+                                        <TextBlock Text="{Binding CapText}" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,6" />
+                                        <ProgressBar Style="{StaticResource MetricProgressBar}" Value="{Binding CapPercent, Mode=OneWay}" Height="4" />
+                                        <TextBlock Text="{Binding CapDetail}" Style="{StaticResource Small}" Margin="0,5,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                        <TextBlock Text="Full-cycle potential" Style="{StaticResource Small}" />
+                                        <TextBlock Text="{Binding PotentialText}" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,4" />
+                                        <TextBlock Text="{Binding PotentialBasis}" Style="{StaticResource Small}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="{Binding PriceText}" FontWeight="SemiBold" FontSize="14" />
+                                        <TextBlock Text="{Binding PriceContext}" Style="{StaticResource Small}" Margin="0,5,0,4" />
+                                        <TextBlock Text="{Binding PriceEvidence}" Foreground="{Binding PriceBrush}" FontSize="12" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <Button Grid.Column="3" VerticalAlignment="Top" Style="{StaticResource BookmarkButton}" Margin="4,0,0,0" Command="{Binding DataContext.ToggleBookmarkCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="{Binding BookmarkAction}" AutomationProperties.Name="{Binding BookmarkAction}">
+                                    <TextBlock Text="{Binding BookmarkGlyph}" FontSize="22" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                </Button>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsOwned}" Value="True">
+                                    <Setter TargetName="AccessLabel" Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DataContext.IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                    <Setter TargetName="Title" Property="Grid.ColumnSpan" Value="2" />
+                                    <Setter TargetName="Comparisons" Property="Grid.Row" Value="1" />
+                                    <Setter TargetName="Comparisons" Property="Grid.Column" Value="1" />
+                                    <Setter TargetName="Comparisons" Property="Grid.ColumnSpan" Value="2" />
+                                    <Setter TargetName="Comparisons" Property="Width" Value="Auto" />
+                                    <Setter TargetName="Comparisons" Property="Margin" Value="0,8,0,0" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Background="{StaticResource SurfaceColor}" CornerRadius="8" Visibility="{Binding ShowState, Converter={StaticResource Show}}">
+                    <StackPanel MaxWidth="420" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+                        <TextBlock Text="{Binding StateTitle}" Style="{StaticResource SectionHeading}" TextAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+                        <TextBlock Text="{Binding StateMessage}" Style="{StaticResource EmptyStateText}" />
+                        <Button Content="Clear filters" Style="{StaticResource SecondaryButton}" Command="{Binding ClearCommand}" HorizontalAlignment="Center" Visibility="{Binding CanClear, Converter={StaticResource Show}}" />
+                        <Button Content="Retry library" Style="{StaticResource SecondaryButton}" Command="{Binding RetryCommand}" HorizontalAlignment="Center" Visibility="{Binding CanRetry, Converter={StaticResource Show}}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <StackPanel Grid.Row="4" Margin="0,10,0,0">
+                <TextBlock Text="{Binding StartingSummary}" Style="{StaticResource Small}" />
+                <TextBlock Text="{Binding SelectionSummary}" Style="{StaticResource Small}" Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="DetailsPage" Visibility="{Binding IsDetailsOpen, Converter={StaticResource Show}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,16">
+                <Button DockPanel.Dock="Left" Content="← Library" Command="{Binding BackCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" />
+                <TextBlock Text="{Binding SelectedGame.Name}" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" />
+                <TextBlock Text="SYNTHETIC GAME DETAILS" Foreground="{StaticResource AccentTextColor}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            </DockPanel>
+            <ScrollViewer x:Name="DetailsScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <Border Style="{StaticResource Panel}" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="76" Height="104" Background="{StaticResource ControlBackgroundColor}" CornerRadius="6" HorizontalAlignment="Left" ClipToBounds="True">
+                                <ContentControl Content="{Binding SelectedGame.Cover}" Style="{StaticResource GameArtwork}" />
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding SelectedGame.Name}" Style="{StaticResource TabName}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SelectedGame.Metadata}" Style="{StaticResource Small}" Margin="0,6,0,8" />
+                                <TextBlock Text="{Binding SelectedGame.Identity}" Style="{StaticResource Small}" />
+                                <TextBlock Text="{Binding SelectedGame.ArchiveExplanation}" Foreground="{Binding SelectedGame.ArchiveBrush}" TextWrapping="Wrap" Margin="0,12,0,0" />
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Button DataContext="{Binding SelectedGame}" Content="{Binding OwnershipAction}" ToolTip="{Binding OwnershipHint}" AutomationProperties.Name="{Binding Name, StringFormat=Toggle personal ownership for {0}}" Style="{StaticResource OwnedButton}" Command="{Binding DataContext.ToggleOwnedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    <Button Content="{Binding SelectedGame.BookmarkAction}" Command="{Binding ToggleBookmarkCommand}" CommandParameter="{Binding SelectedGame}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Padding="10,4" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Grid x:Name="DetailColumns">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <Border Style="{StaticResource Panel}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Earnings &amp; cap" Style="{StaticResource SectionHeading}" />
+                                    <UniformGrid Columns="3" Margin="0,16,0,12">
+                                        <StackPanel>
+                                            <TextBlock Text="Rate · USD/hour" Style="{StaticResource Small}" />
+                                            <TextBlock Text="{Binding SelectedGame.RateText}" FontSize="20" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="Cycle duration" Style="{StaticResource Small}" />
+                                            <TextBlock Text="{Binding SelectedGame.CapText}" FontSize="20" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="Full-cycle potential" Style="{StaticResource Small}" />
+                                            <TextBlock Text="{Binding SelectedGame.PotentialText}" FontSize="20" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </UniformGrid>
+                                    <ProgressBar Style="{StaticResource MetricProgressBar}" Value="{Binding SelectedGame.CapPercent, Mode=OneWay}" />
+                                    <TextBlock Text="{Binding SelectedGame.CapDetail}" Style="{StaticResource Small}" Margin="0,8,0,12" />
+                                    <TextBlock Text="{Binding SelectedGame.EarningsSummary}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding SelectedGame.PotentialExplanation}" Style="{StaticResource Small}" Margin="0,12,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Panel}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Ownership &amp; access" Style="{StaticResource SectionHeading}" />
+                                    <TextBlock Text="{Binding SelectedGame.AccessText}" Foreground="{Binding SelectedGame.AccessBrush}" FontWeight="SemiBold" Margin="0,12,0,8" />
+                                    <TextBlock Text="{Binding SelectedGame.PurchaseText}" Style="{StaticResource Small}" />
+                                    <TextBlock Text="{Binding SelectedGame.SubscriptionText}" Style="{StaticResource Small}" Margin="0,12,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Panel}">
+                                <StackPanel>
+                                    <TextBlock Text="Steam · future UI slots" Style="{StaticResource SectionHeading}" />
+                                    <TextBlock Text="{Binding SelectedGame.Game.SteamSlot}" Margin="0,12,0,8" />
+                                    <TextBlock Text="{Binding SelectedGame.Game.InstalledSlot}" />
+                                    <TextBlock Text="Synthetic indicators only. No Steam account, installation scan or launch action. Personal ownership is a separate flag." Style="{StaticResource Small}" Margin="0,12,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel x:Name="AcquisitionColumn" Grid.Column="2">
+                            <Border Style="{StaticResource Panel}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Acquisition options" Style="{StaticResource SectionHeading}" />
+                                    <TextBlock Text="Editions and source currencies are kept distinct. No store links are opened in this preview." Style="{StaticResource Small}" Margin="0,6,0,12" />
+                                    <ItemsControl ItemsSource="{Binding SelectedGame.Offers}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource SurfacePanel}" Margin="0,0,0,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Context}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding Price}" FontSize="20" FontWeight="SemiBold" Margin="0,8,0,6" />
+                                                        <TextBlock Text="{Binding Evidence}" Foreground="{Binding EvidenceBrush}" TextWrapping="Wrap" FontSize="12" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="{Binding SelectedGame.FxText}" Style="{StaticResource Small}" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Panel}">
+                                <StackPanel>
+                                    <TextBlock Text="History &amp; evidence" Style="{StaticResource SectionHeading}" />
+                                    <TextBlock Text="Inspect recorded sessions and earlier rate/reset boundaries. Archived games retain their history." Style="{StaticResource Small}" Margin="0,6,0,12" />
+                                    <Button Content="Session history →" Command="{Binding HistoryCommand}" CommandParameter="Session history" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" />
+                                    <Button Content="Rate history →" Command="{Binding HistoryCommand}" CommandParameter="Rate history" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" />
+                                    <Button Content="Cap-reset history →" Command="{Binding HistoryCommand}" CommandParameter="Cap-reset history" Style="{StaticResource SecondaryButton}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="Synthetic snapshot · Oct 19, 2026 · identity, ownership and acquisition examples are isolated from other prototypes." Style="{StaticResource Small}" Margin="0,16,0,4" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <Grid x:Name="PreferencesOverlay" Background="#B0000000" Visibility="{Binding IsPreferencesOpen, Converter={StaticResource Show}}" KeyboardNavigation.TabNavigation="Cycle">
+            <Border Style="{StaticResource Panel}" Width="450" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="Starting Games view" Style="{StaticResource SectionHeading}" />
+                    <TextBlock Text="Same preference choices as the current app. This preview stores them in memory only." Style="{StaticResource Small}" Margin="0,8,0,20" />
+                    <TextBlock Text="Starting sort" Style="{StaticResource Label}" />
+                    <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding StartingSort}" AutomationProperties.Name="Sample starting Games sort" />
+                    <CheckBox Content="Start with bookmarks only" IsChecked="{Binding StartingBookmarks}" Margin="0,16,0,0" />
+                    <CheckBox Content="Show archived games" IsChecked="{Binding StartingArchived}" Margin="0,16,0,20" />
+                    <WrapPanel>
+                        <Button x:Name="ApplyStartingButton" Content="Apply sample starting view" Command="{Binding ApplyStartingCommand}" Style="{StaticResource PrimaryButton}" />
+                        <Button Content="Close" Command="{Binding ClosePreferencesCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+        <Grid x:Name="HistoryOverlay" Background="#B0000000" Visibility="{Binding IsHistoryOpen, Converter={StaticResource Show}}" KeyboardNavigation.TabNavigation="Cycle">
+            <Border Style="{StaticResource Panel}" Width="480" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="SYNTHETIC HISTORY" Foreground="{StaticResource AccentTextColor}" FontSize="12" />
+                    <TextBlock Text="{Binding HistoryTitle}" Style="{StaticResource SectionHeading}" Margin="0,12,0,0" />
+                    <TextBlock Text="{Binding HistoryDescription}" TextWrapping="Wrap" Margin="0,16,0,20" />
+                    <Button x:Name="CloseHistoryButton" Content="Back to game" Command="{Binding CloseHistoryCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

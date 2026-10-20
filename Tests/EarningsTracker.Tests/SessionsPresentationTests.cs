@@ -16,6 +16,155 @@ namespace EarningsTracker.Tests;
 [Collection("Wpf")]
 public class SessionsPresentationTests(WpfTestHost host)
 {
+    [Theory]
+    [InlineData(740, 560)]
+    [InlineData(1212, 900)]
+    [InlineData(1572, 940)]
+    public Task DetailsValidationAndSavedWarningPreserveDraftAndSaveOnce(int width, int height) => host.RunAsync(async () =>
+    {
+        using var bindingTrace = new BindingTrace();
+        using var database = new TestDatabase();
+        var importer = new SessionImporter(database.Options);
+        importer.ImportSessions(importer.PreviewImport([new Session
+        {
+            GameName = "Synthetic editor", Date = new DateTime(2026, 10, 1),
+            RecordedDate = new DateTime(2026, 10, 1), Duration = TimeSpan.FromMinutes(5),
+            Earnings = 1.2345m, Status = SessionStatus.Pending
+        }]));
+        var view = new SessionsView(database.Options);
+        var model = (SessionsViewModel)view.DataContext;
+        await view.RefreshSessionsAsync();
+        var item = Assert.Single(model.Sessions);
+        view.SelectSession(item);
+        await view.EvidenceCompletion;
+        item.BeginEdit();
+        item.DraftDurationMinutes = "-1";
+        await Layout(view, width, height);
+        var save = Descendants<Button>(view).Single(button => Equals(button.Content, "Save changes"));
+        save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        await Layout(view, width, height);
+        Assert.True(item.IsEditing);
+        Assert.False(item.IsSaving);
+        Assert.NotNull(item.DurationError);
+        var duration = Descendants<TextBox>(view).Single(box => Equals(box.Tag, nameof(item.DraftDurationMinutes)));
+        Assert.Equal(item.DurationError, System.Windows.Automation.AutomationProperties.GetHelpText(duration));
+        Assert.Contains(Descendants<TextBlock>(view), text => text.Text == item.DurationError && text.ActualHeight > 0);
+        Save(view, $"pro47-validation-{width}");
+        item.DraftEarnings = "2";
+        Assert.NotNull(item.DurationError); // Unrelated edits do not erase the error.
+        item.DraftDurationMinutes = "6";
+        var notifications = 0;
+        EventHandler failedRefresh = (_, _) => { notifications++; throw new InvalidOperationException("Synthetic refresh failure"); };
+        PayoutService.DataChanged += failedRefresh;
+        try { save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
+        finally { PayoutService.DataChanged -= failedRefresh; }
+        Assert.False(item.IsEditing);
+        Assert.False(item.IsSaving);
+        Assert.Equal(1, notifications);
+        var feedback = (TextBlock)view.FindName("EditorFeedback");
+        Assert.Contains("Do not save again", feedback.Text);
+        // A queued click on the old editor cannot repeat the committed write.
+        save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        using (var db = database.CreateContext())
+        {
+            Assert.Equal(2m, Assert.Single(db.Sessions).Earnings);
+            Assert.Single(db.SessionChanges.Where(change => change.ChangeType == "Updated"));
+        }
+        await Layout(view, width, height);
+        Save(view, $"pro47-saved-warning-{width}");
+        ((Button)view.FindName("PanelRetryButton"))
+            .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        await view.RefreshSessionsAsync();
+        using (var db = database.CreateContext())
+            Assert.Single(db.SessionChanges.Where(change => change.ChangeType == "Updated"));
+    });
+
+    [Fact]
+    public Task EditorFocusReturnsToDetailsAfterCancel() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var importer = new SessionImporter(database.Options);
+        importer.ImportSessions(importer.PreviewImport([new Session
+        {
+            GameName = "Synthetic focus", Date = new DateTime(2026, 10, 1),
+            RecordedDate = new DateTime(2026, 10, 1), Duration = TimeSpan.FromMinutes(5), Status = SessionStatus.Pending
+        }]));
+        var view = new SessionsView(database.Options);
+        var window = new Window { Content = view, Width = 1000, Height = 700, Left = -10000, Top = -10000, ShowInTaskbar = false };
+        try
+        {
+            window.Show();
+            await view.RefreshSessionsAsync();
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            view.SelectSession(Assert.Single(((SessionsViewModel)view.DataContext).Sessions));
+            Descendants<Button>(view).Single(button => Equals(button.Content, "Edit session"))
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            Assert.True(Descendants<DatePicker>(view).First().IsKeyboardFocusWithin);
+            Assert.False(((Border)view.FindName("SessionFilters")).IsEnabled);
+            var item = Assert.Single(((SessionsViewModel)view.DataContext).Sessions);
+            item.DraftDurationMinutes = "-1";
+            Descendants<Button>(view).Single(button => Equals(button.Content, "Save changes"))
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.True(Descendants<TextBox>(view).Single(box => Equals(box.Tag, nameof(item.DraftDurationMinutes))).IsKeyboardFocusWithin);
+            Descendants<Button>(view).Single(button => Equals(button.Content, "Cancel"))
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            Assert.False(item.IsEditing);
+            Assert.False(view.HasActiveDraft);
+            Assert.False(((Grid)view.FindName("BrowseContent")).IsEnabled); // Read drawer still contains focus.
+            Assert.True(((Button)view.FindName("EditSessionButton")).IsKeyboardFocused);
+            Assert.Equal(TimeSpan.FromMinutes(5), item.Session.Duration);
+        }
+        finally { window.Close(); }
+    });
+
+    [Fact]
+    public Task NavigationKeepsDraftSelectionAndRecreatesPagesAfterCancel() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var created = new List<NavigationPage>();
+        var view = new SessionsView(database.Options);
+        var model = (SessionsViewModel)view.DataContext;
+        var item = new SessionItemViewModel(new Session { GameName = "Synthetic", Earnings = 3m });
+        model.Sessions.Add(item);
+        var window = new MainWindow(page =>
+        {
+            created.Add(page);
+            return page == NavigationPage.Sessions ? view : new UserControl();
+        });
+        try
+        {
+            window.NavigateTo(NavigationPage.Sessions);
+            view.SelectSession(item);
+        await view.EvidenceCompletion;
+        item.BeginEdit();
+            item.DraftEarnings = "99";
+            window.NavigateTo(NavigationPage.Settings);
+            window.OpenGameDetails(new Game { Name = "Must not open while editing" });
+            Assert.Same(view, ((ContentControl)window.FindName("MainContent")).Content);
+            Assert.Equal(NavigationPage.Sessions, ((ListBoxItem)((ListBox)window.FindName("NavBar")).SelectedItem).Tag);
+            Assert.DoesNotContain(NavigationPage.Settings, created);
+            Assert.True(item.IsEditing);
+            Assert.Equal(3m, item.Session.Earnings);
+            Assert.Contains("Save changes or Cancel", ((TextBlock)view.FindName("EditorFeedback")).Text);
+            item.CancelEdit();
+            window.NavigateTo(NavigationPage.Settings);
+            Assert.Equal(NavigationPage.Settings, ((ListBoxItem)((ListBox)window.FindName("SettingsNav")).SelectedItem).Tag);
+            window.NavigateTo(NavigationPage.Dashboard);
+            Assert.Equal(2, created.Count(page => page == NavigationPage.Dashboard));
+            var modal = (EarningsTracker.Controls.Modal)window.FindName("MainModal");
+            modal.Open("Synthetic import", new UserControl());
+            window.NavigateTo(NavigationPage.Payments);
+            Assert.DoesNotContain(NavigationPage.Payments, created);
+            modal.Close();
+            window.NavigateTo(NavigationPage.Payments);
+            Assert.Contains(NavigationPage.Payments, created);
+            await Task.CompletedTask;
+        }
+        finally { item.CancelEdit(); window.Close(); }
+    });
+
     [Fact]
     [Trait("Category", "Regression")]
     public Task ImportWhileInlineDraftIsOpenRejectsStaleSaveAndCanRestartEditing() => host.RunAsync(async () =>
@@ -29,6 +178,8 @@ public class SessionsPresentationTests(WpfTestHost host)
         var model = (SessionsViewModel)view.DataContext;
         await view.RefreshSessionsAsync();
         var item = Assert.Single(model.Sessions);
+        view.SelectSession(item);
+        await view.EvidenceCompletion;
         item.BeginEdit();
         item.DraftDurationMinutes = "2";
         using (var payouts = new PayoutImporter(database.CreateContext()))
@@ -68,7 +219,7 @@ public class SessionsPresentationTests(WpfTestHost host)
         Assert.Equal(10000, list.Items.Count);
         Assert.Equal(1, ((SessionItemViewModel)list.Items[0]).Session.Id);
         Assert.InRange(Descendants<ListBoxItem>(list).Count(), 1, 100);
-        Assert.Empty(Descendants<DatePicker>(list)); // No editor controls are built for browsing rows.
+        Assert.Empty(Descendants<DatePicker>((Border)view.FindName("DetailsPanel"))); // No editor controls are built for browsing rows.
         var scroll = Descendants<ScrollViewer>(list).First();
         scroll.ScrollToEnd();
         await Layout(view, 740, 560);
@@ -117,28 +268,26 @@ public class SessionsPresentationTests(WpfTestHost host)
         var list = (ListBox)view.FindName("SessionsList");
         list.SelectedIndex = 0;
         await Layout(view, width, 680);
-        foreach (var button in Descendants<Button>(list).Where(b => b.IsVisible && b.Content is string text && (text == "Edit" || text == "Delete")))
+        var details = (Border)view.FindName("DetailsPanel");
+        foreach (var button in Descendants<Button>(details).Where(button => button.Content is string text && (text == "Edit session" || text == "Delete")))
         {
             var right = button.TranslatePoint(new Point(button.ActualWidth, 0), view).X;
             Assert.InRange(right, 0, width);
             Assert.True(button.ActualWidth > 40);
         }
         Save(view, $"sessions-{width}");
-        foreach (var chip in Descendants<RadioButton>(view).Where(x => x.DataContext is SessionStatusFilterItem { Status: SessionStatus.Verified }))
-        {
-            Assert.Same(Application.Current.FindResource("VerifiedTextColor"), chip.Foreground);
-            Assert.Same(chip.Foreground, Descendants<TextBlock>(chip).Single().Foreground);
-        }
+        Assert.Contains(Descendants<TextBlock>(list), text => text.Text == "Not Uploaded");
         var editing = (SessionItemViewModel)list.Items[0];
+        view.SelectSession(editing);
         editing.BeginEdit();
         await Layout(view, width, 680);
         list.ScrollIntoView(editing);
         await Layout(view, width, 680);
         Save(view, $"sessions-editor-{width}");
-        Assert.Equal(2, Descendants<DatePicker>(list).Count());
+        Assert.Equal(2, Descendants<DatePicker>((Border)view.FindName("DetailsPanel")).Count());
         editing.CancelEdit();
         await Layout(view, width, 680);
-        Assert.Empty(Descendants<DatePicker>(list));
+        Assert.Empty(Descendants<DatePicker>((Border)view.FindName("DetailsPanel")));
         ((TextBox)view.FindName("SearchSessionsBox")).Text = "no matching game";
         await Layout(view, width, 680);
         Assert.True(model.SessionsView.IsEmpty);
@@ -169,6 +318,8 @@ public class SessionsPresentationTests(WpfTestHost host)
         var item = Assert.Single(model.SessionsView.Cast<SessionItemViewModel>());
         Assert.Equal(SessionStatus.Verified, item.Session.Status);
         Assert.True(item.CanSelectGame);
+        view.SelectSession(item);
+        await view.EvidenceCompletion;
         item.BeginEdit();
         item.DraftGame = games[1];
         Assert.True(item.TryCreateEditedSession(out var edited, out var error), error);
@@ -258,7 +409,36 @@ public class SessionsPresentationTests(WpfTestHost host)
         element.Arrange(new Rect(0, 0, width, height));
         element.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        if (element is SessionsView view) await view.EvidenceCompletion;
         element.UpdateLayout();
+    }
+
+    private sealed class BindingTrace : IDisposable
+    {
+        private readonly StringWriter _output = new();
+        private readonly System.Diagnostics.TextWriterTraceListener _listener;
+        private readonly System.Diagnostics.SourceLevels _previous;
+
+        public BindingTrace()
+        {
+            _listener = new(_output);
+            var source = System.Diagnostics.PresentationTraceSources.DataBindingSource;
+            _previous = source.Switch.Level;
+            source.Switch.Level = System.Diagnostics.SourceLevels.Warning;
+            source.Listeners.Add(_listener);
+        }
+
+        public void Dispose()
+        {
+            var source = System.Diagnostics.PresentationTraceSources.DataBindingSource;
+            source.Listeners.Remove(_listener);
+            source.Switch.Level = _previous;
+            _listener.Flush();
+            var messages = _output.ToString();
+            _listener.Dispose();
+            _output.Dispose();
+            Assert.True(string.IsNullOrWhiteSpace(messages), messages);
+        }
     }
 
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject

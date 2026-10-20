@@ -42,7 +42,39 @@ Automated coverage includes accounting and reconciliation, import parsing and id
 
 For UI or release changes, add the relevant manual keyboard, DPI, scrolling, dialog, package lifecycle, and isolated-storage checks. Do not launch the default application just to verify a build.
 
+## Games library and subscription evidence
+
+`GamesLibraryTests` checks compact rows, responsive details, independent selection/title entry,
+keyboard focus return, bookmark/ownership changes, price/edition/source evidence, read-only rate
+and cap-reset history, stale-read retry and a 1,200-game recycling workload. Renders and
+`workload.txt` are written under the test output's `GamesLibraryVisuals` directory. The 144-DPI
+export checks bitmap layout, not actual monitor-DPI transitions. `GamePassAvailabilityTests`
+covers the seven-day/expiry boundaries, retained stale Game Pass results, recorded removal,
+membership/ownership/free-access distinctions and unchanged saved timestamps/costs/audit tables.
+Existing `GamesRefinementTests`, `CatalogUiTests`, `CatalogTests`, `GameDetailsPresentationTests`
+and relevant `SettingsTests` cover saved defaults, catalog imports/rollback, navigation and
+history. Fixtures use synthetic isolated databases and do not start the production application.
+Native input, screen readers and monitor-DPI transitions remain unverified.
+
 ## Concurrent editing and imports
+
+PRO-46's cases in `SessionsPresentationTests`, adapted to PRO-47's details editor, use isolated
+SQLite options: field-adjacent validation and accessible help text, draft navigation guards and
+selection restoration, Cancel focus return, one committed audit entry after a refresh failure, and
+refresh without a repeated save. They render narrow/default/wide editor states and capture binding
+warnings. `SessionEditingTests` also checks busy/queued submission and display-notification failure.
+Existing navigation, modal containment, import lifetime/concurrency and post-commit tests remain the
+focused baseline. Offscreen focus assertions do not certify physical keyboard, screen-reader,
+wheel or monitor-DPI behavior; those native checks remain unverified, not owner-operated gates.
+
+`SessionsExplorerTests` covers combined status/date/game/source-ID filters, duplicate game identities,
+all-date defaults, independent game links, keyboard selection/focus, drawer resizing/containment,
+pinned editing actions, source/audit evidence, failed/stale reads, repeated narrow conflict recovery
+and deleted targets. It uses real isolated SQLite records, including a 10,000-session workload, and
+writes renders plus `workload.txt` under the test output's `SessionsExplorerVisuals` directory. The
+144-DPI bitmap is an export check, not a monitor transition test. Existing Sessions coalescing and
+draft-game restoration cases in `PerformanceReliabilityTests` remain relevant; unrelated performance
+and release suites are not required for this presentation integration.
 
 `ImportConcurrencyTests` uses GUID-owned, file-backed synthetic databases with separate connections. It covers competing previews/parallel commits, stale manual edits, force-verification changes, deleted targets, newly ambiguous matches, writer-lock failure/retry and unrelated writes. `InstanceIdentityTests` covers equivalent folder spellings, production compatibility identity and independent scratch profiles. `SessionsPresentationTests.ImportWhileInlineDraftIsOpenRejectsStaleSaveAndCanRestartEditing` exercises retained drafts, refreshed source data, rendered conflict feedback and restarting an edit through the actual view model. Existing import, audit, accounting, source-precision, rollback and lifetime cases remain the regression baseline.
 

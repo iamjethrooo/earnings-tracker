@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EarningsTracker.Prototypes</RootNamespace>
+    <Product>Earnings Tracker UI Prototype</Product>
+    <Title>Earnings Tracker · Synthetic UI prototype</Title>
+    <!-- Shared resource pack URIs require this assembly name. Outputs stay local to this project. -->
+    <AssemblyName>EarningsTracker</AssemblyName>
+    <StartupObject>EarningsTracker.Prototypes.PrototypeApp</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentIcons.Wpf" Version="2.1.339.1" />
+    <Compile Include="../../Commands/RelayCommand.cs" Link="Shared/RelayCommand.cs" />
+    <Compile Include="../../Enums/NavigationPage.cs" Link="Shared/NavigationPage.cs" />
+    <Compile Include="../../Utilities/PresentationPalette.cs" Link="Shared/PresentationPalette.cs" />
+    <Page Include="../../Resources/*.xaml" Exclude="../../Resources/Converters.xaml" Link="Resources/%(Filename)%(Extension)" />
+    <Resource Include="../../Resources/Fonts/Inter-VariableFont_opsz,wght.ttf" Link="Resources/Fonts/Inter-VariableFont_opsz,wght.ttf" />
+    <None Include="../../Resources/Fonts/OFL.txt" Link="Licenses/Inter-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

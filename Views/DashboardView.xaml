@@ -12,7 +12,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Dashboard" Style="{StaticResource TabName}" Margin="0 0 0 20"/>
+        <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="Dashboard" Style="{StaticResource TabName}"/>
+                <TextBlock Text="Earnings, recent sessions and game activity." Style="{StaticResource PageDescription}"/>
+            </StackPanel>
         <Border x:Name="LoadStatusPanel" Grid.Row="1" Visibility="Collapsed" Style="{StaticResource FeedbackPanel}">
             <DockPanel>
                 <Button x:Name="RetryLoadButton" DockPanel.Dock="Right" Content="Retry"

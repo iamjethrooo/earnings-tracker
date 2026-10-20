@@ -14,7 +14,10 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+                <StackPanel>
                 <TextBlock Text="Statistics" Style="{StaticResource TabName}"/>
+                <TextBlock Text="Explore earnings and activity over time." Style="{StaticResource PageDescription}"/>
+            </StackPanel>
 
             </Grid>
 

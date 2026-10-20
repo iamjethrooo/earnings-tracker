@@ -159,7 +159,7 @@ public class GamesRefinementTests(WpfTestHost host)
             Assert.True(title.ActualWidth > 0);
             if (item.Game.IsArchived)
                 Assert.Equal(12d, Descendants<TextBlock>(container).Single(t => t.Text == "Archived").FontSize);
-            if (item.IsBookmarked) Descendants<ContentControl>(container).Single(c => c.Style == artworkStyle).Content = cover;
+            if (item.IsBookmarked) Descendants<ContentControl>(container).Single(c => c.Style == artworkStyle || c.Style?.BasedOn == artworkStyle).Content = cover;
         }
         view.UpdateLayout();
         var directory = Path.Combine(AppContext.BaseDirectory, "GamesVisuals");

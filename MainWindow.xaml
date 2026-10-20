@@ -124,7 +124,7 @@
                 </Style>
             </Grid.Style>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="188" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -140,11 +140,11 @@
                         <StackPanel Margin="16,20,16,0">
                             <DockPanel LastChildFill="True">
                                 <Border Width="32" Height="32" CornerRadius="{StaticResource CardCornerRadius}" Background="{StaticResource AccentBackgroundColor}" Margin="0,0,10,0">
-                                    <TextBlock Text="E" Foreground="{StaticResource AccentColor}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Path Data="M 0,20 L 0,0 16,0 M 0,9 L 12,9 M 0,20 L 16,20" Stroke="{StaticResource AccentColor}" StrokeThickness="3" Stretch="Uniform" Width="16" Height="20"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="EARNINGS" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold"/>
-                                    <TextBlock Text="TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="9" FontWeight="SemiBold"/>
+                                    <TextBlock Text="TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </DockPanel>
                             <Border Height="1" Background="{StaticResource DefaultBorderColor}" Margin="0,18,0,0"/>

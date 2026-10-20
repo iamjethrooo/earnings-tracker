@@ -90,13 +90,14 @@ public class PerformanceReliabilityTests(WpfTestHost host)
         var view = new SessionsView(database.Options) { Width = 940, Height = 600 };
         var model = (SessionsViewModel)view.DataContext;
         await model.LoadSessionsAsync();
-        var row = model.Sessions.Single(); row.BeginEdit();
+        var row = model.Sessions.Single(); view.SelectSession(row); row.BeginEdit();
         view.Measure(new Size(940, 600)); view.Arrange(new Rect(0, 0, 940, 600)); view.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         var combo = VisualDescendants<ComboBox>(view).Single(control => System.Windows.Automation.AutomationProperties.GetName(control) == "Session game");
         combo.SelectedItem = model.AvailableGames.Single();
         var gameId = row.DraftGame!.Id;
         var list = (ListBox)view.FindName("SessionsList"); list.SelectedItem = row;
+        await view.EvidenceCompletion;
         await model.LoadSessionsAsync();
         view.UpdateLayout(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Assert.Same(row, list.SelectedItem); Assert.True(row.IsEditing);

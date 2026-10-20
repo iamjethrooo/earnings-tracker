@@ -14,6 +14,10 @@ namespace EarningsTracker.ViewModels
     class GameDetailsViewModel : INotifyPropertyChanged
     {
         public Game Game { get; }
+        public IReadOnlyList<Game> RateIdentities { get; }
+        public IReadOnlyList<GameChange> CapResetHistory { get; }
+        public string HistoryEvidenceText => "Saved identities with this game name retain separate rates and history. "
+            + (CapResetHistory.Count == 0 ? "No cap-reset audit entries were recorded." : $"{CapResetHistory.Count} cap-reset audit entries; before/after values are read-only.");
         private GameItemViewModel? _catalog;
         public GameItemViewModel? Catalog
         {
@@ -26,9 +30,11 @@ namespace EarningsTracker.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
         private SessionStatus? _selectedStatus;
 
-        public GameDetailsViewModel(Game game, List<Session> sessions)
+        public GameDetailsViewModel(Game game, List<Session> sessions, IReadOnlyList<Game>? rateIdentities = null, IReadOnlyList<GameChange>? capResetHistory = null)
         {
             Game = game;
+            RateIdentities = rateIdentities ?? [];
+            CapResetHistory = capResetHistory ?? [];
             Sessions = new ObservableCollection<Session>(sessions);
             SessionsView = CollectionViewSource.GetDefaultView(Sessions);
             StatusFilters = new[]

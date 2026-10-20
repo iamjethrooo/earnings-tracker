@@ -16,8 +16,7 @@ namespace EarningsTracker
         private readonly Func<NavigationPage, UserControl> _createPage;
         internal Utilities.ApplicationUpdates? ApplicationUpdates { get; private set; }
         internal bool IsEditorOpen => MainModal.Visibility == Visibility.Visible || MainModal.IsBusy
-            || MainContent.Content is Views.SessionsView { DataContext: ViewModels.SessionsViewModel sessions }
-                && sessions.Sessions.Any(item => item.IsEditing);
+            || MainContent.Content is Views.SessionsView sessions && sessions.HasActiveDraft;
 
         internal void AttachApplicationUpdates(Utilities.ApplicationUpdates updates)
         {
@@ -64,7 +63,11 @@ namespace EarningsTracker
         {
             _createPage = pageFactory ?? CreatePage;
             InitializeComponent();
-            Closing += (_, e) => { if (MainModal.IsBusy) e.Cancel = true; };
+            Closing += (_, e) =>
+            {
+                if (MainModal.IsBusy || MainContent.Content is Views.SessionsView sessions && !sessions.CanLeave())
+                    e.Cancel = true;
+            };
 
             MainModal.CloseRequested += (sender, e) =>
             {
@@ -215,6 +218,11 @@ namespace EarningsTracker
                 SelectNavigation(page);
                 return;
             }
+            if (!CanChangePage())
+            {
+                SelectNavigation(_activePage);
+                return;
+            }
             try
             {
                 var view = _createPage(page);
@@ -228,6 +236,9 @@ namespace EarningsTracker
                 ShowReadError("Unable to open page", ex);
             }
         }
+
+        private bool CanChangePage() => !MainModal.IsBusy && MainModal.Visibility != Visibility.Visible
+            && (MainContent.Content is not Views.SessionsView sessions || sessions.CanLeave());
 
         private void SelectNavigation(NavigationPage? page)
         {
@@ -327,6 +338,7 @@ namespace EarningsTracker
 
         public void OpenGameDetails(Game game)
         {
+            if (!CanChangePage()) return;
             try
             {
                 var gamesView = MainContent.Content as Views.GamesView ?? CreateGamesView();

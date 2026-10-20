@@ -18,10 +18,52 @@ namespace EarningsTracker.ViewModels
         private readonly DbContextOptions<AppDbContext>? _databaseOptions;
         private Task? _loadTask;
         private bool _reloadRequested;
+        private SessionItemViewModel? _selectedSession;
+        private SessionGameFilter _selectedGameFilter = new(null, null, "All games");
+        private int _selectedDateIndex;
+
+        public SessionItemViewModel? SelectedSession
+        {
+            get => _selectedSession;
+            set { if (ReferenceEquals(_selectedSession, value)) return; _selectedSession = value; OnPropertyChanged(nameof(SelectedSession)); }
+        }
+        public ObservableCollection<SessionGameFilter> GameFilters { get; } = new();
+        public SessionGameFilter SelectedGameFilter
+        {
+            get => _selectedGameFilter;
+            set { if (value == null || _selectedGameFilter == value) return; _selectedGameFilter = value; RefreshFilters(); OnPropertyChanged(nameof(SelectedGameFilter)); }
+        }
+        public IReadOnlyList<string> DateOptions { get; } = ["All recording dates", "Last 7 days", "Last 30 days"];
+        public int SelectedDateIndex
+        {
+            get => _selectedDateIndex;
+            set { if (value < 0 || value >= DateOptions.Count || value == _selectedDateIndex) return; _selectedDateIndex = value; RefreshFilters(); OnPropertyChanged(nameof(SelectedDateIndex)); }
+        }
+        private DateTime? _filterToday;
+        internal DateTime FilterToday { get => _filterToday ?? DateTime.Today; set => _filterToday = value; }
+        public DateTime? LastLoadedAt { get; private set; }
+
+        private void RefreshFilters()
+        {
+            SessionsView.Refresh();
+            OnPropertyChanged(nameof(SessionHistoryText));
+        }
+
+        public void ClearFilters()
+        {
+            _searchText = string.Empty;
+            _selectedDateIndex = 0;
+            _selectedGameFilter = GameFilters[0];
+            SelectStatus(StatusFilters[0]);
+            OnPropertyChanged(nameof(SearchText));
+            OnPropertyChanged(nameof(SelectedDateIndex));
+            OnPropertyChanged(nameof(SelectedGameFilter));
+        }
 
         public ObservableCollection<SessionItemViewModel> Sessions { get; } = new BatchObservableCollection<SessionItemViewModel>();
         public ObservableCollection<Game> AvailableGames { get; } = new BatchObservableCollection<Game>();
         public ObservableCollection<SessionStatusFilterItem> StatusFilters { get; } = new();
+        public SessionStatusFilterItem? SelectedStatusFilter => StatusFilters.FirstOrDefault(option => option.IsSelected);
         public ICollectionView SessionsView { get; }
         public event PropertyChangedEventHandler? PropertyChanged;
         public bool IsLoading { get; private set; }
@@ -79,6 +121,7 @@ namespace EarningsTracker.ViewModels
         internal SessionsViewModel(DbContextOptions<AppDbContext>? databaseOptions)
         {
             _databaseOptions = databaseOptions;
+            GameFilters.Add(_selectedGameFilter);
             SessionsView = CollectionViewSource.GetDefaultView(Sessions);
             SessionsView.Filter = FilterSession;
             ApplySort();
@@ -108,6 +151,7 @@ namespace EarningsTracker.ViewModels
             _onlyUnlinked = selected.OnlyUnlinked;
             foreach (var option in StatusFilters)
                 option.SetSelected(option == selected);
+            OnPropertyChanged(nameof(SelectedStatusFilter));
             SessionsView.Refresh();
             OnPropertyChanged(nameof(SessionHistoryText));
         }
@@ -137,19 +181,25 @@ namespace EarningsTracker.ViewModels
                         var snapshot = await Task.Run(async () =>
                         {
                             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
-                            var sessions = await db.Sessions.Include(session => session.Game).AsNoTracking()
+                            var sessions = await db.Sessions.Include(session => session.Game).Include(session => session.Payout).AsNoTracking()
                                 .OrderByDescending(session => session.RecordedDate).ThenByDescending(session => session.Id).ToListAsync();
                             var games = await db.Games.AsNoTracking().OrderBy(game => game.IsArchived)
                                 .ThenBy(game => game.Name).ThenBy(game => game.Id).ToListAsync();
                             var artwork = await db.GameMetadata.AsNoTracking().ToDictionaryAsync(x => x.GameId);
-                            return (sessions, games, artwork);
+                            var sources = await db.SessionChanges.AsNoTracking()
+                                .Where(change => change.ChangeType == "Imported" || change.ChangeType == "Imported update" || change.ChangeType == "Payout import update")
+                                .Select(change => new { change.SessionId, change.ChangeType }).Distinct().ToListAsync();
+                            return (sessions, games, artwork, sources);
                         });
                         if (_reloadRequested) continue; // A change during the read requires a fresh snapshot.
                         var previous = Sessions.ToDictionary(item => item.Session.Id);
+                        var sources = snapshot.sources.ToLookup(change => change.SessionId, change => change.ChangeType);
                         var rows = snapshot.sessions.Select(session =>
                         {
                             var item = previous.GetValueOrDefault(session.Id) ?? new SessionItemViewModel(session);
                             item.RefreshSession(session);
+                            item.SetSource(sources[session.Id].Any(type => type.StartsWith("Imported"))
+                                ? "Session import" : sources[session.Id].Any() ? "Payout import" : "Not recorded");
                             item.SetArtwork(session.GameId is int id ? snapshot.artwork.GetValueOrDefault(id) : null);
                             return item;
                         }).ToList();
@@ -162,7 +212,22 @@ namespace EarningsTracker.ViewModels
                         // A ComboBox may clear its selection during a Reset. Restore it with the new game instance.
                         foreach (var draft in drafts)
                             draft.item.RestoreDraftGame(snapshot.games.FirstOrDefault(game => game.Id == draft.gameId));
+                        if (SelectedSession is { } selected)
+                            SelectedSession = rows.FirstOrDefault(item => item.Session.Id == selected.Session.Id)
+                                ?? (selected.IsEditing ? selected : null);
+                        var selectedFilter = _selectedGameFilter;
+                        var filters = rows.Select(item => new SessionGameFilter(item.Session.GameId,
+                                item.Session.GameId.HasValue ? null : item.Session.GameName,
+                                item.Session.GameId.HasValue ? $"{item.Session.GameName} · #{item.Session.GameId}" : $"{item.Session.GameName} · unlinked"))
+                            .Distinct().OrderBy(filter => filter.Label).ToList();
+                        GameFilters.Clear();
+                        GameFilters.Add(new(null, null, "All games"));
+                        foreach (var filter in filters) GameFilters.Add(filter);
+                        _selectedGameFilter = GameFilters.FirstOrDefault(filter => filter == selectedFilter) ?? GameFilters[0];
+                        OnPropertyChanged(nameof(SelectedGameFilter));
+                        RefreshFilters();
                         LoadError = null;
+                        LastLoadedAt = DateTime.Now;
                         UpdateStatusCounts();
                     }
                     catch (Exception ex)
@@ -195,6 +260,12 @@ namespace EarningsTracker.ViewModels
             }
         }
 
+        internal void RefreshPresentation()
+        {
+            UpdateStatusCounts();
+            RefreshFilters();
+        }
+
         private bool FilterSession(object item)
         {
             if (item is not SessionItemViewModel sessionItem)
@@ -204,9 +275,21 @@ namespace EarningsTracker.ViewModels
                 return false;
             if (_onlyUnlinked && sessionItem.Session.GameId.HasValue)
                 return false;
+            if (_selectedGameFilter.GameId.HasValue && sessionItem.Session.GameId != _selectedGameFilter.GameId)
+                return false;
+            if (_selectedGameFilter.UnlinkedName != null && (sessionItem.Session.GameId.HasValue || sessionItem.Session.GameName != _selectedGameFilter.UnlinkedName))
+                return false;
+            if (_selectedDateIndex != 0)
+            {
+                var date = sessionItem.Session.RecordedDate.Date;
+                var days = _selectedDateIndex == 1 ? 7 : 30;
+                if (date < FilterToday.Date.AddDays(1 - days) || date > FilterToday.Date) return false;
+            }
 
             return string.IsNullOrWhiteSpace(_searchText) ||
-                sessionItem.Session.GameName.Contains(_searchText.Trim(), StringComparison.OrdinalIgnoreCase);
+                sessionItem.Session.GameName.Contains(_searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                sessionItem.SourceId.Contains(_searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                sessionItem.Identifier.Contains(_searchText.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         private void OnPropertyChanged(string propertyName)
@@ -214,6 +297,8 @@ namespace EarningsTracker.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+    public sealed record SessionGameFilter(int? GameId, string? UnlinkedName, string Label);
 
     public sealed class SessionStatusFilterItem : INotifyPropertyChanged
     {

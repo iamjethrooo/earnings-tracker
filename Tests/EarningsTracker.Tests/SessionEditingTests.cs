@@ -9,6 +9,40 @@ namespace EarningsTracker.Tests
 {
     public class SessionEditingTests
     {
+        [Fact]
+        public void BusyDraftCannotBeResetCancelledOrSubmittedTwice()
+        {
+            var item = new SessionItemViewModel(Recording());
+            Assert.False(item.TryBeginSave());
+            item.BeginEdit();
+            item.DraftEarnings = "9";
+            Assert.True(item.TryBeginSave());
+            Assert.False(item.TryBeginSave());
+            item.CancelEdit();
+            item.BeginEdit();
+            Assert.True(item.IsEditing);
+            Assert.Equal("9", item.DraftEarnings);
+            item.EndSave();
+            item.CancelEdit();
+            Assert.False(item.IsEditing);
+            Assert.Equal(1.23m, item.Session.Earnings);
+        }
+
+        [Fact]
+        public void CommittedDraftCannotResubmitWhenDisplayNotificationFails()
+        {
+            var item = new SessionItemViewModel(Recording());
+            item.BeginEdit();
+            item.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(item.IsEditing))
+                    throw new InvalidOperationException("Synthetic display failure");
+            };
+            Assert.Throws<InvalidOperationException>(() => item.ApplySavedSession(Recording()));
+            Assert.False(item.IsEditing);
+            Assert.False(item.TryBeginSave());
+        }
+
         private static Session Recording()
         {
             var recorded = new DateTime(2026, 6, 5, 12, 34, 56).AddTicks(1234567);

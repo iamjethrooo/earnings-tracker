@@ -62,6 +62,10 @@ Artwork appears in Games, Dashboard recordings, and Sessions. Games rows have a 
 
 Third-party terms cover their respective components only. No license for the owner's original application source has been selected or added. See the [notice bundle](Resources/ThirdPartyNotices/README.md) and [provider-rights decision table](Docs/Distribution.md). A public repository or API key does not itself grant rights to redistribute all included content.
 
+## UI design prototypes (PRO-19)
+
+The [isolated WPF prototype](Prototypes/Dashboard/README.md) runs the proposed shell and Dashboard with synthetic data only. Use `dotnet run --project Prototypes/Dashboard/DashboardPrototype.csproj` from the repository root, or append `-- --sessions` for [Sessions Explorer](Prototypes/Dashboard/Sessions/README.md) or `-- --games` for the [Games library](Prototypes/Dashboard/Games/README.md). It has its own entry point and does not run production startup, database migrations, credentials, or network services. Functional integration remains deferred pending owner review.
+
 ## Tests
 
 The solution includes an isolated xUnit test project for accounting, imports, reconciliation, migrations, and audit history. See [Tests/README.md](Tests/README.md) for setup, commands, coverage, and manual-check limits.

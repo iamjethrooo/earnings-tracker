@@ -24,10 +24,13 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Payments" Style="{StaticResource TabName}" Width="Auto" />
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Add Payout" Click="AddPayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="18 10" Margin="0,0,8,0"/>
-                <Button Content="Import Payouts" Click="ImportPayoutsButton_Click" Style="{StaticResource PrimaryButton}" Padding="20 10" VerticalContentAlignment="Center"/>
+            <StackPanel>
+                <TextBlock Text="Payments" Style="{StaticResource TabName}"/>
+                <TextBlock Text="Review payouts, adjustments and reconciliation." Style="{StaticResource PageDescription}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="Add payout" Click="AddPayoutButton_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                <Button Content="Import payouts" Click="ImportPayoutsButton_Click" Style="{StaticResource PrimaryButton}" VerticalContentAlignment="Center"/>
             </StackPanel>
         </Grid>
 

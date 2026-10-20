@@ -240,9 +240,8 @@ public class ResponsiveLayoutTests(WpfTestHost host)
         foreach (FrameworkElement child in toolbar.Children)
             Assert.True(Bounds(child, toolbar).Right <= toolbar.ActualWidth + 1);
         var list = (ListBox)view.FindName("GamesList");
-        var card = (FrameworkElement)list.ItemTemplate.LoadContent();
-        card.DataContext = Assert.Single(((GamesViewModel)view.DataContext).Games);
-        Layout(card, width - 62, 160);
+        var item = Assert.Single(((GamesViewModel)view.DataContext).Games);
+        var card = (ListBoxItem)list.ItemContainerGenerator.ContainerFromItem(item);
         var title = Descendants<TextBlock>(card).Single(t => t.Text == LongTitle);
         var archived = Descendants<TextBlock>(card).Single(t => t.Text == "Archived");
         Assert.True(title.ActualWidth > 0);
@@ -257,7 +256,7 @@ public class ResponsiveLayoutTests(WpfTestHost host)
     [InlineData(1480)]
     public Task SessionRowsKeepLongTitlesBadgesAndActionsSeparate(double width) => host.RunAsync(() =>
     {
-        foreach (var view in new UserControl[] { new SessionsView(), new DashboardView() })
+        foreach (var view in new UserControl[] { new DashboardView() })
         {
             var list = (ListBox)view.FindName("SessionsList");
             var row = (FrameworkElement)list.ItemTemplate.LoadContent();

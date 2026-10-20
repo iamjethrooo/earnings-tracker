@@ -20,7 +20,11 @@ namespace EarningsTracker.ViewModels
         private bool _bookmarkedOnly = false;
         private bool _showArchived = true;
         public bool BookmarkedOnly => _bookmarkedOnly;
-        public bool ShowArchived => _showArchived;
+        public bool ShowArchived
+        {
+            get => _showArchived;
+            set { if (_showArchived == value) return; _showArchived = value; OnPropertyChanged(nameof(ShowArchived)); ApplyFilters(); }
+        }
         public int DefaultSortIndex { get; }
         public string BookmarkError { get; private set; } = "";
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -40,12 +44,15 @@ namespace EarningsTracker.ViewModels
         private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly;
         public string SelectedGenre { get => _selectedGenre; set { if (_selectedGenre == value) return; _selectedGenre = value; ApplyFilters(); } }
         public string SelectedStore { get => _selectedStore; set { if (_selectedStore == value) return; _selectedStore = value; ApplyFilters(); } }
-        public bool FreeOnly { get => _freeOnly; set { if (_freeOnly == value) return; _freeOnly = value; ApplyFilters(); } }
-        public bool OwnedOnly { get => _ownedOnly; set { if (_ownedOnly == value) return; _ownedOnly = value; ApplyFilters(); } }
-        public bool GamePassOnly { get => _gamePassOnly; set { if (_gamePassOnly == value) return; _gamePassOnly = value; ApplyFilters(); } }
-        public bool PlayableOnly { get => _playableOnly; set { if (_playableOnly == value) return; _playableOnly = value; ApplyFilters(); } }
+        public bool FreeOnly { get => _freeOnly; set { if (_freeOnly == value) return; _freeOnly = value; ApplyFilters(); OnPropertyChanged(nameof(FreeOnly)); } }
+        public bool OwnedOnly { get => _ownedOnly; set { if (_ownedOnly == value) return; _ownedOnly = value; ApplyFilters(); OnPropertyChanged(nameof(OwnedOnly)); } }
+        public bool GamePassOnly { get => _gamePassOnly; set { if (_gamePassOnly == value) return; _gamePassOnly = value; ApplyFilters(); OnPropertyChanged(nameof(GamePassOnly)); } }
+        public bool PlayableOnly { get => _playableOnly; set { if (_playableOnly == value) return; _playableOnly = value; ApplyFilters(); OnPropertyChanged(nameof(PlayableOnly)); } }
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
+        public bool ShowPriceSortHelp { get; private set; }
+        public string PriceSortHelp => "Lowest price compares saved PH offers and active free/giveaway offers using saved PHP exchange rates, within active/archived groups. Unknown or missing-FX prices sort last. Prices may be outdated; inspect editions and checked dates in details.";
+        public string GamePassFilterHelp => "PC Game Pass includes previously verified games. Stale/expired verification does not confirm current availability; Playable now still requires current verification and a selected membership.";
 
         internal void SetStatus(string text) { CatalogStatus = text; OnPropertyChanged(nameof(CatalogStatus)); }
 
@@ -141,6 +148,7 @@ namespace EarningsTracker.ViewModels
         {
             await Task.Yield();
             IsLoading = true; LoadError = null; OnPropertyChanged(nameof(ShowEmptyState)); OnPropertyChanged(nameof(IsLoading)); SetStatus("Loading games…");
+            OnPropertyChanged(nameof(AvailableGamesText));
             try
             {
                 var snapshot = await Task.Run(() => (games: ReadGames(), catalog: ReadCatalog()));
@@ -152,7 +160,7 @@ namespace EarningsTracker.ViewModels
                 LoadError = ex.GetBaseException().Message;
                 SetStatus("Could not load games. Choose Refresh catalog to retry. " + ex.GetBaseException().Message);
             }
-            finally { _loadTask = null; IsLoading = false; OnPropertyChanged(nameof(IsLoading)); OnPropertyChanged(nameof(ShowEmptyState)); }
+            finally { _loadTask = null; IsLoading = false; OnPropertyChanged(nameof(IsLoading)); OnPropertyChanged(nameof(ShowEmptyState)); OnPropertyChanged(nameof(AvailableGamesText)); }
         }
 
         private void GameItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -205,6 +213,8 @@ namespace EarningsTracker.ViewModels
 
         public void ApplySortChoice(int choice)
         {
+            ShowPriceSortHelp = choice == 3;
+            OnPropertyChanged(nameof(ShowPriceSortHelp));
             switch (choice)
             {
                 case 0: SortGames("Game.RatePerHour", ListSortDirection.Descending); break;
@@ -225,6 +235,17 @@ namespace EarningsTracker.ViewModels
         {
             if (_bookmarkedOnly == bookmarkedOnly) return;
             _bookmarkedOnly = bookmarkedOnly;
+            ApplyFilters();
+        }
+
+        internal void ClearFilters()
+        {
+            _searchText = "";
+            _selectedGenre = "All genres"; _selectedStore = "All stores";
+            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = false;
+            _bookmarkedOnly = false;
+            foreach (var property in new[] { nameof(SelectedGenre), nameof(SelectedStore), nameof(FreeOnly), nameof(OwnedOnly),
+                nameof(GamePassOnly), nameof(PlayableOnly), nameof(BookmarkedOnly) }) OnPropertyChanged(property);
             ApplyFilters();
         }
 
@@ -255,8 +276,8 @@ namespace EarningsTracker.ViewModels
                 if (_freeOnly && !gameItem.FreeToPlay) return false;
                 if (_ownedOnly && !gameItem.IsOwned) return false;
                 var now = DateTime.UtcNow;
-                bool HasService(string service) => gameItem.Subscriptions.Any(x => x.Service == service && CatalogPresentation.Current(x, now));
-                if (_gamePassOnly && !HasService("PC Game Pass")) return false;
+                if (_gamePassOnly && (CatalogPresentation.GamePassEntry(gameItem.Subscriptions) is not { } gamePass
+                    || !CatalogPresentation.PreviouslyIncluded(gamePass, now))) return false;
                 if (_playableOnly && !gameItem.IsOwned && !gameItem.Offers.Any(x => CatalogPresentation.IsFree(x, now))
                     && !gameItem.Subscriptions.Any(s => CatalogPresentation.Current(s, now) && CatalogSubscriptions.Includes(MySubscriptions, s.Service))) return false;
 
@@ -279,6 +300,8 @@ namespace EarningsTracker.ViewModels
         {
             get
             {
+                if (!HasLoaded && IsLoading) return "Loading games…";
+                if (!HasLoaded && LoadError != null) return "Games unavailable";
                 if (!string.IsNullOrWhiteSpace(_searchText))
                 {
                     return $"{AvailableGamesCount} game{(AvailableGamesCount != 1 ? "s" : "")} matching \"{_searchText}\"";
