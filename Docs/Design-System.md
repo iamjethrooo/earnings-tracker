@@ -193,6 +193,45 @@ Isolated fixtures cover narrow/default/wide rendering, keyboard entry/focus retu
 bitmap export, 1,200-game recycling and 10,000-session detail scrolling. These do not certify
 physical keyboard/mouse/wheel input, screen-reader announcements or real monitor-DPI transitions.
 
+## Analytics Dashboard (PRO-16)
+
+The approved Dashboard has five KPI cards, an earnings trend beside the session mix, and recent
+activity beside top earning games. It uses the shared shell, typography, panels, artwork, status
+variants and buttons. Below 850 DIPs of page-region width the paired panels stack. The page body
+scrolls vertically while the heading and period selector stay available. Recent activity is limited
+to five recordings in a 240-DIP recycling viewport; Daily values has a separate bounded viewport.
+
+The 7/30/90-day selector defaults to 30 days, includes the complete snapshot day and starts 6/29/89
+days earlier. Recording dates use `RecordedDate`, falling back to legacy `Date` when absent. No
+timestamps or historical earnings are rewritten. The view reads persisted sessions, payouts and
+catalog artwork, calculates the complete presentation, then publishes on its dispatcher. A saved
+change arriving during a read queues another read. Failed reads keep the previous snapshot and
+expose stale/retry feedback; first-load failures hide unavailable totals.
+
+| Display | Definition and date basis |
+| --- | --- |
+| Earned KPI / purple trend | Verified stored session earnings by recording day, plus qualifying signed separate Bonus/Earnings correction amounts by payout date, using `EarningsPeriods` and `PayoutAccounting.IsSeparateEarnedAdjustment`. Included-in-session, unresolved and ineligible adjustments are excluded. |
+| Pending KPI / dashed trend | Stored Pending session earnings by recording day; separate from earned amounts. |
+| Available balance | Existing lifetime `PayoutAccounting` balance: verified earnings with known posted dates strictly after the latest Paid/Processing Payment day. It is independent of period selection and is not total earned minus payouts. Unknown posted dates are excluded and counted in the notice. |
+| Payouts KPI | Existing `PayoutAccounting` Paid/Processing Payment amounts in the selected payment-date range; payment signs retain the shared accounting treatment. Payments can pay earnings recorded in another period. |
+| Hours played | Stored duration of Verified + Pending period recordings, summed without modifying duration precision. Rejected/Not Uploaded hours are excluded. Statistics' verified-only hours are a subset. |
+| Session mix | All four stored statuses by period recording date. Verified percentage denominator is **all period sessions**, including Rejected/Not Uploaded; no sessions displays “No sessions.” Status amounts are recorded values, not a claim that Rejected/Not Uploaded earnings were earned. Adjustments do not add sessions. |
+| Top games | Top four saved game identities by verified period session earnings; archived identities remain eligible. Unlinked names remain explicit without invented game links. Bars use the highest game amount as denominator, or zero when all amounts are zero. Adjustments are not attributed to games. |
+| Recent activity | Latest five period recordings ordered by recording timestamp, then stable session ID. Existing game-detail and Sessions navigation routes through MainWindow. |
+| Lifetime notice | Existing total earned and total paid/processing figures remain available. Their all-history rules, including future records, are unchanged; period analytics exclude future recording/payment dates. |
+
+Daily values exposes verified, signed adjustments, earned and pending values alongside the chart.
+The chart supports negative totals and displays legitimate zero/offsetting activity; absence of
+eligible records has distinct empty guidance. USD formatting rounds display only. Exact persisted
+decimals are retained in reporting rows. Whole-period earned amounts reconcile with Statistics at
+the same recording-date range; session counts/status totals reconcile with Sessions at identical
+date/status filters. Top-game totals exclude adjustments and are limited to four identities.
+
+Verification uses isolated SQLite fixtures and actual WPF resources, including narrow/default/wide
+renders, negative/zero/empty/error/stale states, bounded scrolling, programmatic focus/navigation
+and a 144-DPI export. Physical keyboard/mouse/wheel behavior, screen-reader announcements and real
+monitor-DPI transitions remain unverified; owner-operated manual tests are not an acceptance gate.
+
 ## Statistics charts
 
 Statistics reuses `MetricPanel`, Dashboard metric text styles, `SurfacePanel`, `SectionHeading`,

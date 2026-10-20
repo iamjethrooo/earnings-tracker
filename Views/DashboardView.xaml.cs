@@ -55,6 +55,108 @@ namespace EarningsTracker.Views
         private bool _reloadRequested;
         private bool _queuedSavedRefresh;
 
+        private List<Session> _sessions = [];
+        private List<Payout> _payouts = [];
+        private Dictionary<int, GameMetadata> _artwork = [];
+        private DateTime _snapshotDay;
+        public IReadOnlyList<DashboardMetric> Metrics { get; private set; } = [];
+        public IReadOnlyList<DashboardDay> Trend { get; private set; } = [];
+        public IReadOnlyList<DashboardStatus> Statuses { get; private set; } = [];
+        public IReadOnlyList<DashboardGame> TopGames { get; private set; } = [];
+        public string RangeLabel { get; private set; } = "";
+        public string SessionCountLabel { get; private set; } = "";
+        public string VerifiedShare { get; private set; } = "";
+        public double VerifiedPercent { get; private set; }
+        public string GameAttributionNotice { get; private set; } = "";
+        internal decimal PeriodEarned => Trend.Sum(day => day.Earned);
+        internal decimal PeriodPending => Trend.Sum(day => day.Pending);
+        private static DateTime RecordedDay(Session session) => (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
+
+        private sealed record PeriodReport(DateTime Start, DateTime End, List<Session> Sessions,
+            List<DashboardDay> Days, List<SessionItemViewModel> Recent, List<DashboardGame> Games,
+            decimal Paid, double Hours, bool HasEarningsActivity);
+
+        private PeriodReport BuildPeriod(List<Session> sessions, List<Payout> payouts, Dictionary<int, GameMetadata> artwork, DateTime today)
+        {
+            var start = today.AddDays(1 - new[] { 7, 30, 90 }[Math.Clamp(PeriodSelector.SelectedIndex, 0, 2)]);
+            var rows = sessions.Where(session => RecordedDay(session) >= start && RecordedDay(session) <= today).ToList();
+            var adjustments = payouts.Where(PayoutAccounting.IsSeparateEarnedAdjustment)
+                .Where(row => row.Date.Date >= start && row.Date.Date <= today).ToList();
+            var byDay = rows.ToLookup(RecordedDay);
+            var changesByDay = adjustments.ToLookup(row => row.Date.Date);
+            var days = Enumerable.Range(0, (today - start).Days + 1).Select(offset =>
+            {
+                var date = start.AddDays(offset);
+                var daily = byDay[date].ToList();
+                // Shared reporting owns verified eligibility and signed separate adjustments.
+                var earned = EarningsPeriods.Calculate(daily, changesByDay[date], date).Today;
+                var separate = changesByDay[date].Sum(row => row.Amount);
+                return new DashboardDay(date, earned - separate, separate,
+                    daily.Where(row => row.Status == SessionStatus.Pending).Sum(row => row.Earnings));
+            }).ToList();
+            var recent = rows.OrderByDescending(session => session.RecordedDate == default ? session.Date : session.RecordedDate)
+                .ThenByDescending(session => session.Id).Take(5).Select(session => new SessionItemViewModel(session)).ToList();
+            foreach (var item in recent)
+                item.SetArtwork(item.Session.GameId is int id ? artwork.GetValueOrDefault(id) : null);
+            // Preserve separate rate identities and never invent a link for unlinked history.
+            var groups = rows.Where(row => row.Status == SessionStatus.Verified)
+                .GroupBy(row => (row.GameId, UnlinkedName: row.GameId.HasValue ? "" : row.GameName))
+                .OrderByDescending(group => group.Sum(row => row.Earnings)).ThenBy(group => group.Key.GameId).ThenBy(group => group.Key.UnlinkedName).ToList();
+            var maximum = groups.Count == 0 ? 0m : groups.Max(group => group.Sum(row => row.Earnings));
+            var games = groups.Take(4).Select(group =>
+            {
+                var first = group.First();
+                var artworkItem = new SessionItemViewModel(first);
+                artworkItem.SetArtwork(first.GameId is int id ? artwork.GetValueOrDefault(id) : null);
+                var earnings = group.Sum(row => row.Earnings);
+                return new DashboardGame(first.Game, first.Game?.Name ?? first.GameName, group.Count(), earnings,
+                    maximum > 0 ? (double)(earnings / maximum * 100m) : 0, artworkItem);
+            }).ToList();
+            var paid = PayoutAccounting.Calculate([], payouts.Where(row => row.Date.Date >= start && row.Date.Date <= today)).TotalPaidOut;
+            var hours = rows.Where(row => row.Status is SessionStatus.Verified or SessionStatus.Pending).Sum(row => row.Duration.TotalHours);
+            return new(start, today, rows, days, recent, games, paid, hours,
+                rows.Any(row => row.Status is SessionStatus.Verified or SessionStatus.Pending) || adjustments.Count > 0);
+        }
+
+        private void PublishPeriod(PeriodReport report)
+        {
+            Trend = report.Days;
+            TopGames = report.Games;
+            var verified = report.Sessions.Count(row => row.Status == SessionStatus.Verified);
+            Brush BrushFor(string key) => (Brush)FindResource(key);
+            Statuses = new[] { SessionStatus.Verified, SessionStatus.Pending, SessionStatus.Rejected, SessionStatus.NotUploaded }
+                .Select(status => new DashboardStatus(status, report.Sessions.Count(row => row.Status == status),
+                    report.Sessions.Where(row => row.Status == status).Sum(row => row.Earnings), BrushFor(status switch
+                    { SessionStatus.Verified => "VerifiedTextColor", SessionStatus.Pending => "PendingTextColor", SessionStatus.Rejected => "RejectedTextColor", _ => "NotUploadedTextColor" }))).ToList();
+            Metrics = [new("Earned", CurrencyDisplay.FormatUsd(PeriodEarned), "Verified + signed adjustments · period", BrushFor("DefaultTextColor")),
+                new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "Not yet verified · period", BrushFor("PendingTextColor")),
+                new("Available balance", BalanceDisplay, "Lifetime posted-date balance", BrushFor("VerifiedTextColor")),
+                new("Payouts", CurrencyDisplay.FormatUsd(report.Paid), "Paid + Processing · payment date", BrushFor("DefaultTextColor")),
+                new("Hours played", $"{report.Hours:N1} h", "Verified + Pending · recording date", BrushFor("DefaultTextColor"))];
+            RangeLabel = $"{report.Start:MMM d} – {report.End:MMM d, yyyy} · inclusive recording dates; adjustments/payment dates are separate";
+            SessionCountLabel = $"{report.Sessions.Count:N0} sessions · recording date";
+            VerifiedPercent = report.Sessions.Count == 0 ? 0 : verified * 100d / report.Sessions.Count;
+            VerifiedShare = report.Sessions.Count == 0 ? "No sessions" : $"{VerifiedPercent:0}% verified";
+            GameAttributionNotice = TopGames.Count == 0 ? "No verified session earnings in this period." : "Top four saved game identities. Unlinked history has no navigation target.";
+            ((BatchObservableCollection<SessionItemViewModel>)RecentSessions).ReplaceAll(report.Recent);
+            DashboardViewEmptyState.Visibility = report.Recent.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            TrendChart.Visibility = report.HasEarningsActivity ? Visibility.Visible : Visibility.Collapsed;
+            TrendEmptyState.Visibility = report.HasEarningsActivity ? Visibility.Collapsed : Visibility.Visible;
+            foreach (var property in new[] { nameof(Metrics), nameof(Trend), nameof(TopGames), nameof(Statuses), nameof(RangeLabel), nameof(SessionCountLabel), nameof(VerifiedPercent), nameof(VerifiedShare), nameof(GameAttributionNotice) })
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
+
+        private void Period_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_hasLoaded || _isLoading) return;
+            PublishPeriod(BuildPeriod(_sessions, _payouts, _artwork, _snapshotDay));
+        }
+
+        private void TopGame_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: DashboardGame { Game: not null } item }) ViewGameRequested?.Invoke(this, item.Game);
+        }
+
         public DashboardView() : this(null) { }
 
         internal DashboardView(DbContextOptions<AppDbContext>? databaseOptions)
@@ -69,11 +171,17 @@ namespace EarningsTracker.Views
 
         private void Dashboard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // Only change layout at a breakpoint; no chart/tree rebuild per resize event.
-            var columns = e.NewSize.Width >= 600 ? 2 : 1;
-            if (MetricCards.Columns != columns) MetricCards.Columns = columns;
-            // Keep recent activity in a finite viewport even on short windows.
-            TotalsScroll.MaxHeight = Math.Max(120, Math.Min(e.NewSize.Height * 0.40, e.NewSize.Height - 300));
+            var stacked = ActualWidth - 40 < 850;
+            foreach (var panel in new[] { DistributionPanel, GamesPanel })
+            {
+                Grid.SetColumn(panel, stacked ? 0 : 2);
+                Grid.SetRow(panel, stacked ? 1 : 0);
+                panel.Margin = stacked ? new Thickness(0, 16, 0, 0) : new Thickness(0);
+            }
+            Grid.SetColumnSpan(TrendPanel, stacked ? 3 : 1);
+            Grid.SetColumnSpan(ActivityPanel, stacked ? 3 : 1);
+            Grid.SetColumnSpan(DistributionPanel, stacked ? 3 : 1);
+            Grid.SetColumnSpan(GamesPanel, stacked ? 3 : 1);
         }
 
         private void ViewAllSessions_Click(object sender, RoutedEventArgs e)
@@ -103,21 +211,18 @@ namespace EarningsTracker.Views
                 _isLoading = true;
                 LoadStatusPanel.Visibility = Visibility.Visible;
                 LoadStatusText.Text = "Loading Dashboard…";
-                RetryLoadButton.IsEnabled = false;
+                RetryLoadButton.IsEnabled = PeriodSelector.IsEnabled = false;
                 try
                 {
                     using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
-                    var allSessions = await db.Sessions.ToListAsync();
+                    var allSessions = await db.Sessions.Include(session => session.Game).AsNoTracking().ToListAsync();
                     var payouts = await db.Payouts.ToListAsync();
                     var totals = PayoutAccounting.Calculate(allSessions, payouts);
-                    var sessions = await db.Sessions.Include(s => s.Game).OrderByDescending(s => s.Date).Take(5).ToListAsync();
-                    var recentSessions = sessions.Select(session => new SessionItemViewModel(session)).ToList();
-                    var gameIds = sessions.Where(x => x.GameId.HasValue).Select(x => x.GameId!.Value).Distinct().ToList();
-                    var artwork = await db.GameMetadata.AsNoTracking().Where(x => gameIds.Contains(x.GameId)).ToDictionaryAsync(x => x.GameId);
-                    foreach (var item in recentSessions)
-                        item.SetArtwork(item.Session.GameId is int id ? artwork.GetValueOrDefault(id) : null);
+                    var artwork = await db.GameMetadata.AsNoTracking().ToDictionaryAsync(item => item.GameId);
                     var hours = allSessions.Sum(session => session.Duration.TotalHours);
                     var periods = EarningsPeriods.Calculate(allSessions, payouts, asOfDate ?? DateTime.Today);
+                    var today = (asOfDate ?? DateTime.Today).Date;
+                    var report = BuildPeriod(allSessions, payouts, artwork, today);
                     // A queued refresh supersedes this read; keep the displayed snapshot until the next succeeds.
                     if (_reloadRequested) { changesSaved |= _queuedSavedRefresh; continue; }
 
@@ -131,12 +236,16 @@ namespace EarningsTracker.Views
                     TotalEarned = totals.TotalEarned;
                     TotalPaidOut = totals.TotalPaidOut;
                     Balance = totals.Balance;
-                    BalanceDescription = totals.UndatedVerifiedSessions == 0
-                        ? $"Total earned: {TotalEarned.ToString("C2", CultureInfo.GetCultureInfo("en-US"))}"
-                        : $"Total earned: {TotalEarned.ToString("C2", CultureInfo.GetCultureInfo("en-US"))} · Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates";
+                    var cutoff = payouts.Where(PayoutAccounting.IsCountedAsPaidPayment).Select(row => (DateTime?)row.Date.Date).Max();
+                    BalanceDescription = $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}. Balance uses verified posted dates {(cutoff.HasValue ? $"after {cutoff:MMM d, yyyy}" : "with no payment cutoff")}; independent of the selected period."
+                        + (totals.UndatedVerifiedSessions > 0 ? $" Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates." : "");
                     TotalSessions = allSessions.Count;
                     TotalHoursPlayed = hours;
-                    ((BatchObservableCollection<SessionItemViewModel>)RecentSessions).ReplaceAll(recentSessions);
+                    _sessions = allSessions;
+                    _payouts = payouts;
+                    _artwork = artwork;
+                    _snapshotDay = today;
+                    PublishPeriod(report);
                     _hasLoaded = true;
                     TotalsPanel.Visibility = RecordingsPanel.Visibility = Visibility.Visible;
                     LoadStatusPanel.Visibility = Visibility.Collapsed;
@@ -151,7 +260,7 @@ namespace EarningsTracker.Views
                 finally
                 {
                     _isLoading = false;
-                    RetryLoadButton.IsEnabled = true;
+                    RetryLoadButton.IsEnabled = PeriodSelector.IsEnabled = true;
                 }
                 changesSaved = _queuedSavedRefresh;
             } while (_reloadRequested);

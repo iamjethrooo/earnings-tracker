@@ -42,6 +42,18 @@ Automated coverage includes accounting and reconciliation, import parsing and id
 
 For UI or release changes, add the relevant manual keyboard, DPI, scrolling, dialog, package lifecycle, and isolated-storage checks. Do not launch the default application just to verify a build.
 
+## Dashboard analytics
+
+`DashboardAnalyticsTests` verifies period boundaries, recording-date fallback, signed/offsetting
+adjustments, future records, unknown posted dates, all verification states, separate archived game
+identities and unlinked history against Sessions, Statistics, `EarningsPeriods` and `PayoutAccounting`.
+It checks empty versus real zero, retained snapshots/retry, first-load failure, responsive chart and
+panel layout, bounded recent/daily-value scrolling, navigation events and offscreen focus. Renders
+are under the test output's `DashboardAnalyticsVisuals` directory, including a 144-DPI export.
+`DashboardRefinementTests`, reporting/accounting, database-error, dispatcher-refresh and navigation
+tests remain the focused baseline. Physical input, screen readers and monitor-DPI transitions are
+not certified. See [metric definitions](../Docs/Design-System.md#analytics-dashboard-pro-16).
+
 ## Games library and subscription evidence
 
 `GamesLibraryTests` checks compact rows, responsive details, independent selection/title entry,

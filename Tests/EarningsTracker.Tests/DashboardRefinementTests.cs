@@ -91,20 +91,11 @@ public class DashboardRefinementTests(WpfTestHost host)
         view.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         view.UpdateLayout();
-        var cards = (UniformGrid)view.FindName("MetricCards");
-        Assert.Equal(2, cards.Columns);
-        Assert.Equal(2, cards.Children.Count);
+        Assert.Equal(5, view.Metrics.Count);
         var scroll = (ScrollViewer)view.FindName("TotalsScroll");
         Assert.Equal(0, scroll.ScrollableWidth);
+        Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
         scroll.ScrollToBottom(); view.UpdateLayout();
-        var balance = (Border)cards.Children[1];
-        Assert.True(Bounds(balance, scroll).Bottom <= scroll.ActualHeight + 1);
-        Assert.All(cards.Children.OfType<Border>(), card =>
-        {
-            Assert.True(card.ActualWidth > 250);
-            Assert.All(((StackPanel)card.Child).Children.OfType<TextBlock>(), text =>
-                Assert.True(text.ActualWidth <= card.ActualWidth - card.Padding.Left - card.Padding.Right + 1));
-        });
         var list = (ListBox)view.FindName("SessionsList");
         Assert.True(list.ActualHeight >= 70, $"List height: {list.ActualHeight}");
         Assert.True(Bounds(list, view).Bottom <= height + 1);

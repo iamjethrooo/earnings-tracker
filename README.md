@@ -64,7 +64,7 @@ Third-party terms cover their respective components only. No license for the own
 
 ## UI design prototypes (PRO-19)
 
-The [isolated WPF prototype](Prototypes/Dashboard/README.md) runs the proposed shell and Dashboard with synthetic data only. Use `dotnet run --project Prototypes/Dashboard/DashboardPrototype.csproj` from the repository root, or append `-- --sessions` for [Sessions Explorer](Prototypes/Dashboard/Sessions/README.md) or `-- --games` for the [Games library](Prototypes/Dashboard/Games/README.md). It has its own entry point and does not run production startup, database migrations, credentials, or network services. Functional integration remains deferred pending owner review.
+The [approved isolated WPF prototype](Prototypes/Dashboard/README.md) preserves the shell, Dashboard, Sessions and Games design reference with synthetic data only. Use `dotnet run --project Prototypes/Dashboard/DashboardPrototype.csproj` from the repository root, or append `-- --sessions` for [Sessions Explorer](Prototypes/Dashboard/Sessions/README.md) or `-- --games` for the [Games library](Prototypes/Dashboard/Games/README.md). It has its own entry point and does not run production startup, database migrations, credentials, or network services. Production integration uses existing application rules; see the [design system and metric definitions](Docs/Design-System.md#analytics-dashboard-pro-16).
 
 ## Tests
 
