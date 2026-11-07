@@ -23,7 +23,10 @@ redistribution-rights verification. See [distribution policy](Distribution.md).
 
 Build on Windows with the .NET 10 SDK and Windows Desktop runtime. Catalog maintainer scripts require Python 3.11+ and use the standard library. The solution is `EarningsTracker.slnx`.
 
-`global.json` pins SDK `10.0.402`, with roll-forward disabled and prerelease SDKs excluded, following the owner's PRO-39 decision on 2026-10-19. Repository-local `dotnet --version` and evaluation-only MSBuild checks resolve that SDK and accept both projects' `net10.0-windows`/WPF configuration. Evaluation of the release script's intended Production properties confirms coherent v1.1.0 version/repository/runtime metadata; this is not build, restore or package verification. Earlier focused checks used the same SDK through an isolated invocation directory. Retain that evidence and record the exact SDK, source SHA, configuration, tools and hashes during separately authorized final-artifact preparation. Do not silently bypass the pin.
+`global.json` pins SDK `10.0.403`, with roll-forward disabled and prerelease SDKs excluded.
+Historical v1.1.0/v1.2.0 candidates used SDK `10.0.402`; retain their original evidence.
+Record the actual SDK, source SHA, configuration, tools and hashes for each new candidate.
+Do not silently bypass the pin.
 
 ```powershell
 dotnet restore EarningsTracker.slnx
@@ -34,6 +37,28 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 ```
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
+
+## v1.3.0 preparation — 2026-11-08
+
+The owner selected v1.3.0 for the payout-assignment, Steam ownership and presentation changes.
+The complete source passes 740 Debug tests, 740 Release tests and 30 Python tool tests.
+Tests use synthetic isolated storage; no personal database startup or migration was performed.
+The full run also verified the updated UI expectations, bookmark action names, currency formatting,
+empty-state guidance, and migration/model agreement. Offscreen WPF rendering is partial UI evidence.
+
+Use the supported packaging entry point with Production configuration, package identity
+`EarningsTracker.App`, channel `win-x64-app-stable`, and full packages only. Do not supply a previous
+full package or generate deltas. Product/package version is 1.3.0; assembly/file version is 1.3.0.0.
+Preserve existing published releases and feeds. Local candidate preparation does not approve
+source pushes, tags, uploads, or stable/latest publication; the exact candidate requires approval.
+
+First launch adds `20261107145034_AddSessionPayoutAssignments`. Existing sessions retain their
+legacy accounting until explicitly assigned or changed through audited workflows. Keep an independent
+backup before upgrading. The release does not certify installed 1.2.0-to-1.3.0 apply/restart,
+clean-Windows installation, native keyboard/screen-reader behavior, physical monitor-DPI transitions,
+or real Steam account/API-key acceptance. Prior lifecycle evidence and disclosed distribution/notice
+limitations remain applicable; the new automated results do not certify these unverified checks.
+Private candidate hashes, commands and verification receipts belong under `.local-docs/` and `artifacts/`.
 
 ## v1.0.0 session import scope
 

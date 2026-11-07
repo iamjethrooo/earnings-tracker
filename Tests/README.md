@@ -26,13 +26,15 @@ The first restore downloads test packages; subsequent runs can use `--no-restore
 
 Tests do not start `App.OnStartup`, open the user's database, call `EnsureDeleted`, or disable migration checks. Persistence and migration tests use synthetic fixtures only. See [Database and storage](../Docs/Database.md) for profile isolation and migration rules.
 
+`SteamLibraryTests` uses synthetic HTTP responses and an injected credential store to verify account linking, profile validation, daily/manual sync, failed/private/incomplete libraries, empty libraries, cancellation, replacement rollback, unlinking, diagnostic privacy and app-ID matching. `SteamLibraryUiTests` verifies Settings link/unlink actions, secret clearing and busy controls, manual-cost preservation, Owned/Steam owned/Playable filters, game details and accessible Steam badge text. It renders Settings at 740/960 DIPs and Games at 740/1280 DIPs under `SteamVisuals` in the test output. These tests make no Steam requests and never write Windows credentials. Live Steam/API-key acceptance, native keyboard/screen-reader behavior and real monitor-DPI changes remain manual checks.
+
 `UserDataMigrationTests` uses GUID-owned synthetic filesystem profiles to cover the copy-only install/data separation, full-table fingerprints, EF migration IDs, SQLite integrity/FKs, frozen committed WAL, existing-backup bytes, verified snapshot recovery, retry, conflicts, locks and linked backup rejection. Its synthetic install-folder deletion tests filesystem containment only; it does not execute Velopack install/update/repair/uninstall. For v1.1.0 personal use and limited sharing, the owner accepted completed real-account native Stages 1–4A instead of repeating the lifecycle in a synthetic environment; interrupted installer/updater fault injection, legacy removal and delta verification are explicitly deferred, not passed. Do not rerun those stages or completed tests without an invalidating change. See [Build and release](../Docs/Release.md) for current acceptance and remaining final-package/backup-restore/delivery checks. Automated tests must still use isolated synthetic databases.
 
 ## Scope and limits
 
 Session imports preserve explicit game selection and unique name matches. Duplicate names can be resolved from positive Verified earnings only when exactly one rate agrees with the source duration precision and monetary rounding. Minute-only durations allow one minute of uncertainty in either direction; explicit seconds remain exact. Matching assumes Nerve pays the full recording when it crosses a cap, so positive earnings are compared against the full duration without clipping to remaining cap minutes. Missing/zero earnings, unknown rates, overlapping evidence and historical amounts that disagree with every rate remain unlinked. Reported earnings are never recalculated.
 
-Unresolved game matches are saved with a null game link, retain their verification status, and appear in Sessions' Ambiguous filter for audited manual linking. They contribute to overall accounting, but not a particular game's totals. Recording-identity conflicts remain excluded by the existing duplicate safeguards and can be inspected in the preview's View conflicts section. Re-import cannot erase or replace an existing game association. Tests cover mixed imports, manual resolution, re-import, source precision, caps and offscreen preview/filter/editor behavior.
+Unresolved game matches are saved with a null game link, retain their verification status, and appear in Sessions' Unlinked filter for audited manual linking. They contribute to overall accounting, but not a particular game's totals. Recording-identity conflicts remain excluded by the existing duplicate safeguards and can be inspected in the preview's Conflicts section. Re-import cannot erase or replace an existing game association. Tests cover mixed imports, manual resolution, re-import, source precision, caps and offscreen preview/filter/editor behavior.
 
 At a minute-only timestamp, a zero-duration, zero-earnings NotUploaded recording and a recording lasting at least a minute are distinct attempts. Import and re-import keep both, even when pasted separately. Differing earnings or game links for the same recording category, indistinguishable database matches, and collisions at precise timestamps still require resolution.
 
@@ -69,6 +71,15 @@ history. Fixtures use synthetic isolated databases and do not start the producti
 Native input, screen readers and monitor-DPI transitions remain unverified.
 
 ## Concurrent editing and imports
+
+`PayoutAssignmentTests` verifies same-day and delayed verification, manual reassignment, source
+preservation, re-import idempotence, payment coverage and unchecked legacy sessions, status changes,
+stale previews/editors, duplicate coverage, audit rollback and a synthetic baseline-to-assignment
+migration. `PayoutAssignmentUiTests` exercises the session selector and draft refresh, the two-step
+payment coverage editor, historical-import choice and reporting agreement. Offscreen captures at
+narrow/wide widths and 144-DPI export are under `PayoutAssignmentVisuals` in the test output.
+Physical keyboard, screen reader, monitor transitions and installed-profile interaction remain
+manual checks; all fixtures use isolated synthetic databases without default app startup.
 
 PRO-46's cases in `SessionsPresentationTests`, adapted to PRO-47's details editor, use isolated
 SQLite options: field-adjacent validation and accessible help text, draft navigation guards and

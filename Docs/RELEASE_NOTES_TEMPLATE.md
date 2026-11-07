@@ -4,16 +4,23 @@ Windows x64 · self-contained .NET 10 · unsigned · full-package updates.
 
 Application update configuration: {{configuration}}.
 
-- New analytics Dashboard with period selection, earnings trends, financial summaries, session
-  verification, hours played, top earning games and recent activity.
-- Compact Sessions explorer with search and filters, contextual details and deliberate Save/Cancel
-  editing with validation and recovery feedback.
-- Redesigned Games library and Game Details with clearer comparisons, ownership, acquisition
-  information and dated availability evidence. Previously verified Game Pass games remain visible
-  when stale, with a warning; stale evidence does not grant current playable availability.
-- Consistent navigation, headings and actions, with responsive layouts and clearer empty, loading,
-  error and stale-data presentation.
-- Existing accounting rules, imports, payout history, audited edits and saved ownership are retained.
+- Assign verified sessions to Current payout or a specific Paid/Processing payment. Review covered
+  sessions when adding or importing payments, with visible totals and differences.
+- Correct historical payout membership through the session editor. Newly verified historical
+  sessions join Current payout unless already assigned; unchanged historical records retain their
+  previous date-based treatment. Assignment changes are audited.
+- Optionally link Steam in Settings to mark matching catalog games as owned. Filter by Steam
+  ownership and sync manually or at most daily when Games opens. Failed syncs keep saved ownership;
+  manual ownership and purchase costs remain separate. Steam Game details must be public.
+- Cleaner Games and Game Details layouts, shorter Game Pass availability text, and no Game Pass
+  link in subscription details. Checked dates, expiry dates and stale-availability warnings remain.
+- Clearer payout coverage, import results and financial summaries across Dashboard, Payments,
+  Sessions and Statistics, plus simpler Settings and update feedback.
+
+This version adds session payout-assignment fields to the local database on first launch. It does
+not automatically reassign existing sessions. Keep an independent backup before upgrading.
+Steam API keys are stored in Windows Credential Manager and excluded from database backups;
+the linked account ID and cached library are included.
 
 This is an **unsigned Windows release**. Windows may show an unknown publisher or Windows SmartScreen
 warning, or block installation under its security policy. Keep Windows security protections enabled.

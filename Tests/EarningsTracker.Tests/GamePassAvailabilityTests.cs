@@ -36,7 +36,7 @@ public class GamePassAvailabilityTests(WpfTestHost host)
         Assert.Equal(new[] { 1, 2, 3, 9, 10, 11 }, model.GamesView.Cast<GameItemViewModel>().Select(item => item.Game.Id).Order());
         var stale = model.Games.Single(item => item.Game.Id == 2);
         Assert.Contains("Game Pass availability may have changed.", stale.GamePassStatus);
-        Assert.Contains(now.AddDays(-8).ToString("yyyy-MM-dd HH:mm"), stale.GamePassStatus);
+        Assert.Contains(now.AddDays(-8).ToString("yyyy-MM-dd"), stale.GamePassStatus);
         Assert.True(stale.GamePassNeedsVerification);
         Assert.False(stale.GamePassCurrentlyAvailable);
         model.SaveSubscriptions(["PC Game Pass"]);
@@ -50,9 +50,9 @@ public class GamePassAvailabilityTests(WpfTestHost host)
         model.ReloadCatalog();
         Assert.Contains(model.GamesView.Cast<GameItemViewModel>(), item => item.Game.Id == 2);
         var settings = new SettingsViewModel(database.Options);
-        Assert.Contains("1 currently verified available", settings.SubscriptionStatus);
-        Assert.Contains("4 previously included, verification stale/expired", settings.SubscriptionStatus);
-        Assert.Contains("2 currently verified not included", settings.SubscriptionStatus);
+        Assert.Contains("1 current", settings.SubscriptionStatus);
+        Assert.Contains("4 outdated", settings.SubscriptionStatus);
+        Assert.Contains("2 not included", settings.SubscriptionStatus);
         Assert.Contains("Stale verification does not confirm removal", settings.SubscriptionStatus);
         using var db = database.CreateContext();
         Assert.Equal(now.AddDays(-8), db.SubscriptionAvailability.Single(entry => entry.GameId == 2).VerifiedAt);
@@ -79,7 +79,7 @@ public class GamePassAvailabilityTests(WpfTestHost host)
         model.ReloadCatalog();
         Assert.DoesNotContain(model.GamesView.Cast<GameItemViewModel>(), item => item.Game.Id == 2);
         Assert.Same(original, model.Games.Single(item => item.Game.Id == 2));
-        Assert.Contains("Not included · verification current", original.GamePassStatus);
+        Assert.Contains("Not included", original.GamePassStatus);
         Assert.False(original.GamePassCurrentlyAvailable);
         Assert.DoesNotContain("Game Pass availability may have changed.", original.GamePassStatus);
         return Task.CompletedTask;

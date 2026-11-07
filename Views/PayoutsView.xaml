@@ -26,7 +26,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel>
                 <TextBlock Text="Payments" Style="{StaticResource TabName}"/>
-                <TextBlock Text="Review payouts, adjustments and reconciliation." Style="{StaticResource PageDescription}"/>
+
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="Add payout" Click="AddPayoutButton_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
@@ -42,10 +42,16 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Imported transactions and verified session earnings" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,16,8"/>
-                    <TextBlock Text="Select a payout to edit. Verified session rows are read-only here." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,0,16,0"/>
+
+                    <TextBlock x:Name="SessionReadOnlyNotice" Visibility="Collapsed" Text="Session earnings are read-only here." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,0,16,0"/>
                     <TextBlock x:Name="ReconciliationNotice" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,8,16,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
                     <TextBlock x:Name="UndatedSessionsNotice" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,8,16,0" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+                    <Expander Header="How calculated" Margin="0,4,16,0" AutomationProperties.Name="Payment calculation details">
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="Total earned includes verified sessions and eligible separate bonuses/corrections. Separate adjustments count when Verified, Paid, or Processing; included adjustments aren't added again." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                            <TextBlock Text="Total paid includes Paid and Processing payments. Amount owed includes verified sessions in Current payout and historical sessions after the latest Paid/Processing payment day. Hidden or inactive payment assignments return to Current payout. Missing posted dates and separate adjustments are excluded from Amount owed." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Expander>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="EditButton" Content="Edit selected" Click="EditPayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" IsEnabled="False" Margin="0,0,8,0"/>
@@ -70,21 +76,21 @@
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Total earned" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="TotalEarnedValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource VerifiedTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Verified sessions + eligible separate adjustments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                    <TextBlock Text="Verified sessions + separate adjustments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="1" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource AccentTextColor}" MinHeight="112">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Total paid" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="TotalPaidValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource AccentTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Payments with Paid or Processing status" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                    <TextBlock Text="Paid + Processing" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="2" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource PendingTextColor}" MinHeight="112">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Amount owed" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="AmountOwedValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource PendingTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Posted earnings after payment cutoff" ToolTip="Verified sessions posted after the latest Paid or Processing payment. Without a payment, all dated verified sessions count. Separate adjustments do not affect this balance." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                    <TextBlock Text="Unpaid verified sessions" ToolTip="Verified sessions in Current payout, plus historical sessions after the latest Paid or Processing payment day. Sessions assigned to an inactive or hidden payment return to Amount Owed. Unknown posted dates and separate adjustments remain excluded." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

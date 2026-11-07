@@ -13,6 +13,10 @@ namespace EarningsTracker.Models
         public Game? Game { get; set; }
         public int? PayoutId { get; set; }
         public Payout? Payout { get; set; }
+        // PayoutId retains legacy source evidence; settlement membership is independent.
+        public bool HasExplicitPayoutAssignment { get; set; }
+        public int? AssignedPayoutId { get; set; }
+        public Payout? AssignedPayout { get; set; }
         public DateTime Date { get; set; }
         // Date is retained for compatibility and mirrors the recording date.
         public DateTime RecordedDate { get; set; }

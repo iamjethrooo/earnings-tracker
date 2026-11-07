@@ -11,7 +11,7 @@ internal sealed class GameOwnershipWindow : Window
 {
     internal GameOwnershipWindow(GameItemViewModel item)
     {
-        Title = "Ownership / purchase cost"; Width = 450; SizeToContent = SizeToContent.Height;
+        Title = "Ownership"; Width = 450; SizeToContent = SizeToContent.Height;
         MinWidth = 360; MinHeight = 300;
         MaxHeight = Math.Max(MinHeight, SystemParameters.WorkArea.Height - 40);
         ResizeMode = ResizeMode.CanResize; WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -22,24 +22,25 @@ internal sealed class GameOwnershipWindow : Window
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
         panel.Children.Add(new TextBlock { Text = item.Game.Name, FontSize = 18, TextWrapping = TextWrapping.Wrap });
-        var owned = new CheckBox { Content = "I own this game", IsChecked = item.IsOwned, Margin = new Thickness(0, 12, 0, 12) };
+        var owned = new CheckBox { Content = "I also own this game manually", IsChecked = item.Ownership?.IsOwned == true, Margin = new Thickness(0, 12, 0, 12) };
+        if (!item.IsSteamOwned) owned.Content = "I own this game";
         panel.Children.Add(owned);
-        panel.Children.Add(new TextBlock { Text = "Owned on / acquisition source" });
+        if (item.IsSteamOwned) panel.Children.Add(new TextBlock { Text = "Owned on Steam. Manage the linked account in Settings.",
+            TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) });
+        panel.Children.Add(new TextBlock { Text = "Store or source" });
         var source = new ComboBox { IsEditable = true, Text = item.Ownership?.Source ?? "", Margin = new Thickness(0, 5, 0, 12),
             ItemsSource = new[] { "Steam", "Epic Games", "Xbox / Microsoft Store", "GOG", "EA app", "Ubisoft Connect", "Battle.net", "Direct download" } };
         panel.Children.Add(source);
-        panel.Children.Add(new TextBlock { Text = "Purchase cost (optional; 0 for a free acquisition)" });
+        panel.Children.Add(new TextBlock { Text = "Purchase cost (optional)" });
         var cost = new TextBox { Text = item.Ownership?.PurchaseAmount?.ToString(CultureInfo.CurrentCulture) ?? "", Margin = new Thickness(0, 5, 0, 12) };
         panel.Children.Add(cost);
-        panel.Children.Add(new TextBlock { Text = "Currency (three-letter code)" });
+        panel.Children.Add(new TextBlock { Text = "Currency" });
         var currency = new TextBox { Text = item.Ownership?.Currency ?? "PHP", MaxLength = 3, Margin = new Thickness(0, 5, 0, 12) };
         panel.Children.Add(currency);
         cost.Style = currency.Style = (Style)FindResource("ModalTextBox");
         AutomationProperties.SetName(source, "Owned on / acquisition source");
         AutomationProperties.SetName(cost, "Purchase cost (optional)");
         AutomationProperties.SetName(currency, "Currency (three-letter code)");
-        panel.Children.Add(new TextBlock { Text = "Subscription access is managed in Settings. Purchase estimates use current exchange rates and do not change earnings records.",
-            Style = (Style)FindResource("DashboardStatDescription"), TextWrapping = TextWrapping.Wrap });
         var error = new TextBlock { Style = (Style)FindResource("InlineValidationText"), Margin = new Thickness(0, 8, 0, 0) };
         AutomationProperties.SetLiveSetting(error, System.Windows.Automation.AutomationLiveSetting.Polite);
         panel.Children.Add(error);

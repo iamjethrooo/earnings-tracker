@@ -111,7 +111,7 @@ public class PayoutsPresentationTests(WpfTestHost host)
         await Preview(view);
         skip.IsChecked = true;
         Assert.False(confirm.IsEnabled);
-        Assert.Contains("Conflicting rows block", ((TextBlock)view.FindName("ImportGuidance")).Text);
+        Assert.Contains("Conflicting rows must be corrected", ((TextBlock)view.FindName("ImportGuidance")).Text);
         using var read = database.CreateContext();
         Assert.Equal(2, read.Payouts.Count());
         Assert.Empty(read.PayoutChanges);

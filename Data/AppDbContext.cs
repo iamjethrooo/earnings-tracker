@@ -69,6 +69,15 @@ namespace EarningsTracker.Data
                 .HasForeignKey(s => s.PayoutId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<Session>()
+                .HasOne(s => s.AssignedPayout)
+                .WithMany()
+                .HasForeignKey(s => s.AssignedPayoutId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Session>()
+                .Property(s => s.HasExplicitPayoutAssignment)
+                .HasDefaultValue(false);
+
             modelBuilder.Entity<Bookmark>()
                 .HasOne(b => b.Game)
                 .WithOne()

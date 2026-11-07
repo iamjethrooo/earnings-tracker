@@ -56,7 +56,7 @@ public sealed class ApplicationBackupTests
             Assert.Equal(2.3456m, Assert.Single(restored.Sessions).Earnings);
             Assert.Equal("Synthetic audit", Assert.Single(restored.SessionChanges).ChangeType);
             Assert.Equal("false", CatalogService.GetSetting(restored, "updates.automatic"));
-            Assert.Single(restored.Database.GetAppliedMigrations());
+            Assert.Equal(restored.Database.GetMigrations(), restored.Database.GetAppliedMigrations());
         }
         using (var prior = new AppDbContext(OptionsFor(recovery!)))
             Assert.Equal(2, prior.Games.Count());

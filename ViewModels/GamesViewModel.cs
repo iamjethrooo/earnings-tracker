@@ -1,4 +1,5 @@
 using EarningsTracker.Data;
+using EarningsTracker.Enums;
 using EarningsTracker.Models;
 using System;
 using System.Collections.Generic;
@@ -41,24 +42,27 @@ namespace EarningsTracker.ViewModels
         public List<string> GenreOptions { get; private set; } = ["All genres"];
         public List<string> StoreOptions { get; private set; } = ["All stores"];
         private string _selectedGenre = "All genres", _selectedStore = "All stores";
-        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly;
+        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly, _steamOnly;
         public string SelectedGenre { get => _selectedGenre; set { if (_selectedGenre == value) return; _selectedGenre = value; ApplyFilters(); } }
         public string SelectedStore { get => _selectedStore; set { if (_selectedStore == value) return; _selectedStore = value; ApplyFilters(); } }
         public bool FreeOnly { get => _freeOnly; set { if (_freeOnly == value) return; _freeOnly = value; ApplyFilters(); OnPropertyChanged(nameof(FreeOnly)); } }
         public bool OwnedOnly { get => _ownedOnly; set { if (_ownedOnly == value) return; _ownedOnly = value; ApplyFilters(); OnPropertyChanged(nameof(OwnedOnly)); } }
+        public bool SteamOnly { get => _steamOnly; set { if (_steamOnly == value) return; _steamOnly = value; ApplyFilters(); OnPropertyChanged(nameof(SteamOnly)); } }
         public bool GamePassOnly { get => _gamePassOnly; set { if (_gamePassOnly == value) return; _gamePassOnly = value; ApplyFilters(); OnPropertyChanged(nameof(GamePassOnly)); } }
         public bool PlayableOnly { get => _playableOnly; set { if (_playableOnly == value) return; _playableOnly = value; ApplyFilters(); OnPropertyChanged(nameof(PlayableOnly)); } }
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
+        public string SteamStatus { get; private set; } = "";
         public bool ShowPriceSortHelp { get; private set; }
-        public string PriceSortHelp => "Lowest price compares saved PH offers and active free/giveaway offers using saved PHP exchange rates, within active/archived groups. Unknown or missing-FX prices sort last. Prices may be outdated; inspect editions and checked dates in details.";
+        public string PriceSortHelp => "Saved PH prices · may be outdated";
         public string GamePassFilterHelp => "PC Game Pass includes previously verified games. Stale/expired verification does not confirm current availability; Playable now still requires current verification and a selected membership.";
 
         internal void SetStatus(string text) { CatalogStatus = text; OnPropertyChanged(nameof(CatalogStatus)); }
 
         private sealed record CatalogSnapshot(Dictionary<int, GameMetadata> Metadata, ILookup<int, GameGenre> Genres,
             ILookup<int, StoreOffer> Offers, ILookup<int, SubscriptionAvailability> Subscriptions,
-            Dictionary<int, GameOwnership> Owned, Dictionary<string, ExchangeRate> Rates, HashSet<string> MySubscriptions);
+            Dictionary<int, GameOwnership> Owned, Dictionary<string, ExchangeRate> Rates, HashSet<string> MySubscriptions,
+            SteamLibrarySnapshot? Steam, string SteamStatus);
 
         private CatalogSnapshot ReadCatalog()
         {
@@ -69,7 +73,8 @@ namespace EarningsTracker.ViewModels
             var subscriptions = db.SubscriptionAvailability.AsNoTracking().ToList().ToLookup(x => x.GameId);
             var owned = db.GameOwnership.AsNoTracking().ToDictionary(x => x.GameId);
             var rates = db.ExchangeRates.AsNoTracking().ToDictionary(x => x.Currency);
-            return new(metadata, genres, offers, subscriptions, owned, rates, new AppSettings(_databaseOptions).Subscriptions());
+            return new(metadata, genres, offers, subscriptions, owned, rates, new AppSettings(_databaseOptions).Subscriptions(),
+                SteamLibrary.Read(db), SteamLibrary.Status(db));
         }
 
         internal void ReloadCatalog() => ApplyCatalog(ReadCatalog());
@@ -77,15 +82,18 @@ namespace EarningsTracker.ViewModels
 
         private void ApplyCatalog(CatalogSnapshot snapshot)
         {
-            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions) = snapshot;
+            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions, steam, steamStatus) = snapshot;
             MySubscriptions = mySubscriptions;
+            SteamStatus = steamStatus;
+            OnPropertyChanged(nameof(SteamStatus));
             _reloadingCatalog = true;
             try
             {
                 using var deferred = GamesView.DeferRefresh();
                 foreach (var item in Games)
                     item.SetCatalog(metadata.GetValueOrDefault(item.Game.Id), genres[item.Game.Id].Select(x => x.Name).ToList(),
-                        offers[item.Game.Id].ToList(), subscriptions[item.Game.Id].ToList(), owned.GetValueOrDefault(item.Game.Id), rates);
+                        offers[item.Game.Id].ToList(), subscriptions[item.Game.Id].ToList(), owned.GetValueOrDefault(item.Game.Id), rates,
+                        SteamGameMatching.IsOwned(metadata.GetValueOrDefault(item.Game.Id), offers[item.Game.Id], steam));
             }
             finally { _reloadingCatalog = false; }
             GenreOptions = new[] { "All genres" }.Concat(genres.SelectMany(x => x).Select(x => x.Name).Distinct().Order()).ToList();
@@ -121,19 +129,37 @@ namespace EarningsTracker.ViewModels
             if (loadImmediately)
             {
                 var snapshot = ReadGames();
-                PublishGames(snapshot.games, snapshot.bookmarkedIds, ReadCatalog());
+                PublishGames(snapshot.games, snapshot.bookmarkedIds, snapshot.cycleMinutes, ReadCatalog());
             }
         }
 
-        private (List<Game> games, HashSet<int> bookmarkedIds) ReadGames()
+        private (List<Game> games, HashSet<int> bookmarkedIds, Dictionary<int, decimal> cycleMinutes) ReadGames()
         {
             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
-            return (db.Games.AsNoTracking().ToList(), db.Bookmarks.Select(b => b.GameId).ToHashSet());
+            var games = db.Games.AsNoTracking().ToList();
+            var resetDates = games.ToDictionary(game => game.Id, game => game.CapResetDate?.Date);
+            var cycleMinutes = new Dictionary<int, decimal>();
+            var verifiedSessions = db.Sessions.AsNoTracking()
+                .Where(session => session.GameId.HasValue && session.Status == SessionStatus.Verified)
+                .Select(session => new { session.GameId, session.Duration, session.Date, session.RecordedDate })
+                .ToList();
+
+            foreach (var session in verifiedSessions)
+            {
+                var gameId = session.GameId!.Value;
+                if (!resetDates.TryGetValue(gameId, out var resetDate)) continue;
+                var recordedDate = (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
+                if (resetDate.HasValue && recordedDate < resetDate.Value) continue;
+                cycleMinutes[gameId] = cycleMinutes.GetValueOrDefault(gameId) + (decimal)session.Duration.TotalMinutes;
+            }
+
+            return (games, db.Bookmarks.Select(b => b.GameId).ToHashSet(), cycleMinutes);
         }
 
-        private void PublishGames(List<Game> games, HashSet<int> bookmarkedIds, CatalogSnapshot catalog)
+        private void PublishGames(List<Game> games, HashSet<int> bookmarkedIds, Dictionary<int, decimal> cycleMinutes, CatalogSnapshot catalog)
         {
             var rows = games.Select(game => new GameItemViewModel(game, bookmarkedIds.Contains(game.Id), _databaseOptions)).ToList();
+            foreach (var row in rows) row.SetCycleMinutes(cycleMinutes.GetValueOrDefault(row.Game.Id));
             foreach (var item in Games) item.PropertyChanged -= GameItem_PropertyChanged;
             ((BatchObservableCollection<GameItemViewModel>)Games).ReplaceAll(rows);
             foreach (var item in Games) item.PropertyChanged += GameItem_PropertyChanged;
@@ -152,7 +178,7 @@ namespace EarningsTracker.ViewModels
             try
             {
                 var snapshot = await Task.Run(() => (games: ReadGames(), catalog: ReadCatalog()));
-                PublishGames(snapshot.games.games, snapshot.games.bookmarkedIds, snapshot.catalog);
+                PublishGames(snapshot.games.games, snapshot.games.bookmarkedIds, snapshot.games.cycleMinutes, snapshot.catalog);
             }
             catch (Exception ex)
             {
@@ -167,7 +193,7 @@ namespace EarningsTracker.ViewModels
         {
             if (e.PropertyName == nameof(GameItemViewModel.IsOwned))
             {
-                if (!_reloadingCatalog && (_ownedOnly || _playableOnly)) ApplyFilters();
+                if (!_reloadingCatalog && (_ownedOnly || _playableOnly || _steamOnly)) ApplyFilters();
                 return;
             }
             if (e.PropertyName == nameof(GameItemViewModel.IsBookmarked))
@@ -242,10 +268,10 @@ namespace EarningsTracker.ViewModels
         {
             _searchText = "";
             _selectedGenre = "All genres"; _selectedStore = "All stores";
-            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = false;
+            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = _steamOnly = false;
             _bookmarkedOnly = false;
             foreach (var property in new[] { nameof(SelectedGenre), nameof(SelectedStore), nameof(FreeOnly), nameof(OwnedOnly),
-                nameof(GamePassOnly), nameof(PlayableOnly), nameof(BookmarkedOnly) }) OnPropertyChanged(property);
+                nameof(GamePassOnly), nameof(PlayableOnly), nameof(SteamOnly), nameof(BookmarkedOnly) }) OnPropertyChanged(property);
             ApplyFilters();
         }
 
@@ -275,6 +301,7 @@ namespace EarningsTracker.ViewModels
                     && !gameItem.Subscriptions.Any(x => x.Included && x.Service == _selectedStore)) return false;
                 if (_freeOnly && !gameItem.FreeToPlay) return false;
                 if (_ownedOnly && !gameItem.IsOwned) return false;
+                if (_steamOnly && !gameItem.IsSteamOwned) return false;
                 var now = DateTime.UtcNow;
                 if (_gamePassOnly && (CatalogPresentation.GamePassEntry(gameItem.Subscriptions) is not { } gamePass
                     || !CatalogPresentation.PreviouslyIncluded(gamePass, now))) return false;

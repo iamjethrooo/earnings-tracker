@@ -37,7 +37,7 @@ The first successful transition displays the new data location. Former files rem
 
 Settings can create a standalone `.db` backup in a user-selected location (defaulting to `Backups` under the active data folder). SQLite's backup API captures committed WAL transactions without copying a live base file alone. The app checks SQLite integrity, foreign keys, migration history, and required application tables before publishing the file. An existing destination is never overwritten. Keep backup files private: they contain personal financial records in unencrypted SQLite form.
 
-The database backup includes all tables: sessions, payouts, adjustments, audit history and source evidence, games/catalog data, bookmarks/ownership, rates, and saved settings/preferences. Cached `Artwork` is excluded because it can be fetched again. The IsThereAnyDeal API key is stored in Windows Credential Manager and is excluded; it remains unchanged by restore. Existing backup files are not nested into a new backup.
+The database backup includes all tables: sessions, payouts, adjustments, audit history and source evidence, games/catalog data, bookmarks/ownership, rates, and saved settings/preferences. This includes the linked Steam account ID, cached owned app IDs and sync timestamps in `CatalogSettings`. Steam ownership is combined with manual ownership when games load; it does not overwrite `GameOwnership`, purchase costs or history. Cached `Artwork` is excluded because it can be fetched again. IsThereAnyDeal and Steam API keys are stored separately in Windows Credential Manager and are excluded; they remain unchanged by restore. Relink Steam if a restored account has no matching saved key. Existing backup files are not nested into a new backup.
 
 Restore accepts a selected `.db` with the current migration history, validates it, and asks for explicit confirmation before scheduling replacement. The app then closes. On the next launch, under the normal instance mutex and before constructing views, it revalidates the staged file, creates a verified snapshot of the current database in `Backups/BeforeUserRestore`, and uses SQLite's backup API to replace the database. It checks the result before opening financial views and reports the recovery path on success. A failure or interrupted operation stops startup and retains the pending file and recovery snapshots for review; it never removes the current database to make a restore work. Close other database tools and resolve locks or file permissions before retrying. No automatic cleanup deletes recovery snapshots. Restoring an older application schema or a future migration history is rejected; use a matching application version and a reviewed recovery path instead.
 
@@ -64,6 +64,49 @@ PRO-10's disposable filesystem rehearsal covers actual app startup/restarts, mis
 For the migration and recovery audit trail, consult the local-only `.local-docs/DATA-LOCATION-MIGRATION.md`, `.local-docs/DATABASE-STORAGE-ISOLATION.md`, and `.local-docs/LEGACY-DATABASE-RECOVERY.md` when available.
 
 ## Concurrent edits and import previews
+
+### Session payout assignments
+
+Sessions imported now default to **Current payout**, the open cycle awaiting a payment.
+In Sessions, select a recording, choose **Edit session**, and change **Payout assignment**
+to Current payout or a specific Paid/Processing Payment. Dates and earnings remain independent
+of this choice. New-session import previews also offer a payment choice for the whole new batch;
+re-importing an existing session preserves its assignment. Pending sessions first verified now
+join the open cycle unless they already have an explicit assignment.
+
+For example, a November 5 session verified after a November 5 payment stays in Current payout.
+An existing historical session excluded by the former date cutoff can be moved to Current payout
+without changing its November 5 posted date.
+
+New Paid/Processing payments, and records first changing into those statuses, offer a coverage
+preview. Review the checked sessions before saving. Candidates are verified sessions currently
+owed with known posted dates no later than the payment day. Unchecked candidates remain current;
+later verifications are not consumed by that payment. Differences between the selected session
+earnings and payment amount are shown for review, without rewriting either amount. Multiple imported
+payments default to covering each candidate once, in payment-date order; selecting one session
+for two payments rejects the batch. Sessions being force-verified/updated by the same transaction
+import are excluded from its coverage choices. Internal service callers that omit a coverage
+preview retain their immediate-write contract and do not capture explicitly current sessions.
+
+`Session.HasExplicitPayoutAssignment` distinguishes new/edited allocation from legacy inference.
+An explicit assignment with a null `AssignedPayoutId` means Current payout; a non-null ID identifies
+its Payment. The original `PayoutId` is retained separately for historical source evidence.
+`AddSessionPayoutAssignments` adds these fields and a restrictive settlement foreign key. Existing
+rows default to legacy inference, preserving the previous posted-day cutoff until explicitly
+changed or selected in a payment coverage preview. No historical bulk reassignment runs at startup.
+
+Amount Owed sums verified current sessions with known posted dates. Explicitly assigned sessions
+are excluded while their Payment is Paid/Processing and visible. If that payment is hidden or
+becomes ineligible, those earnings return to Current payout while their membership is retained;
+restoring eligibility settles them again. Unknown posting dates remain excluded and explained,
+including after assignment edits. Total Earned, Total Paid, adjustment reconciliation and signs
+retain their existing definitions. Dashboard and Statistics use the same session membership rule
+for Current payout and continue to chart by recording date.
+
+Assignment edits and payment coverage changes include before/after assignment values in the
+session audit. Coverage commits recheck candidate records and payment eligibility inside the
+SQLite transaction; changed candidates require a new preview. Payment, assignment and audit writes
+commit together, and refresh notifications follow commit. Original source links/text are retained.
 
 Normal application launches acquire the existing per-folder `Local\Nerve.EarningsTracker-…` mutex before database initialization. Equivalent absolute folder spellings, including a trailing separator, share an identity. Production also retains its former compatibility identity when selected through an explicit Release override. Different scratch profiles have separate locks. The mutex is scoped to a Windows session; external database tools and processes that bypass startup do not participate in it. It is not an exclusive SQLite file lock or a live cross-process refresh channel.
 

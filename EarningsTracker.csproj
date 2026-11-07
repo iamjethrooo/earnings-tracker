@@ -55,6 +55,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Data\steam-app-mappings.json" />
     <Resource Include="Resources\Fonts\Inter-VariableFont_opsz,wght.ttf" />
     <None Update="Resources\Fonts\OFL.txt">
       <TargetPath>Licenses\Inter-OFL.txt</TargetPath>

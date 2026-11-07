@@ -178,9 +178,11 @@ public class CatalogUiTests(WpfTestHost host)
         view.Measure(new Size(740, 560)); view.Arrange(new Rect(0, 0, 740, 560)); view.UpdateLayout();
         await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         var scroll = view.DetailsScroll!;
-        var metadata = (StackPanel)view.FindName("CatalogDetailsPanel");
+        var metadata = Descendants<TextBlock>(view).Single(text => text.Text.StartsWith("A lengthy description"));
         var sessions = (ListBox)view.FindName("GameSessionsList");
         Assert.True(metadata.ActualHeight > 220);
+        Assert.Equal(TextWrapping.Wrap, metadata.TextWrapping);
+        Assert.Equal(TextTrimming.None, metadata.TextTrimming);
         Assert.Empty(Descendants<ScrollViewer>(metadata));
         Assert.True(scroll.ScrollableHeight > 0);
         Assert.Equal(19, sessions.Items.Count); // The metadata header and 18 sessions share one surface.

@@ -16,7 +16,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                 <TextBlock Text="Statistics" Style="{StaticResource TabName}"/>
-                <TextBlock Text="Explore earnings and activity over time." Style="{StaticResource PageDescription}"/>
+
             </StackPanel>
 
             </Grid>
@@ -34,28 +34,35 @@
                         <StackPanel>
                             <TextBlock Text="Today" Style="{StaticResource DashboardStatLabel}"/>
                             <TextBlock Text="{Binding TodayEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource AccentTextColor}"/>
-                            <TextBlock Text="Verified sessions + separate adjustments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
                         <StackPanel>
                             <TextBlock Text="This Week" Style="{StaticResource DashboardStatLabel}"/>
                             <TextBlock Text="{Binding ThisWeekEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
-                            <TextBlock Text="Monday through today" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                            <TextBlock Text="Since Monday" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
                         <StackPanel>
                             <TextBlock Text="This Month" Style="{StaticResource DashboardStatLabel}"/>
                             <TextBlock Text="{Binding ThisMonthEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
-                            <TextBlock Text="Month to date" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+
                         </StackPanel>
                     </Border>
                 </UniformGrid>
 
+                <Expander Header="How calculated" Margin="0,0,0,12" AutomationProperties.Name="Statistics calculation details">
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="Earned includes verified sessions and eligible separate bonuses/corrections. Sessions use recording dates; adjustments use transaction dates. Game totals exclude adjustments." Style="{StaticResource PageDescription}"/>
+                        <TextBlock Text="Current payout includes unpaid assigned sessions with known posted dates. Historical sessions use the latest Paid/Processing payment cutoff; separate adjustments use transaction dates after that cutoff." Style="{StaticResource PageDescription}"/>
+                        <TextBlock Text="Cap usage counts verified time since the last reset. No reset date means all history." Style="{StaticResource PageDescription}"/>
+                    </StackPanel>
+                </Expander>
                 <TextBlock Text="Earnings analysis" Style="{StaticResource SectionHeading}"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,8,0,12">
-                    <TextBlock Text="EARNINGS RANGE" Style="{StaticResource FilterLabel}" Margin="0,0,8,0"/>
+                    <TextBlock Text="Period" Style="{StaticResource FilterLabel}" Margin="0,0,8,0"/>
                     <ComboBox x:Name="EarningsRangeComboBox" Width="165" AutomationProperties.Name="Earnings chart date range" SelectedIndex="0" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
                         <ComboBoxItem Content="Last 30 days" Tag="30"/>
                         <ComboBoxItem Content="Last 90 days" Tag="90"/>
@@ -78,10 +85,10 @@
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
                                 <TextBlock Text="Earnings over time" Style="{StaticResource SectionHeading}"/>
-                                <TextBlock Text="Verified sessions plus separate bonuses and corrections" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+
                             </StackPanel>
                             <Canvas Grid.Row="1" x:Name="EarningsTrendCanvas" Height="230" SizeChanged="EarningsTrendCanvas_SizeChanged"/>
-                            <Expander Grid.Row="2" x:Name="TrendValuesExpander" Header="View trend values" Margin="0,10,0,0"
+                            <Expander Grid.Row="2" x:Name="TrendValuesExpander" Header="Values" Margin="0,10,0,0"
                                       Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeSupporting}">
                                 <ListBox x:Name="TrendValuesList" ItemsSource="{Binding TrendPeriods}" Height="180" Margin="0,8,0,0"
                                          Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
@@ -115,9 +122,9 @@
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
                                 <TextBlock Text="Earnings by game" Style="{StaticResource SectionHeading}"/>
-                                <TextBlock Text="Top 8 titles · verified session earnings. Bars are relative to the highest earner." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="Top 8 · verified session earnings" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
-                            <TextBlock Grid.Row="1" Text="No verified sessions in this range. Choose another range or import sessions." TextWrapping="Wrap">
+                            <TextBlock Grid.Row="1" Text="No verified sessions in this period." TextWrapping="Wrap">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -150,7 +157,7 @@
                             <RowDefinition Height="220"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Text="Game cap utilization" Style="{StaticResource SectionHeading}" Margin="4,0,4,8"/>
-                        <TextBlock Grid.Row="1" Text="Verified recording time in the current cap cycle. Games without a reset date include all recorded history." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="1" Text="Verified time since the last reset." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap"/>
                         <TextBlock Grid.Row="2" x:Name="GameAssociationNoticeText" Text="{Binding GameAssociationNotice}" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -208,7 +215,7 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
-            <TextBlock x:Name="StatisticsViewEmptyState" Grid.Row="3" Text="No linked history for active games. Import sessions through a game or review game links in Sessions.">
+            <TextBlock x:Name="StatisticsViewEmptyState" Grid.Row="3" Text="No linked session history. Import or link sessions in Sessions.">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
                         <Setter Property="Visibility" Value="Collapsed"/>

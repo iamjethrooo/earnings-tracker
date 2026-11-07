@@ -139,6 +139,17 @@ namespace EarningsTracker.Utilities
             }
             foreach (var update in result.Updates)
                 result.ExpectedPayoutStates.Add(update.Id, PayoutService.CaptureEditState(update.Existing));
+            var coveredIds = new HashSet<int>();
+            var updatedSessionIds = result.ForceVerifiedSessionUpdates.Select(u => u.Id).ToHashSet();
+            var paymentsNeedingCoverage = result.NewPayouts.Where(p => PayoutAssignments.NeedsCoverage(p))
+                .Concat(result.Updates.Where(u => PayoutAssignments.NeedsCoverage(u.Imported, u.Existing)).Select(u => u.Imported));
+            foreach (var payment in paymentsNeedingCoverage.OrderBy(p => p.Date))
+            {
+                var coverage = PayoutAssignments.Preview(_db, payment, updatedSessionIds);
+                foreach (var choice in coverage.Sessions)
+                    choice.IsSelected = coveredIds.Add(choice.SessionId);
+                result.CoveragePreviews.Add(coverage);
+            }
             return result;
         }
 
@@ -168,6 +179,15 @@ namespace EarningsTracker.Utilities
                 || result.ExpectedSessionStates.Any(pair =>
                     !current.ExpectedSessionStates.TryGetValue(pair.Key, out var state) || state != pair.Value))
                 throw new InvalidOperationException("Payouts or sessions changed after this preview. Return to input and preview again; no changes were committed.");
+            if (!current.CoveragePreviews.Select(p => p.Payment).SequenceEqual(result.CoveragePreviews.Select(p => p.Payment)))
+                throw new InvalidOperationException("Payment coverage changed. Return to input and preview again.");
+            foreach (var coverage in result.CoveragePreviews)
+                PayoutAssignments.ValidateCoverage(_db, coverage.Payment, coverage);
+            var selectedIds = result.CoveragePreviews.SelectMany(p => p.Sessions.Where(s => s.IsSelected)).Select(s => s.SessionId).ToList();
+            if (selectedIds.Count != selectedIds.Distinct().Count())
+                throw new InvalidOperationException("A session can belong to only one payment. Review the selected sessions before importing.");
+            var openSessionIds = PayoutAccounting.CurrentPayoutSessions(_db.Sessions.AsNoTracking().ToList(), _db.Payouts.AsNoTracking().ToList())
+                .Select(s => s.Id).ToHashSet();
             foreach (var payout in result.NewPayouts)
             {
                 payout.ImportedAt = DateTime.Now;
@@ -212,11 +232,16 @@ namespace EarningsTracker.Utilities
                 var session = _db.Sessions.Find(update.Id)
                     ?? throw new InvalidOperationException($"Session {update.Id} no longer exists. Import was not committed.");
                 var before = SessionService.Snapshot(session);
+                var wasVerified = session.Status == Enums.SessionStatus.Verified;
+                var keepOpen = !wasVerified || (result.CoveragePreviews.Count > 0 && openSessionIds.Contains(session.Id));
                 var preservePostedDate = session.IsForceVerified && session.Status == Enums.SessionStatus.Verified;
                 var postedDate = preservePostedDate ? session.PostedDate : update.Session.PostedDate;
                 // JSON decimal formatting can differ after SQLite reloads an unchanged amount.
                 var changed = session.Status != Enums.SessionStatus.Verified || !session.IsForceVerified
-                    || session.PostedDate != postedDate || session.Earnings != update.Session.Earnings;
+                    || session.PostedDate != postedDate || session.Earnings != update.Session.Earnings
+                    || (!session.HasExplicitPayoutAssignment && keepOpen);
+                if (keepOpen)
+                    session.HasExplicitPayoutAssignment = true;
                 session.Status = Enums.SessionStatus.Verified;
                 session.PostedDate = postedDate;
                 session.IsForceVerified = true;
@@ -236,6 +261,14 @@ namespace EarningsTracker.Utilities
                         SourceText = update.Session.ImportSourceText
                     });
                 }
+            }
+            _db.SaveChanges();
+            var assignedInBatch = new HashSet<int>();
+            foreach (var coverage in result.CoveragePreviews)
+            {
+                var updateId = result.Updates.FirstOrDefault(u => ReferenceEquals(u.Imported, coverage.Payment)).Id;
+                var payment = updateId == 0 ? coverage.Payment : _db.Payouts.Single(p => p.Id == updateId);
+                PayoutAssignments.ApplyCoverage(_db, payment, coverage, assignedInBatch);
             }
             _db.SaveChanges();
             transaction.Commit();

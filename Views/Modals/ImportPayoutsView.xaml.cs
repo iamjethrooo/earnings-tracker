@@ -165,12 +165,14 @@ namespace EarningsTracker.Views.Modals
         private void ShowSummary(PayoutImportResult result, bool completed = false)
         {
             ImportSummarySections.Children.Clear();
-            SetOutcome(completed ? "Import saved." : "Review the summary before importing.", completed ? "VerifiedTextColor" : "DefaultTextColor");
-            ImportGuidance.Text = completed ? "Saved changes retain their source evidence and audit history. Choose Done to close." :
-                result.ConflictingRows.Count > 0 ? "Conflicting rows block this import. Return to input to correct them and preview again." :
-                result.AmbiguousPayoutMatches.Count + result.AmbiguousForceVerifiedSessions.Count > 0 ? "Ambiguous rows cannot be matched safely. Review Skipped below, then explicitly choose to skip them or return to input. No changes have been saved." :
-                result.AddedCount + result.UpdatedCount == 0 ? "No additions or updates are available. Review skipped or failed rows, or return to input." :
-                "Only added and updated records will be saved. Review skipped and failed rows; signed USD amounts are preserved.";
+            SetOutcome(completed ? "Import saved." : "Import preview", completed ? "VerifiedTextColor" : "DefaultTextColor");
+            ImportGuidance.Text = completed ? "" :
+                result.ConflictingRows.Count > 0 ? "Conflicting rows must be corrected before importing." :
+                result.AmbiguousPayoutMatches.Count + result.AmbiguousForceVerifiedSessions.Count > 0 ? "Ambiguous rows: review Skipped, then skip them or correct the input. Nothing saved yet." :
+                result.AddedCount + result.UpdatedCount == 0 ? "No additions or updates. Review skipped or failed rows." :
+                "";
+
+            ImportGuidance.Visibility = string.IsNullOrEmpty(ImportGuidance.Text) ? Visibility.Collapsed : Visibility.Visible;
 
             AddSection("Added", result.AddedCount,
                 result.NewPayouts.Select(p => $"{p.Date:d} · {p.Type} — {p.Description} ({CurrencyDisplay.FormatUsd(p.Amount)}, {p.Status})"), "VerifiedTextColor");
@@ -195,6 +197,9 @@ namespace EarningsTracker.Views.Modals
             AddSection("Skipped", result.SkippedCount, skippedRows, "PendingTextColor", !completed && result.SkippedCount > 0);
 
             AddSection("Failed", result.FailedRows.Count, result.FailedRows, "RejectedTextColor", !completed && result.FailedRows.Count > 0);
+            if (!completed)
+                foreach (var coverage in result.CoveragePreviews)
+                    ImportSummarySections.Children.Add(new PayoutCoverageView { DataContext = coverage });
         }
 
         private void SetOutcome(string text, string foreground)
@@ -206,6 +211,16 @@ namespace EarningsTracker.Views.Modals
         private void AddSection(string title, int count, IEnumerable<string> details, string foreground = "DefaultTextColor", bool expanded = false)
         {
             var rows = details.ToList();
+            if (count == 0)
+            {
+                ImportSummarySections.Children.Add(new TextBlock
+                {
+                    Text = $"{title} (0)",
+                    Style = (Style)FindResource("ItemSubtitle"),
+                    Margin = new Thickness(0, 0, 0, 8)
+                });
+                return;
+            }
             var expander = new Expander
             {
                 Header = new TextBlock
@@ -251,12 +266,7 @@ namespace EarningsTracker.Views.Modals
             text.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
             text.SetValue(TextBlock.ForegroundProperty, FindResource("DefaultTextColor"));
             list.ItemTemplate = new DataTemplate { VisualTree = text };
-            expander.Content = rows.Count == 0 ? new TextBlock
-            {
-                Text = "No records.",
-                Style = (Style)FindResource("ItemSubtitle"),
-                Margin = new Thickness(0, 8, 0, 0)
-            } : list;
+            expander.Content = list;
             ImportSummarySections.Children.Add(expander);
         }
     }

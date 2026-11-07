@@ -16,11 +16,13 @@ namespace EarningsTracker.Utilities
             return db.Payouts.OrderByDescending(p => p.Date).ThenByDescending(p => p.Id).ToList();
         }
 
-        public static Payout Create(Payout payout, string? reason = null, DbContextOptions<AppDbContext>? options = null)
+        public static Payout Create(Payout payout, string? reason = null, DbContextOptions<AppDbContext>? options = null,
+            PayoutCoveragePreview? coverage = null)
         {
             Validate(payout);
             using var db = options == null ? new AppDbContext() : new AppDbContext(options);
             using var tx = db.Database.BeginTransaction();
+            if (coverage != null) PayoutAssignments.ValidateCoverage(db, payout, coverage);
             payout.Type = payout.Type.Trim();
             payout.Description = payout.Description.Trim();
             payout.Status = payout.Status.Trim();
@@ -43,12 +45,18 @@ namespace EarningsTracker.Utilities
             });
             db.Payouts.Add(payout);
             db.SaveChanges();
+            if (coverage != null)
+            {
+                PayoutAssignments.ApplyCoverage(db, payout, coverage);
+                db.SaveChanges();
+            }
             tx.Commit();
             NotifyDataChanged();
             return payout;
         }
 
-        public static void Update(int id, Payout edited, string? reason = null, DbContextOptions<AppDbContext>? options = null, EditState? expectedState = null)
+        public static void Update(int id, Payout edited, string? reason = null, DbContextOptions<AppDbContext>? options = null, EditState? expectedState = null,
+            PayoutCoveragePreview? coverage = null)
         {
             Validate(edited);
             using var db = options == null ? new AppDbContext() : new AppDbContext(options);
@@ -58,6 +66,12 @@ namespace EarningsTracker.Utilities
             if (expectedState != null && CaptureEditState(existing) != expectedState)
                 throw new InvalidOperationException("This payout changed while you were editing. Close the editor and reopen Payments before editing again.");
             var before = Snapshot(existing);
+            if (coverage != null)
+            {
+                if (!PayoutAssignments.NeedsCoverage(edited, existing))
+                    throw new InvalidOperationException("This payment no longer needs coverage. Reopen the editor.");
+                PayoutAssignments.ValidateCoverage(db, edited, coverage);
+            }
             existing.Date = edited.Date;
             existing.Type = edited.Type.Trim();
             existing.Description = edited.Description.Trim();
@@ -74,6 +88,11 @@ namespace EarningsTracker.Utilities
                 Reason = reason
             });
             db.SaveChanges();
+            if (coverage != null)
+            {
+                PayoutAssignments.ApplyCoverage(db, existing, coverage);
+                db.SaveChanges();
+            }
             tx.Commit();
             NotifyDataChanged();
         }

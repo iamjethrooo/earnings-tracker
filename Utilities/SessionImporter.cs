@@ -41,6 +41,7 @@ namespace EarningsTracker.Utilities
 
         private static bool UpdateSession(Session existing, Session imported)
         {
+            var newlyVerified = existing.Status != Enums.SessionStatus.Verified && imported.Status == Enums.SessionStatus.Verified;
             var forceVerified = existing.IsForceVerified || imported.IsForceVerified;
             var postedDate = existing.PostedDate;
             if (imported.Status == Enums.SessionStatus.Verified && !existing.IsForceVerified)
@@ -51,7 +52,9 @@ namespace EarningsTracker.Utilities
                 || existing.Duration != imported.Duration || existing.Date != imported.Date
                 || existing.RecordedDate != imported.RecordedDate || existing.Earnings != imported.Earnings
                 || existing.Status != imported.Status || existing.IsForceVerified != forceVerified
-                || existing.PostedDate != postedDate;
+                || existing.PostedDate != postedDate || (newlyVerified && !existing.HasExplicitPayoutAssignment);
+            if (newlyVerified && !existing.HasExplicitPayoutAssignment)
+                existing.HasExplicitPayoutAssignment = true;
             existing.GameId = imported.GameId;
             existing.GameName = imported.GameName;
             existing.Duration = imported.Duration;
@@ -86,6 +89,8 @@ namespace EarningsTracker.Utilities
 
             foreach (var session in result.NewSessions)
             {
+                PayoutAssignments.ValidateAssignment(db, session);
+                session.HasExplicitPayoutAssignment = true;
                 if (session.Status == Enums.SessionStatus.Verified && !session.IsForceVerified && session.PostedDate == null)
                     session.PostedDate = session.Date;
                 db.Sessions.Add(session);
@@ -211,6 +216,9 @@ namespace EarningsTracker.Utilities
             }
             foreach (var update in result.Updates)
                 result.ExpectedSessionStates.Add(update.Id, SessionService.CaptureEditState(db.Sessions.Find(update.Id)!));
+            foreach (var session in result.NewSessions)
+                session.HasExplicitPayoutAssignment = true;
+            result.PayoutOptions = PayoutAssignments.Options(db.Payouts.AsNoTracking().ToList()).Where(p => p.IsExplicit).ToList();
             return result;
         }
 

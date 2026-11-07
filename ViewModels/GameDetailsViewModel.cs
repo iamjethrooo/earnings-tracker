@@ -16,8 +16,7 @@ namespace EarningsTracker.ViewModels
         public Game Game { get; }
         public IReadOnlyList<Game> RateIdentities { get; }
         public IReadOnlyList<GameChange> CapResetHistory { get; }
-        public string HistoryEvidenceText => "Saved identities with this game name retain separate rates and history. "
-            + (CapResetHistory.Count == 0 ? "No cap-reset audit entries were recorded." : $"{CapResetHistory.Count} cap-reset audit entries; before/after values are read-only.");
+        public string HistoryEvidenceText => "Past rates keep their own session history.";
         private GameItemViewModel? _catalog;
         public GameItemViewModel? Catalog
         {
@@ -91,8 +90,8 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(SessionEmptyText));
         }
         public string SessionEmptyText => FilteredSessionCount > 0 ? "" : SessionCount == 0
-            ? "No sessions for this game yet. Add a session to start tracking."
-            : "No sessions match this status. Select All to see the full history.";
+            ? "No sessions yet. Import sessions from Sessions."
+            : "No sessions with this status.";
         public string AllFilterText => $"All ({SessionCount})";
         public string NotUploadedFilterText => $"Not uploaded ({NotUploadedCount})";
         public string VerifiedFilterText => $"Verified ({VerifiedCount})";

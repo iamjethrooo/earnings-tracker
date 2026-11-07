@@ -17,12 +17,12 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="Paste the payout transaction table, including dates, types, descriptions, statuses, and signed amounts. Review the preview before saving." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+            <TextBlock Grid.Row="0" Text="Paste the full payout table with dates, types, descriptions, statuses, and signed amounts." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
             <TextBox Grid.Row="1" AutomationProperties.Name="Payout import text" x:Name="ImportTextBox" Style="{StaticResource ImportInputTextBox}">
             </TextBox>
-            <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste payout text before parsing." Style="{StaticResource InputValidationText}"/>
+            <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste payout text first." Style="{StaticResource InputValidationText}"/>
 
-            <Button x:Name="ParseImportButton" Grid.Row="3" Content="Parse Import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}" Margin="0 20 0 0" HorizontalAlignment="Right"/>
+            <Button x:Name="ParseImportButton" Grid.Row="3" Content="Preview import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}" Margin="0 20 0 0" HorizontalAlignment="Right"/>
         </Grid>
         <Grid x:Name="ImportResultContainer" Grid.Row="1" Visibility="Collapsed">
             <Grid.RowDefinitions>

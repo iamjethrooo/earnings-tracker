@@ -337,7 +337,8 @@ public class ImportConcurrencyTests
         using var read = database.CreateContext();
         Assert.All(read.Sessions, session => Assert.Equal(1m, session.Earnings));
         Assert.All(read.Payouts, payment => Assert.Equal(-10m, payment.Amount));
-        Assert.Single(read.SessionChanges); Assert.Single(read.PayoutChanges);
+        Assert.Equal(2, read.SessionChanges.Count()); // Original import and reviewed payment assignment only.
+        Assert.Single(read.PayoutChanges);
     }
 
     private sealed class FileDatabase : IDisposable

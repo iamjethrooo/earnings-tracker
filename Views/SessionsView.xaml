@@ -20,7 +20,7 @@
         </Style>
         <DataTemplate x:Key="SessionEditorTemplate">
             <StackPanel>
-                <TextBlock Text="Editing draft" Style="{StaticResource SectionHeading}" Foreground="{StaticResource PendingTextColor}"/>
+                <TextBlock Text="Edit session" Style="{StaticResource SectionHeading}" Foreground="{StaticResource PendingTextColor}"/>
                 <StackPanel Visibility="{Binding CanSelectGame, Converter={StaticResource Show}}">
                     <TextBlock Text="Link to game" Style="{StaticResource SessionFieldLabel}"/>
                     <ComboBox AutomationProperties.Name="Session game"
@@ -32,7 +32,7 @@
                             <TextBlock Text="Archived" Style="{StaticResource ItemSubtitle}" Visibility="{Binding IsArchived, Converter={StaticResource Show}}"/>
                         </StackPanel></DataTemplate></ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBlock Text="Choose a game to resolve this link. Earnings stay unchanged." Style="{StaticResource PageDescription}"/>
+                    <TextBlock Text="Linking keeps recorded earnings." Style="{StaticResource PageDescription}"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="Recorded date" Style="{StaticResource SessionFieldLabel}"/>
@@ -54,6 +54,10 @@
                     <TextBox Tag="DraftEarnings" AutomationProperties.Name="Earnings (USD)" AutomationProperties.HelpText="{Binding EarningsError}" Text="{Binding DraftEarnings, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModalTextBox}"/>
                     <TextBlock Text="{Binding EarningsError}" Style="{StaticResource InlineValidationText}" AutomationProperties.LiveSetting="Polite"/>
                 </StackPanel>
+                <TextBlock Text="Payout assignment" Style="{StaticResource SessionFieldLabel}"/>
+                <ComboBox AutomationProperties.Name="Payout assignment" ItemsSource="{Binding PayoutOptions}"
+                          DisplayMemberPath="Label" SelectedItem="{Binding DraftPayout, Mode=TwoWay}" MaxDropDownHeight="300"/>
+                <TextBlock Text="Missing posted dates are excluded from Amount owed." Style="{StaticResource PageDescription}" TextWrapping="Wrap"/>
                 <TextBlock Text="Status" Style="{StaticResource SessionFieldLabel}"/>
                 <ComboBox AutomationProperties.Name="Status" SelectedValuePath="Tag" SelectedValue="{Binding DraftStatus, Mode=TwoWay}">
                     <ComboBoxItem Content="Verified" Tag="{x:Static enums:SessionStatus.Verified}"/>
@@ -71,17 +75,19 @@
                     <TextBlock Text="{Binding StatusText}" Style="{StaticResource SessionHistoryStatusText}"/>
                 </Border>
                 <TextBlock Text="Force-verified" Foreground="{StaticResource VerifiedTextColor}" Margin="0,8,0,0" Visibility="{Binding Session.IsForceVerified, Converter={StaticResource Show}}"/>
-                <TextBlock Text="Recording date / time" Style="{StaticResource SessionFieldLabel}"/>
+                <TextBlock Text="Recorded" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding Session.RecordedDate, StringFormat={}{0:MMM d, yyyy h:mm:ss tt}}" TextWrapping="Wrap"/>
                 <TextBlock Text="Duration" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding Session.DurationText}"/>
                 <TextBlock Text="Earnings · USD" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding Session.Earnings, StringFormat={}{0:C2}, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}"/>
-                <TextBlock Text="Posted date / time" Style="{StaticResource SessionFieldLabel}"/>
+                <TextBlock Text="Posted" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding PostedText}" TextWrapping="Wrap"/>
+                <TextBlock Text="Payout assignment" Style="{StaticResource SessionFieldLabel}"/>
+                <TextBlock Text="{Binding PayoutAssignmentText}" TextWrapping="Wrap"/>
                 <TextBlock Text="Source" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding SourceLabel}" TextWrapping="Wrap"/>
-                <TextBlock Text="Source ID (linked payout, when recorded)" Style="{StaticResource SessionFieldLabel}"/>
+                <TextBlock Text="Payout source ID" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding SourceId}" TextWrapping="Wrap"/>
             </StackPanel>
         </DataTemplate>
@@ -91,12 +97,12 @@
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
             <Grid Margin="0,0,0,12">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Sessions" Style="{StaticResource TabName}"/><TextBlock Text="Review recordings, source details and saved corrections." Style="{StaticResource PageDescription}"/></StackPanel>
+                <StackPanel><TextBlock Text="Sessions" Style="{StaticResource TabName}"/></StackPanel>
                 <Button Grid.Column="1" Content="Import sessions" Style="{StaticResource PrimaryButton}" Click="ImportSessionsButton_Click" VerticalAlignment="Center"/>
             </Grid>
             <Border x:Name="SessionFilters" Grid.Row="1" Style="{StaticResource SurfacePanel}" Margin="0,0,0,12">
                 <WrapPanel>
-                    <StackPanel Width="210" Margin="0,0,12,4"><TextBlock Text="Search recordings" Style="{StaticResource ItemSubtitle}" Margin="0,0,0,6"/>
+                    <StackPanel Width="210" Margin="0,0,12,4"><TextBlock Text="Search" Style="{StaticResource ItemSubtitle}" Margin="0,0,0,6"/>
                         <TextBox x:Name="SearchSessionsBox" AutomationProperties.Name="Search by game, source ID or session ID" Style="{StaticResource SearchBar}" Width="Auto" Tag="Game or source ID" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" TextChanged="SearchSessionsBox_TextChanged"/>
                     </StackPanel>
                     <StackPanel Width="144" Margin="0,0,12,4"><TextBlock Text="Verification" Style="{StaticResource ItemSubtitle}" Margin="0,0,0,6"/>
@@ -116,7 +122,7 @@
             </Border>
             <StackPanel Grid.Row="2">
                 <TextBlock x:Name="SessionsSummary" Text="{Binding SessionHistoryText}" Style="{StaticResource ItemSubtitle}" Margin="0,0,0,4"/>
-                <TextBlock Text="USD · recording-date filters · select a row for details; game links open Game Details" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
                 <Border x:Name="EditorFeedbackPanel" Style="{StaticResource FeedbackPanel}" Visibility="Collapsed"><DockPanel>
                     <Button x:Name="RetryEditorRefreshButton" Content="Retry refresh" DockPanel.Dock="Right" Style="{StaticResource SecondaryButton}" Click="RetryEditorRefresh_Click" Margin="12,0,0,0"/>
                     <TextBlock x:Name="EditorFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
@@ -176,14 +182,14 @@
                                     <Setter Property="ContentTemplate" Value="{StaticResource SessionReadTemplate}"/>
                                     <Style.Triggers><DataTrigger Binding="{Binding IsEditing}" Value="True"><Setter Property="ContentTemplate" Value="{StaticResource SessionEditorTemplate}"/></DataTrigger></Style.Triggers>
                                 </Style></ContentControl.Style></ContentControl>
-                                <Expander Header="Source evidence and audit history" Margin="0,16,0,0">
+                                <Expander Header="Source &amp; history" Margin="0,16,0,0">
                                     <StackPanel>
-                                        <TextBlock Text="Source IDs are linked payout IDs when recorded. Missing historical evidence remains unknown." Style="{StaticResource PageDescription}"/>
+
                                         <Expander Header="Linked payout source values" Margin="0,8">
                                             <StackPanel>
-                                                <TextBlock Text="Raw payout source row (when recorded)" Style="{StaticResource SessionFieldLabel}"/>
+                                                <TextBlock Text="Payout source" Style="{StaticResource SessionFieldLabel}"/>
                                                 <TextBox Text="{Binding Session.Payout.SourceRow, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBox}"/>
-                                                <TextBlock Text="Original payout values (when recorded)" Style="{StaticResource SessionFieldLabel}"/>
+                                                <TextBlock Text="Original payout values" Style="{StaticResource SessionFieldLabel}"/>
                                                 <TextBox Text="{Binding Session.Payout.SourceValuesJson, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBox}"/>
                                             </StackPanel>
                                         </Expander>
@@ -192,7 +198,7 @@
                                         <ListBox ItemsSource="{Binding Evidence}" MaxHeight="280" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" Background="Transparent" BorderThickness="0">
                                             <ListBox.ItemTemplate><DataTemplate><Expander Margin="0,8">
                                                 <Expander.Header><StackPanel><TextBlock Text="{Binding ChangeType}"/><TextBlock Text="{Binding ChangedAt, StringFormat={}{0:MMM d, yyyy h:mm:ss tt}}" Style="{StaticResource ItemSubtitle}"/></StackPanel></Expander.Header>
-                                                <StackPanel><TextBlock Text="Raw source (when recorded)" Style="{StaticResource SessionFieldLabel}"/>
+                                                <StackPanel><TextBlock Text="Source text" Style="{StaticResource SessionFieldLabel}"/>
                                                     <TextBox Text="{Binding SourceText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBox}"/>
                                                     <TextBlock Text="Before" Style="{StaticResource SessionFieldLabel}"/><TextBox Text="{Binding BeforeValuesJson, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBox}"/>
                                                     <TextBlock Text="After / original imported values" Style="{StaticResource SessionFieldLabel}"/><TextBox Text="{Binding AfterValuesJson, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="160" VerticalScrollBarVisibility="Auto" Style="{StaticResource ModalTextBox}"/>

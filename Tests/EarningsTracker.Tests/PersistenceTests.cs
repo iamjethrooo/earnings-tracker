@@ -25,7 +25,7 @@ namespace EarningsTracker.Tests
             using (var seed = database.CreateContext())
             {
                 Assert.Equal(seed.Database.GetMigrations(), seed.Database.GetAppliedMigrations());
-                Assert.EndsWith("_InitialCreate", Assert.Single(seed.Database.GetAppliedMigrations()));
+                Assert.Equal(seed.Database.GetMigrations(), seed.Database.GetAppliedMigrations());
                 Assert.False(seed.Database.HasPendingModelChanges());
                 seed.Games.Add(new Game { Name = "Test game", RatePerHour = 1m, MinutesCap = 60m });
                 seed.SaveChanges();

@@ -62,7 +62,7 @@ public sealed class DataLocationMigrationTests : IDisposable
         Assert.Single(db.Bookmarks);
         Assert.Equal(42.50m,Assert.Single(db.GameOwnership).PurchaseAmount);
         Assert.Equal("false",Assert.Single(db.CatalogSettings).Value);
-        Assert.Equal("20261013055107_InitialCreate",Assert.Single(db.Database.GetAppliedMigrations()));
+        Assert.Equal(db.Database.GetMigrations(), db.Database.GetAppliedMigrations());
         Assert.False(db.Database.HasPendingModelChanges());
         DataLocationMigration.Migrate(Legacy, Current);
         Assert.Single(Directory.GetFiles(Path.Combine(Current,"Backups","BeforeDataLocationMigration"),"Snapshot.db",SearchOption.AllDirectories));

@@ -35,7 +35,7 @@ public class ResponsiveLayoutTests(WpfTestHost host)
             {
                 modal.Open("Import", view);
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-                var parse = Descendants<Button>(view).Single(b => b.Content as string == "Parse Import");
+                var parse = Descendants<Button>(view).Single(b => b.Content as string == "Preview import");
                 parse.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 var input = (TextBox)view.FindName("ImportTextBox");
                 var feedback = (TextBlock)view.FindName("InputValidationMessage");
@@ -161,7 +161,7 @@ public class ResponsiveLayoutTests(WpfTestHost host)
                 Assert.True(panel.ActualHeight <= height - 40 + 1);
                 var scroll = (ScrollViewer)modal.FindName("DialogScroll");
                 Assert.Equal(0, scroll.ScrollableWidth);
-                var action = Descendants<Button>(view).Single(b => b.Content as string is "Parse Import" or "Save payout");
+                var action = Descendants<Button>(view).Single(b => b.Content as string is "Preview import" or "Save payout");
                 scroll.ScrollToBottom();
                 modal.UpdateLayout();
                 Assert.True(Bounds(action, scroll).Bottom <= scroll.ActualHeight + 1);

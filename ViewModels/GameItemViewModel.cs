@@ -35,16 +35,19 @@ namespace EarningsTracker.ViewModels
             if (Metadata?.CoverSha256 != metadata.CoverSha256 || Metadata?.CoverUrl != metadata.CoverUrl) return;
             _cover = cover; OnPropertyChanged(nameof(Cover));
         }
-        public bool IsOwned => Ownership?.IsOwned == true;
-        public string OwnershipButtonText => IsOwned ? "Owned · remove" : "Mark owned";
-        public string OwnershipTooltip => IsOwned ? "Remove from owned games. Saved purchase cost is kept."
+        public bool IsSteamOwned { get; private set; }
+        public bool IsOwned => IsSteamOwned || Ownership?.IsOwned == true;
+        public string OwnershipButtonText => IsSteamOwned ? "Owned · Steam" : IsOwned ? "Owned · remove" : "Mark owned";
+        public string OwnershipAccessibleName => IsSteamOwned ? $"Owned on Steam: {Game.Name}" : $"Toggle ownership for {Game.Name}";
+        public string OwnershipTooltip => IsSteamOwned ? "Owned in your last synced Steam library. Manage Steam linking in Settings; edit purchase costs in game details."
+            : IsOwned ? "Remove from owned games. Saved purchase cost is kept."
             : "Add to owned games. Edit purchase cost in game details.";
         public string OwnershipError { get; private set; } = "";
         public ICommand ToggleOwnedCommand { get; }
         public string GenreText => Genres.Count == 0 ? "Genre unknown" : string.Join(" · ", Genres);
         public string SourceText => Offers.Count == 0 && Subscriptions.Count == 0 ? "Sources unknown"
             : string.Join(" · ", Offers.Select(x => x.Source).Concat(Subscriptions.Where(x => x.Included).Select(x => x.Service)).Distinct());
-        public string Summary => string.IsNullOrWhiteSpace(Metadata?.Summary) ? "Metadata has not been reviewed yet." : Metadata.Summary;
+        public string Summary => string.IsNullOrWhiteSpace(Metadata?.Summary) ? "" : Metadata.Summary;
         public string MetadataStatus => Metadata?.Reviewed == true
             ? $"{Metadata.Provenance} · verified {Metadata.VerifiedAt:MMM d, yyyy}" : Game.IsArchived ? "Archived · metadata optional" : "Unresolved catalog entry";
         public bool FreeToPlay => Offers.Any(x => (x.Kind == AcquisitionKind.FreeToPlay || x.Kind == AcquisitionKind.Purchase)
@@ -79,33 +82,49 @@ namespace EarningsTracker.ViewModels
                 $"{x.Edition} · {x.Region} · checked {x.VerifiedAt:yyyy-MM-dd}"
                 + ((x.SalePrice ?? x.RegularPrice) is decimal quote ? $" · saved quote {CatalogPresentation.Money(quote, x.Currency)}" : " · no recorded price")
                 + (x.Region != "PH" ? " · not a PH offer" : "")
-                + (x.ExpiresAt.HasValue ? $" · offer validity {x.ExpiresAt:yyyy-MM-dd HH:mm}" : ""), CatalogPresentation.OfferText(x, Rates, DateTime.UtcNow))).ToList();
+                + (x.ExpiresAt.HasValue ? $" · offer validity {x.ExpiresAt:yyyy-MM-dd HH:mm}" : ""), CatalogPresentation.OfferText(x, Rates, DateTime.UtcNow) + $"\nSource evidence: {x.Provenance}")
+                { Heading = $"{x.Source} · {x.Edition} · PC / {x.Region}", Price = CatalogPresentation.CompactPrice(x, DateTime.UtcNow) }).ToList();
         public List<OfferDisplay> SubscriptionDetails => Subscriptions.Select(x => new OfferDisplay(x.Url,
-            CatalogPresentation.SubscriptionText(x, DateTime.UtcNow), x.Provenance, IsWarning: !CatalogPresentation.VerificationCurrent(x, DateTime.UtcNow))).ToList();
+            CatalogPresentation.SubscriptionText(x, DateTime.UtcNow), x.Provenance, IsWarning: !CatalogPresentation.VerificationCurrent(x, DateTime.UtcNow))
+            { CanOpenLink = x.Service != "PC Game Pass" }).ToList();
         public string GamePassStatus => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
             ? CatalogPresentation.SubscriptionText(entry, DateTime.UtcNow) : "";
         public bool GamePassNeedsVerification => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
             && !CatalogPresentation.VerificationCurrent(entry, DateTime.UtcNow);
         public bool GamePassCurrentlyAvailable => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
             && CatalogPresentation.Current(entry, DateTime.UtcNow);
-        public string PurchaseEvidence => $"{(IsOwned ? "Personally owned" : "Not marked owned")} · "
+        public string PurchaseEvidence => $"{(IsSteamOwned ? "Owned on Steam (saved library)" : IsOwned ? "Personally owned" : "Not marked owned")} · "
             + (Ownership?.PurchaseAmount is decimal amount ? $"saved cost {CatalogPresentation.Money(amount, Ownership.Currency)} · {Ownership.Source}" : "purchase cost not recorded");
-        public string RateBasis => Game.IsArchived ? "Historical rate" : "Current rate";
+        public string RateBasis => Game.IsArchived ? "Historical rate" : "";
         public string CycleCapText => $"{Game.MinutesCap / 60m:0.##} hours";
+        private decimal _cycleMinutes;
+        public bool HasCycleProgress => _cycleMinutes > 0;
+        public decimal CycleProgressPercent => Game.MinutesCap > 0 ? _cycleMinutes / Game.MinutesCap * 100m : 0;
+        public string CycleProgressText => HasCycleProgress
+            ? $"{_cycleMinutes:0.##} min · {CycleProgressPercent:0}%"
+            : "No verified play";
+        internal void SetCycleMinutes(decimal minutes)
+        {
+            _cycleMinutes = minutes;
+            OnPropertyChanged(nameof(HasCycleProgress));
+            OnPropertyChanged(nameof(CycleProgressPercent));
+            OnPropertyChanged(nameof(CycleProgressText));
+        }
         public string PotentialText => Game.IsArchived ? "History only" : CurrencyDisplay.FormatUsd(Game.RatePerHour * Game.MinutesCap / 60m);
-        public string PotentialBasis => Game.IsArchived ? "Archived earning opportunity" : "Rate × full cycle cap";
+        public string PotentialBasis => Game.IsArchived ? "Archived earning opportunity" : "";
         public string PriceEvidence => BestOffer is { } offer
             ? $"{offer.Source} · {offer.Edition} · {offer.Region} · checked {offer.VerifiedAt:yyyy-MM-dd}"
             : "No current comparable purchase offer. See acquisition details.";
 
         internal void SetCatalog(GameMetadata? metadata, List<string> genres, List<StoreOffer> offers,
-            List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates)
+            List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates,
+            bool steamOwned = false)
         {
             var artworkChanged = Metadata?.CoverSha256 != metadata?.CoverSha256 || Metadata?.CoverUrl != metadata?.CoverUrl;
             Metadata = metadata; Genres = genres;
             Offers = offers.Where(x => CatalogSources.PopularName(x.Source) != null).ToList();
             foreach (var offer in Offers) offer.Source = CatalogSources.PopularName(offer.Source)!;
-            Subscriptions = subscriptions; Ownership = ownership; Rates = rates;
+            Subscriptions = subscriptions; Ownership = ownership; Rates = rates; IsSteamOwned = steamOwned;
             if (artworkChanged) { _cover = null; _coverRequested = false; OnPropertyChanged(nameof(Cover)); }
             foreach (var property in new[] { nameof(Metadata), nameof(Genres), nameof(Offers), nameof(Subscriptions), nameof(Rates),
                 nameof(GenreText), nameof(SourceText), nameof(Summary), nameof(MetadataStatus), nameof(FreeToPlay),
@@ -116,8 +135,9 @@ namespace EarningsTracker.ViewModels
 
         private void NotifyOwnership()
         {
-            foreach (var property in new[] { nameof(Ownership), nameof(IsOwned), nameof(OwnershipButtonText),
-                nameof(OwnershipTooltip), nameof(BreakEvenText), nameof(PurchaseEvidence) }) OnPropertyChanged(property);
+            foreach (var property in new[] { nameof(Ownership), nameof(IsOwned), nameof(IsSteamOwned), nameof(OwnershipButtonText),
+                nameof(OwnershipTooltip), nameof(OwnershipAccessibleName), nameof(BreakEvenText), nameof(PurchaseEvidence) }) OnPropertyChanged(property);
+            ((RelayCommand)ToggleOwnedCommand).RaiseCanExecuteChanged();
         }
 
         internal void SaveOwnership(bool owned, string source, decimal? amount, string currency)
@@ -140,6 +160,7 @@ namespace EarningsTracker.ViewModels
         }
 
         public ICommand ToggleBookmarkCommand { get; }
+        public string BookmarkAccessibleName => IsBookmarked ? $"Remove bookmark for {Game.Name}" : $"Bookmark {Game.Name}";
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -156,6 +177,7 @@ namespace EarningsTracker.ViewModels
             ToggleBookmarkCommand = new RelayCommand(ToggleBookmark);
             ToggleOwnedCommand = new RelayCommand(_ =>
             {
+                if (IsSteamOwned) return;
                 try
                 {
                     SaveOwnership(!IsOwned, Ownership?.Source ?? "", Ownership?.PurchaseAmount, Ownership?.Currency ?? "PHP");
@@ -163,7 +185,7 @@ namespace EarningsTracker.ViewModels
                 }
                 catch (Exception) { OwnershipError = "Ownership could not be saved. Please retry."; }
                 OnPropertyChanged(nameof(OwnershipError));
-            });
+            }, _ => !IsSteamOwned);
         }
 
         public bool IsBookmarked
@@ -176,6 +198,7 @@ namespace EarningsTracker.ViewModels
 
                 _isBookmarked = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(BookmarkAccessibleName));
             }
         }
         private void OnPropertyChanged(
@@ -216,5 +239,10 @@ namespace EarningsTracker.ViewModels
             IsBookmarked = isBookmarked;
         }
     }
-    public record OfferDisplay(string Url, string Text, string Details = "", string Tooltip = "", bool IsWarning = false);
+    public record OfferDisplay(string Url, string Text, string Details = "", string Tooltip = "", bool IsWarning = false)
+    {
+        public bool CanOpenLink { get; init; } = true;
+        public string Heading { get; init; } = "";
+        public string Price { get; init; } = "";
+    }
 }

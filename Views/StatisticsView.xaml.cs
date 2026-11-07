@@ -31,7 +31,7 @@ namespace EarningsTracker.Views
         private bool _hasRangeData;
         private int _trendVersion;
         private (double Width, double Height, int Version)? _lastTrendRender;
-        public string RangeDescription => $"{_rangeStart:MMM d, yyyy} – {_rangeEnd:MMM d, yyyy} · {_bucket.ToString().ToLowerInvariant()} buckets · USD";
+        public string RangeDescription => $"{_rangeStart:MMM d, yyyy} – {_rangeEnd:MMM d, yyyy} · {_bucket switch { EarningsBucket.Day => "Daily", EarningsBucket.Week => "Weekly", _ => "Monthly" }} · USD";
         private string? _capSortProperty;
         private ListSortDirection _capSortDirection = ListSortDirection.Ascending;
         private GridViewColumnHeader? _capSortHeader;
@@ -41,7 +41,7 @@ namespace EarningsTracker.Views
         public decimal ThisMonthEarnings { get; private set; }
         public int UnlinkedSessionCount { get; private set; }
         public string GameAssociationNotice => UnlinkedSessionCount == 0 ? string.Empty
-            : $"{UnlinkedSessionCount:N0} {(UnlinkedSessionCount == 1 ? "recording has" : "recordings have")} no linked game and {(UnlinkedSessionCount == 1 ? "is" : "are")} excluded from cap utilization. Verified earnings remain in totals. To link a recording, use the Ambiguous filter in Sessions, edit it, and select a game.";
+            : $"{UnlinkedSessionCount:N0} unlinked {(UnlinkedSessionCount == 1 ? "session" : "sessions")} excluded from cap usage; verified earnings still count. Review in Sessions → Unlinked.";
         public string TodayEarningsDisplay => FormatUsd(TodayEarnings);
         public string ThisWeekEarningsDisplay => FormatUsd(ThisWeekEarnings);
         public string ThisMonthEarningsDisplay => FormatUsd(ThisMonthEarnings);
@@ -187,11 +187,9 @@ namespace EarningsTracker.Views
                     var latestPaymentDate = payouts.Where(PayoutAccounting.IsCountedAsPaidPayment)
                         .Select(payout => (DateTime?)payout.Date.Date).Max();
                     var undatedSessionCount = sessions.Count(session => !session.PostedDate.HasValue);
-                    // Allocate by posted date, but chart by recording date so later verification
-                    // does not move a recording's earnings into a different recording day.
-                    sessions = sessions.Where(session => session.PostedDate.HasValue
-                        && session.PostedDate.Value.Date <= today
-                        && (!latestPaymentDate.HasValue || session.PostedDate.Value.Date > latestPaymentDate.Value)).ToList();
+                    // Share settlement membership with Payments; chart by recording date.
+                    sessions = PayoutAccounting.CurrentPayoutSessions(sessions, payouts)
+                        .Where(session => session.PostedDate!.Value.Date <= today).ToList();
                     payouts = payouts.Where(payout => !latestPaymentDate.HasValue
                         || payout.Date.Date > latestPaymentDate.Value).ToList();
                     _rangeStart = sessions.Select(GetRecordedDay)
@@ -205,10 +203,10 @@ namespace EarningsTracker.Views
                     else
                         _bucket = EarningsBucket.Month;
                     PayoutRangeNotice.Text = latestPaymentDate.HasValue
-                        ? $"Current payout: earnings posted after {latestPaymentDate.Value:MMM d, yyyy}. Charts use recording dates."
-                        : "Current payout: no Paid or Processing payment yet. Charts use recording dates.";
+                        ? $"Current payout · historical cutoff: {latestPaymentDate.Value:MMM d, yyyy}"
+                        : "Current payout · no Paid or Processing payment yet";
                     if (undatedSessionCount > 0)
-                        PayoutRangeNotice.Text += $" {undatedSessionCount:N0} verified session(s) with no posted date are excluded.";
+                        PayoutRangeNotice.Text += $" {undatedSessionCount:N0} {(undatedSessionCount == 1 ? "session" : "sessions")} excluded: missing posted dates.";
                     PayoutRangeNotice.Visibility = Visibility.Visible;
                     break;
                 case "90":

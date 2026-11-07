@@ -94,7 +94,7 @@ public class UiConsistencyTests(WpfTestHost host)
             result.NewSessions.Add(session);
             var modal = new ImportResultModal();
             modal.ShowPreview(result);
-            Assert.Equal("Total session earnings: $1,234.50", ((TextBlock)modal.FindName("TotalEarningsText")).Text);
+            Assert.Equal("Session earnings (USD): $1,234.50", ((TextBlock)modal.FindName("TotalEarningsText")).Text);
         }
         finally { CultureInfo.CurrentCulture = previous; }
         return Task.CompletedTask;
@@ -236,14 +236,15 @@ public class UiConsistencyTests(WpfTestHost host)
         Assert.Contains(Descendants<TextBlock>(details), text => text.Text == "$1.50/hr");
         Assert.Contains(Descendants<TextBlock>(details), text => text.Text == "$1.25");
         var sessionView = new SessionsView(); // Loading is not raised, so no default database is opened.
-        var sessions = (ListBox)sessionView.FindName("SessionsList");
-        var row = (FrameworkElement)sessions.ItemTemplate.LoadContent();
+        var sessions = (ListView)sessionView.FindName("SessionsList");
+        var earningsColumn = ((GridView)sessions.View).Columns.Single(column => Equals(column.Header, "USD"));
+        var row = (FrameworkElement)earningsColumn.CellTemplate.LoadContent();
         row.Language = XmlLanguage.GetLanguage(language);
         row.DataContext = new SessionItemViewModel(new Session { Earnings = 1234.5m, Status = SessionStatus.Verified });
         row.Measure(new Size(1000, 400));
         row.Arrange(new Rect(0, 0, 1000, 400));
         await Dispatcher.Yield();
-        Assert.Contains(Descendants<TextBlock>(row), text => text.Text == "$1,234.50");
+        Assert.Equal("$1,234.50", Assert.IsType<TextBlock>(row).Text);
     });
 
     private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : DependencyObject

@@ -31,6 +31,18 @@ internal static class CatalogPresentation
 
     internal static string SubscriptionText(SubscriptionAvailability sub, DateTime now)
     {
+        if (sub.Service == "PC Game Pass")
+        {
+            var status = Current(sub, now) ? "Available"
+                : VerificationCurrent(sub, now) ? "Not included"
+                : sub.Included ? "Unverified" : "Previously not included";
+            var verified = sub.VerifiedAt == default ? "verification date not recorded"
+                : $"checked {sub.VerifiedAt:yyyy-MM-dd}";
+            return $"{sub.Service} · {status} · {sub.Platform}/{sub.Region} · {verified}"
+                + (sub.ExpiresAt.HasValue ? $" · expires {sub.ExpiresAt:yyyy-MM-dd}" : "")
+                + (!VerificationCurrent(sub, now) ? ". Game Pass availability may have changed." : "");
+        }
+
         var date = sub.VerifiedAt == default ? "verification date not recorded"
             : $"last verified {sub.VerifiedAt:yyyy-MM-dd HH:mm}{(sub.VerifiedAt.Kind == DateTimeKind.Utc ? " UTC" : "")}";
         var state = Current(sub, now) ? "Availability verified"

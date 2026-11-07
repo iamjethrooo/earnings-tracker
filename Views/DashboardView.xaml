@@ -9,9 +9,9 @@
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
   <Grid Margin="0,0,0,12">
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-   <StackPanel><TextBlock Text="Dashboard" Style="{StaticResource TabName}"/><TextBlock Text="Your playtime, translated into earnings." Style="{StaticResource PageDescription}"/><TextBlock Text="{Binding RangeLabel}" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel>
-   <ComboBox x:Name="PeriodSelector" Grid.Column="1" Width="120" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Period_Changed" AutomationProperties.Name="Dashboard period">
-    <ComboBoxItem Content="7 days"/><ComboBoxItem Content="30 days"/><ComboBoxItem Content="90 days"/>
+   <StackPanel><TextBlock Text="Dashboard" Style="{StaticResource TabName}"/><TextBlock Text="{Binding RangeLabel}" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel>
+   <ComboBox x:Name="PeriodSelector" Grid.Column="1" Width="156" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Period_Changed" AutomationProperties.Name="Dashboard period">
+    <ComboBoxItem Content="7 days"/><ComboBoxItem Content="30 days"/><ComboBoxItem Content="90 days"/><ComboBoxItem Content="Current payout" Tag="Payout"/>
    </ComboBox>
   </Grid>
   <Border x:Name="LoadStatusPanel" Grid.Row="1" Visibility="Collapsed" Style="{StaticResource FeedbackPanel}"><DockPanel>
@@ -28,14 +28,24 @@
       <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}"/>
      </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate>
     </ItemsControl>
-    <TextBlock Text="{Binding BalanceDescription}" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+    <TextBlock Text="{Binding LifetimeSummary}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+    <TextBlock x:Name="BalanceExclusions" Text="{Binding BalanceExclusionNotice}" Foreground="{StaticResource PendingTextColor}" AutomationProperties.LiveSetting="Polite">
+     <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource Caption}"><Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers></Style></TextBlock.Style>
+    </TextBlock>
+    <Expander x:Name="CalculationDetails" Header="How calculated" Margin="0,4,0,12" AutomationProperties.Name="Dashboard calculation details">
+     <StackPanel>
+      <TextBlock Text="Earned includes verified sessions and eligible separate bonuses/corrections. Pending is separate. Session dates use recording dates; adjustments and payments use transaction dates." Style="{StaticResource Caption}" Margin="0,8,0,6"/>
+      <TextBlock Text="{Binding BalanceDescription}" Style="{StaticResource Caption}"/>
+      <TextBlock Text="Session mix counts all statuses. Top games use verified session earnings, exclude adjustments, and compare bars with the highest earner." Style="{StaticResource Caption}" Margin="0,6,0,0"/>
+     </StackPanel>
+    </Expander>
     <Grid x:Name="AnalysisGrid" Margin="0,0,0,16">
      <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
      <Border x:Name="TrendPanel" Style="{StaticResource SurfacePanel}"><StackPanel>
       <TextBlock Text="Earnings over time" Style="{StaticResource SectionHeading}"/>
-      <TextBlock Text="Earned (purple): verified sessions + signed separate adjustments. Pending (dashed amber) is separate. Daily USD." Style="{StaticResource Caption}" Margin="0,4,0,8"/>
+      <TextBlock Text="Earned (solid) · Pending (dashed) · USD" Style="{StaticResource Caption}" Margin="0,4,0,8"/>
       <controls:DashboardEarningsChart x:Name="TrendChart" Days="{Binding Trend}" Height="180"/>
-      <TextBlock x:Name="TrendEmptyState" Text="No earnings activity in this period. Recorded zero or offsetting earnings still appear on the chart." Style="{StaticResource Caption}" Visibility="Collapsed"/>
+      <TextBlock x:Name="TrendEmptyState" Text="No earnings activity in this period." Style="{StaticResource Caption}" Visibility="Collapsed"/>
       <Expander x:Name="DailyValues" Header="Daily values" Margin="0,8,0,0"><ListBox ItemsSource="{Binding Trend}" Height="140" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" AutomationProperties.Name="Daily earnings and adjustments">
        <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Description}" Style="{StaticResource Caption}"/></DataTemplate></ListBox.ItemTemplate>
       </ListBox></Expander>
@@ -45,14 +55,14 @@
       <TextBlock Text="{Binding VerifiedShare}" FontSize="30" FontWeight="SemiBold"/>
       <ProgressBar Value="{Binding VerifiedPercent, Mode=OneWay}" Style="{StaticResource MetricProgressBar}" Margin="0,8,0,12" AutomationProperties.Name="Percentage of period sessions verified"/>
       <ItemsControl ItemsSource="{Binding Statuses}"><ItemsControl.ItemTemplate><DataTemplate><DockPanel Margin="0,0,0,8"><TextBlock DockPanel.Dock="Right" Text="{Binding AmountText}" Margin="8,0,0,0"/><TextBlock Text="{Binding Description}" Foreground="{Binding Color}" TextWrapping="Wrap"/></DockPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-      <TextBlock Text="Share uses all period session counts. Amounts are stored session earnings by status; rejected/not uploaded amounts are not earned. Adjustments are separate." Style="{StaticResource Caption}"/>
+      <TextBlock Text="Rejected and not uploaded amounts aren’t earned." Style="{StaticResource Caption}"/>
      </StackPanel></Border>
     </Grid>
     <Grid x:Name="RecordingsPanel" Visibility="Collapsed">
      <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
      <Border x:Name="ActivityPanel" Style="{StaticResource SurfacePanel}"><StackPanel>
       <DockPanel><Button DockPanel.Dock="Right" Content="Sessions →" Style="{StaticResource SecondaryButton}" Click="ViewAllSessions_Click" AutomationProperties.Name="View all sessions"/><TextBlock Text="Recent activity" Style="{StaticResource SectionHeading}" VerticalAlignment="Center"/></DockPanel>
-      <TextBlock Text="Latest five period recordings. Open a linked game for its full history." Style="{StaticResource Caption}" Margin="0,8"/>
+
       <ListBox x:Name="SessionsList" ItemsSource="{Binding RecentSessions}" Height="240" ItemContainerStyle="{StaticResource ItemButton}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" AutomationProperties.Name="Recent sessions" SelectionChanged="SessionsList_SelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -112,10 +122,10 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
       </ListBox>
-      <TextBlock x:Name="DashboardViewEmptyState" Text="No sessions in this period. Choose Sessions to inspect or import recordings." Style="{StaticResource EmptyStateText}" Visibility="Collapsed"/>
+      <TextBlock x:Name="DashboardViewEmptyState" Text="No sessions in this period." Style="{StaticResource EmptyStateText}" Visibility="Collapsed"/>
      </StackPanel></Border>
      <Border x:Name="GamesPanel" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
-      <TextBlock Text="Top earning games" Style="{StaticResource SectionHeading}"/><TextBlock Text="Verified session earnings · period USD. Bars compare with the highest game; adjustments are not attributed to games." Style="{StaticResource Caption}" Margin="0,4,0,12"/>
+      <TextBlock Text="Top earning games" Style="{StaticResource SectionHeading}"/><TextBlock Text="Verified session earnings · USD" Style="{StaticResource Caption}" Margin="0,4,0,12"/>
       <ItemsControl ItemsSource="{Binding TopGames}"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,12">
        <Grid.ColumnDefinitions><ColumnDefinition Width="52"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
        <ContentControl Style="{StaticResource ArtworkPresenter}" Content="{Binding Artwork.Cover}" Width="44" Height="52" VerticalAlignment="Top"/>

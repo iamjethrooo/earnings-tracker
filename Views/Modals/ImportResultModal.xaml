@@ -54,13 +54,19 @@
             <StackPanel>
                 <TextBlock x:Name="SessionsFoundText"
                    Style="{StaticResource SectionHeading}"/>
-                <TextBlock Text="Review before saving. Unresolved game matches are saved unlinked and can be resolved in Ambiguous. Conflicting and invalid recordings are excluded; repeated rows are skipped."
+                <TextBlock x:Name="UnlinkedGuidance" Text="Link these sessions in Sessions → Unlinked." Visibility="Collapsed"
                            Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,8,0,4"/>
 
                 <TextBlock x:Name="NewSessionsText"
                    Margin="0,12,0,0"
                    Foreground="{StaticResource VerifiedTextColor}"
                    FontSize="{StaticResource FontSizeBody}"/>
+                <StackPanel x:Name="NewSessionsPayoutPanel" Margin="0,12,0,8">
+                    <TextBlock Text="Payout for new sessions" Style="{StaticResource FilterLabel}"/>
+                    <ComboBox x:Name="NewSessionsPayout" AutomationProperties.Name="Payout for new sessions"
+                              DisplayMemberPath="Label" SelectionChanged="NewSessionsPayout_SelectionChanged" MaxDropDownHeight="300"/>
+                    <TextBlock Text="For past sessions, choose the payment that covered them." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                </StackPanel>
 
                 <TextBlock x:Name="UpdatedSessionsText"
                    Margin="0,4,0,0"
@@ -88,7 +94,7 @@
                    Style="{StaticResource SectionHeading}"/>
                 <Expander x:Name="ConflictsSection" Header="View conflicts" Visibility="Collapsed" Margin="0,12,0,0">
                     <StackPanel>
-                        <TextBlock Text="These rows will not be imported. Their recording identity or existing game association needs review."
+                        <TextBlock Text="These rows won’t be imported. Review their recording or game match."
                                    Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,8,0,4"/>
                         <ListBox x:Name="ConflictRows" MaxHeight="240" Background="Transparent" BorderThickness="0"
                                  AutomationProperties.Name="Conflicting session import rows"

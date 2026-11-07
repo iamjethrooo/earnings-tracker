@@ -14,6 +14,11 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public string SubscriptionStatus { get; private set; } = "";
     public string UpdateStatus { get; private set; } = "";
     public string RateStatus { get; private set; } = "";
+    public string SteamStatus { get; private set; } = "";
+    public string SteamProfile { get; private set; } = "";
+    public bool SteamLinked { get; private set; }
+    public bool SteamAutomatic => settings.Get("steam.automatic") != "false";
+    internal void SetSteamAutomatic(bool value) => settings.Set("steam.automatic", value ? "true" : "false");
     public string Version => Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown";
     public string AssemblyVersionLabel => $"Assembly version {Version}";
     // ReleaseVersion is assigned explicitly when a release is prepared; assembly defaults are not product versions.
@@ -41,6 +46,10 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     internal void Reload()
     {
         using var db = settings.Context();
+        var steam = SteamLibrary.Read(db);
+        SteamLinked = steam != null;
+        SteamProfile = steam?.SteamId ?? "";
+        SteamStatus = SteamLibrary.Status(db);
         var activeIds = db.Games.Where(g => !g.IsArchived).Select(g => g.Id).ToHashSet();
         var entries = db.SubscriptionAvailability.AsNoTracking().ToList().Where(s => activeIds.Contains(s.GameId))
             .GroupBy(s => s.GameId).Select(group => CatalogPresentation.GamePassEntry(group)).OfType<EarningsTracker.Models.SubscriptionAvailability>().ToList();
@@ -49,8 +58,8 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         var stale = entries.Count(s => CatalogPresentation.PreviouslyIncluded(s, now) && !CatalogPresentation.Current(s, now));
         var removed = entries.Count(s => !s.Included && CatalogPresentation.VerificationCurrent(s, now));
         var unverified = entries.Count - current - stale - removed;
-        SubscriptionStatus = $"{current} currently verified available · {stale} previously included, verification stale/expired · {removed} currently verified not included · {unverified} other unverified records. "
-            + "Stale verification does not confirm removal. Previously verified games remain in the PC Game Pass filter; stale entries do not grant Playable now. Game Pass availability may have changed.";
+        SubscriptionStatus = $"{current} current · {stale} outdated · {removed} not included · {unverified} unverified. "
+            + "Outdated availability may have changed. Stale verification does not confirm removal or grant Playable now.";
         UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog checked: {Date(settings.Get("updates.catalogSuccess"))}\nLive prices checked: {Date(settings.Get("updates.pricesSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nCatalog snapshot: {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
         var rate = db.ExchangeRates.AsNoTracking().SingleOrDefault(r => r.Currency == "PHP");
         RateStatus = rate == null ? "No saved PHP exchange rate. Refresh to check rates."

@@ -36,7 +36,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
         ((TextBox)view.FindName("ImportTextBox")).Text = selectedGame
             ? "recording-20260605120000123.mkv\n6/5/2026 · 1m\n+$1.00\nVerified"
             : "Example\nvideo.mkv · 6/5/2026 12:00 PM · 1m\n+$1.00\nVerified";
-        Click(view, "Parse Import");
+        Click(view, "Preview import");
     }
 
     private static void Click(UserControl view, string content) =>
@@ -68,7 +68,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
         await SessionCompletion(view);
         Assert.Equal(failQuery ? 1 : 2, disposals.Count);
         if (failQuery)
-            Assert.Equal("Import Failed", ((TextBlock)((ImportResultModal)view.FindName("ImportResultModal")).FindName("ResultTitle")).Text);
+            Assert.Equal("Import failed", ((TextBlock)((ImportResultModal)view.FindName("ImportResultModal")).FindName("ResultTitle")).Text);
         using var read = database.CreateContext();
         Assert.Empty(read.Sessions);
         Assert.Empty(read.SessionChanges);
@@ -117,7 +117,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
         var summary = (ImportResultModal)view.FindName("ImportResultModal");
         if (failSave)
         {
-            Assert.Equal("Import Failed", ((TextBlock)summary.FindName("ResultTitle")).Text);
+            Assert.Equal("Import failed", ((TextBlock)summary.FindName("ResultTitle")).Text);
             using (var read = database.CreateContext())
             {
                 Assert.Empty(read.Sessions);
@@ -128,7 +128,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
             await SessionCompletion(view);
             Assert.Equal(4, disposals.Count);
         }
-        Assert.Equal("Import Complete", ((TextBlock)summary.FindName("ResultTitle")).Text);
+        Assert.Equal("Import complete", ((TextBlock)summary.FindName("ResultTitle")).Text);
         using (var read = database.CreateContext())
         {
             var session = Assert.Single(read.Sessions);
@@ -191,7 +191,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
             closed++;
         };
         ((TextBox)view.FindName("ImportTextBox")).Text = "|6/5/2026|—|Payment|Example|Paid|-$1.00|";
-        Click(view, "Parse Import");
+        Click(view, "Preview import");
         await view.OperationCompletion;
         Assert.Empty(disposals); // PayoutImporter owns the context through preview and commit.
         if (completeImport)
@@ -226,7 +226,7 @@ public class ImportResourceLifetimeTests(WpfTestHost host)
         var first = new ImportPayoutsView(options);
         var modal = new Modal { ModalContent = first };
         ((TextBox)first.FindName("ImportTextBox")).Text = "|6/5/2026|—|Payment|Example|Paid|-$1.00|";
-        Click(first, "Parse Import");
+        Click(first, "Preview import");
         await first.OperationCompletion;
         modal.ModalContent = new ImportResultModal();
         Assert.Single(disposals);

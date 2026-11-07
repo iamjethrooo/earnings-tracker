@@ -41,7 +41,7 @@ public class MigrationBackupTests
             using var read = new AppDbContext(options);
             Assert.Equal("Preserved synthetic game", Assert.Single(read.Games).Name);
             Assert.Equal(1.2345m, read.Games.Single().RatePerHour);
-            Assert.Single(read.Database.GetAppliedMigrations());
+            Assert.Equal(read.Database.GetMigrations(), read.Database.GetAppliedMigrations());
             if (!blockBackup)
             {
                 var backup = Assert.Single(Directory.GetFiles(Path.Combine(directory, "Backups"), "*.db"));
@@ -49,7 +49,7 @@ public class MigrationBackupTests
                     .UseSqlite(new SqliteConnectionStringBuilder { DataSource = backup, Pooling = false, Mode = SqliteOpenMode.ReadOnly }.ToString()).Options);
                 Assert.Equal("Preserved synthetic game", Assert.Single(restored.Games).Name);
                 Assert.Equal(1.2345m, restored.Games.Single().RatePerHour);
-                Assert.Single(restored.Database.GetAppliedMigrations());
+                Assert.Equal(restored.Database.GetMigrations(), restored.Database.GetAppliedMigrations());
             }
         }
         finally { Directory.Delete(directory, recursive: true); }
@@ -61,7 +61,8 @@ public class MigrationBackupTests
         public IReadOnlyDictionary<string, TypeInfo> Migrations { get; } = new Dictionary<string, TypeInfo>
         {
             ["20261013055107_InitialCreate"] = typeof(InitialCreate).GetTypeInfo(),
-            ["20261013100000_BackupProbe"] = typeof(FailingMigration).GetTypeInfo()
+            ["20261107145034_AddSessionPayoutAssignments"] = typeof(AddSessionPayoutAssignments).GetTypeInfo(),
+            ["20261108000000_BackupProbe"] = typeof(FailingMigration).GetTypeInfo()
         };
         public ModelSnapshot? ModelSnapshot { get; } = new AppDbContextModelSnapshot();
         public Assembly Assembly => typeof(AppDbContext).Assembly;
@@ -74,7 +75,7 @@ public class MigrationBackupTests
         }
     }
 
-    [Migration("20261013100000_BackupProbe")]
+    [Migration("20261108000000_BackupProbe")]
     public sealed class FailingMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder) => throw new InvalidOperationException("synthetic migration failure");

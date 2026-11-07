@@ -28,7 +28,7 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
     private int operationId;
     public event PropertyChangedEventHandler? PropertyChanged;
     public ApplicationUpdateState State { get; private set; }
-    public string Message { get; private set; } = "Check for a new application version.";
+    public string Message { get; private set; } = "";
     public int Progress { get; private set; }
     public string Version => pending?.Version.ToString() ?? available?.TargetFullRelease.Version.ToString() ?? "";
     public string CurrentVersion { get; private set; } = "Development build";
@@ -40,7 +40,8 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
     public bool HasNotice => State is ApplicationUpdateState.Available or ApplicationUpdateState.ReadyToRestart
         || State == ApplicationUpdateState.Error && available != null;
     public string Notice => State == ApplicationUpdateState.ReadyToRestart ? $"Version {Version} is ready. Restart when convenient." : $"Version {Version} is available.";
-    public string RestartHint => CanRestart ? "Restart is always your choice." : "Close editing/import dialogs and wait for database work before restarting.";
+    public string RestartHint => State == ApplicationUpdateState.ReadyToRestart && !CanRestart
+        ? "Finish editing, importing, or database work to restart." : "";
 
     internal static UpdateManager CreateManager()
     {
@@ -56,16 +57,16 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
         this.armUpdates = armUpdates ?? (asset => manager.WaitExitThenApplyUpdates(asset, silent: true, restart: true));
         try
         {
-            CurrentVersion = manager.CurrentVersion?.ToString() ?? "Development build";
+            CurrentVersion = manager.CurrentVersion is { } version ? $"Version {version}" : "Development build";
             State = manager.IsInstalled ? ApplicationUpdateState.Idle : ApplicationUpdateState.Unavailable;
-            if (!manager.IsInstalled) Message = "Application updates are available in installed builds. This development build works normally.";
-            else if ((pending = manager.UpdatePendingRestart) != null) Set(ApplicationUpdateState.ReadyToRestart, "A downloaded update is ready. Restart when convenient.");
+            if (!manager.IsInstalled) Message = "Updates require an installed build.";
+            else if ((pending = manager.UpdatePendingRestart) != null) Set(ApplicationUpdateState.ReadyToRestart, "Ready to restart.");
         }
         catch (Exception ex)
         {
             Trace.TraceError($"Application updater initialization failed: {ex}");
             State = ApplicationUpdateState.Unavailable;
-            Message = "Application updates are unavailable in this launch. Your saved data remains usable. Try again on a later launch.";
+            Message = "Application updates unavailable. Try reopening the app.";
         }
         guard.Changed += GuardChanged;
     }
@@ -112,12 +113,12 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
                 throw new InvalidDataException("A prerelease package cannot be offered on the stable application channel.");
             available = result;
             Set(result == null ? ApplicationUpdateState.UpToDate : ApplicationUpdateState.Available,
-                result == null ? "You have the latest application version." : $"Version {Version} is available. Download when convenient.");
+                result == null ? "Up to date." : $"Version {Version} available.");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         { if (!disposed) { available = previous; Set(previous == null ? ApplicationUpdateState.Idle : ApplicationUpdateState.Available, "Check cancelled. You can retry."); } }
         catch (Exception ex)
-        { if (!disposed) { Trace.TraceError($"Application update check failed: {ex}"); available = previous; Set(ApplicationUpdateState.Error, "Unable to check for updates. Saved data remains available. Check your connection and retry."); } }
+        { if (!disposed) { Trace.TraceError($"Application update check failed: {ex}"); available = previous; Set(ApplicationUpdateState.Error, "Couldn’t check for updates. Check your connection and retry."); } }
         finally { cancellation?.Dispose(); cancellation = null; }
     }
 
@@ -141,7 +142,7 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
             if (disposed) return;
             pending = manager.UpdatePendingRestart ?? update.TargetFullRelease;
             Progress = 100;
-            Set(ApplicationUpdateState.ReadyToRestart, "Download complete. Restart when convenient to apply the update.");
+            Set(ApplicationUpdateState.ReadyToRestart, "Ready to restart.");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -149,11 +150,11 @@ internal sealed class ApplicationUpdates : INotifyPropertyChanged, IDisposable
             {
                 pending = manager.UpdatePendingRestart;
                 Set(pending != null ? ApplicationUpdateState.ReadyToRestart : ApplicationUpdateState.Available,
-                    pending != null ? "The completed download is ready for restart." : "Download cancelled. You can retry.");
+                    pending != null ? "Ready to restart." : "Download cancelled. You can retry.");
             }
         }
         catch (Exception ex)
-        { if (!disposed) { Trace.TraceError($"Application update download failed: {ex}"); Set(ApplicationUpdateState.Error, "Download failed. Your installed version and saved data are unchanged. Retry when connected."); } }
+        { if (!disposed) { Trace.TraceError($"Application update download failed: {ex}"); Set(ApplicationUpdateState.Error, "Download failed. Check your connection and retry."); } }
         finally { cancellation?.Dispose(); cancellation = null; }
     }
 

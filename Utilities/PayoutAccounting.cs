@@ -19,13 +19,22 @@ namespace EarningsTracker.Utilities
 
             var paidPayments = payoutRows.Where(IsCountedAsPaidPayment).ToList();
             var totalPaidOut = paidPayments.Sum(payout => Math.Abs(payout.Amount));
-            var latestPaidDate = paidPayments.Count == 0 ? (DateTime?)null : paidPayments.Max(payout => payout.Date.Date);
             var undatedVerifiedSessions = verifiedSessions.Count(session => session.PostedDate == null);
-            var balance = verifiedSessions
-                .Where(session => session.PostedDate.HasValue && (!latestPaidDate.HasValue || session.PostedDate.Value.Date > latestPaidDate.Value))
+            var balance = CurrentPayoutSessions(verifiedSessions, payoutRows)
                 .Sum(session => session.Earnings);
 
             return new PayoutTotals(totalEarned, totalPaidOut, balance, undatedVerifiedSessions);
+        }
+
+        internal static IEnumerable<Session> CurrentPayoutSessions(IEnumerable<Session> sessions, IEnumerable<Payout> payouts)
+        {
+            var paidPayments = payouts.Where(p => !p.IsDeleted && IsCountedAsPaidPayment(p)).ToList();
+            var paidIds = paidPayments.Select(p => p.Id).ToHashSet();
+            var latestDate = paidPayments.Count == 0 ? (DateTime?)null : paidPayments.Max(p => p.Date.Date);
+            return sessions.Where(session => session.PostedDate.HasValue &&
+                (session.HasExplicitPayoutAssignment
+                    ? !session.AssignedPayoutId.HasValue || !paidIds.Contains(session.AssignedPayoutId.Value)
+                    : !latestDate.HasValue || session.PostedDate.Value.Date > latestDate.Value));
         }
 
         internal static bool IsSeparateEarnedAdjustment(Payout payout)

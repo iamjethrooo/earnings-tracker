@@ -29,6 +29,12 @@ namespace EarningsTracker.Views
         public bool StackGameDetails { get => (bool)GetValue(StackGameDetailsProperty); private set => SetValue(StackGameDetailsProperty, value); }
         public static readonly DependencyProperty StackGameDetailsProperty = DependencyProperty.Register(nameof(StackGameDetails), typeof(bool), typeof(GamesView), new PropertyMetadata(false));
 
+        private void SessionHistory_Click(object sender, RoutedEventArgs e)
+        {
+            SessionFilterList.BringIntoView();
+            SessionFilterList.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+        }
+
         private void View_SizeChanged(object sender, SizeChangedEventArgs e)
             => UpdateResponsiveLayout();
 
@@ -231,7 +237,12 @@ namespace EarningsTracker.Views
                     if (!model.HasLoaded) return;
                 }
                 var message = await new CatalogUpdates(_databaseOptions).RefreshAsync(manual);
-                if (message != "") { await model.ReloadCatalogAsync(); model.SetStatus(model.CatalogStatus + " · " + message); }
+                var steamMessage = await new SteamLibrary(_databaseOptions).RefreshAsync(manual);
+                if (message != "" || steamMessage != "")
+                {
+                    await model.ReloadCatalogAsync();
+                    if (message != "") model.SetStatus(model.CatalogStatus + " · " + message);
+                }
             }
             catch (Exception ex)
             {

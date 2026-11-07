@@ -26,7 +26,7 @@ public class CleanInstallationTests
                 DbInitializer.Initialize(db);
                 CatalogService.ImportBundled(db);
                 AppSettings.InitializeDefaults(db);
-                Assert.EndsWith("_InitialCreate", Assert.Single(db.Database.GetAppliedMigrations()));
+                Assert.Equal(db.Database.GetMigrations(), db.Database.GetAppliedMigrations());
                 Assert.False(db.Database.HasPendingModelChanges());
                 Assert.Empty(db.Database.GetPendingMigrations());
                 Assert.Equal(579, db.Games.Count());
@@ -100,7 +100,7 @@ public class CleanInstallationTests
             Assert.Equal(1.2345m, recording.Earnings);
             Assert.True(recording.IsForceVerified);
             Assert.Null(recording.PostedDate);
-            Assert.EndsWith("_InitialCreate", Assert.Single(reopened.Database.GetAppliedMigrations()));
+            Assert.Equal(reopened.Database.GetMigrations(), reopened.Database.GetAppliedMigrations());
             Assert.False(reopened.Database.HasPendingModelChanges());
         }
         finally { Directory.Delete(directory, recursive: true); }
@@ -141,9 +141,9 @@ public class CleanInstallationTests
             "Games", "PayoutChanges", "Payouts", "SessionChanges", "Sessions", "StoreOffers", "SubscriptionAvailability" },
             Names("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__EF%' ORDER BY name"));
         Assert.Equal(new[] { "IX_Bookmarks_GameId", "IX_GameChanges_GameId", "IX_GameMetadata_CatalogId", "IX_PayoutChanges_PayoutId",
-            "IX_Payouts_SourceId", "IX_SessionChanges_SessionId", "IX_Sessions_GameId", "IX_Sessions_PayoutId", "IX_StoreOffers_GameId",
+            "IX_Payouts_SourceId", "IX_SessionChanges_SessionId", "IX_Sessions_AssignedPayoutId", "IX_Sessions_GameId", "IX_Sessions_PayoutId", "IX_StoreOffers_GameId",
             "IX_SubscriptionAvailability_GameId" }, Names("SELECT name FROM sqlite_schema WHERE type='index' AND name LIKE 'IX_%' ORDER BY name"));
-        Assert.Equal(new[] { "RESTRICT", "SET NULL" }, Names("SELECT on_delete FROM pragma_foreign_key_list('Sessions') ORDER BY on_delete"));
+        Assert.Equal(new[] { "RESTRICT", "RESTRICT", "SET NULL" }, Names("SELECT on_delete FROM pragma_foreign_key_list('Sessions') ORDER BY on_delete"));
         Assert.Equal(new[] { "RESTRICT" }, Names("SELECT on_delete FROM pragma_foreign_key_list('PayoutChanges')"));
         Assert.Equal(new[] { "CASCADE" }, Names("SELECT on_delete FROM pragma_foreign_key_list('Bookmarks')"));
         Assert.Empty(Names("SELECT [table] FROM pragma_foreign_key_list('SessionChanges')"));

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,29 @@ namespace EarningsTracker.Tests;
 [Collection("Wpf")]
 public class GamesLibraryTests(WpfTestHost host)
 {
+    [Fact]
+    public Task ArchivedDetailsStayReadableAndGiveAccurateEmptySessionGuidance() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            db.Games.Add(new Game { Name = "Archived history", IsArchived = true, RatePerHour = 2m, MinutesCap = 120m });
+            db.SaveChanges();
+        }
+
+        var view = View(database);
+        await Layout(view, 1212, 900);
+        var game = ((GamesViewModel)view.DataContext).Games.Single().Game;
+        view.OpenGameDetails(game);
+        await Layout(view, 1212, 900);
+
+        var detailsList = (ListBox)view.FindName("GameSessionsList");
+        var header = Descendants<ListBoxItem>(detailsList).Single(item => item.DataContext is GameDetailsViewModel);
+        Assert.Equal(1d, header.Opacity);
+        Assert.Contains(Descendants<TextBlock>(detailsList), text => text.Text.Contains("Import sessions from Sessions."));
+        Capture(view, "archived-details-readable");
+    });
+
     [Theory]
     [InlineData(740, 560)]
     [InlineData(1212, 900)]
@@ -51,7 +75,7 @@ public class GamesLibraryTests(WpfTestHost host)
         var row = (ListBoxItem)list.ItemContainerGenerator.ContainerFromItem(item);
         var warning = Descendants<TextBlock>(row).Single(text => text.Text.Contains("Game Pass availability may have changed."));
         Assert.Same(Application.Current.FindResource("PendingTextColor"), warning.Foreground);
-        Assert.Contains(now.AddDays(-8).ToString("yyyy-MM-dd HH:mm"), warning.Text);
+        Assert.Contains(now.AddDays(-8).ToString("yyyy-MM-dd"), warning.Text);
         var warningBounds = warning.TransformToAncestor(row).TransformBounds(new Rect(warning.RenderSize));
         Assert.InRange(warningBounds.Right, 0, row.ActualWidth);
         Assert.InRange(warningBounds.Bottom, 0, row.ActualHeight);
@@ -71,7 +95,7 @@ public class GamesLibraryTests(WpfTestHost host)
         Assert.Contains(item.OfferDetails, offer => offer.Details.Contains("EUR 7.99") && offer.Details.Contains("not a PH offer"));
         Assert.Contains(item.OfferDetails, offer => offer.Text.Contains("US$19.99"));
         Assert.Contains(item.SubscriptionDetails, entry => entry.Text.Contains("Game Pass availability may have changed."));
-        Assert.Contains(Descendants<TextBlock>(view), text => text.Text == "Steam · not connected");
+        Assert.DoesNotContain(Descendants<TextBlock>(view), text => text.Text.Contains("placeholder only") || text.Text == "Steam · not connected");
         Assert.Equal(width - 40 < 900 ? 1 : 0, Grid.GetRow((StackPanel)view.FindName("DetailRight")));
         Assert.Equal(Visibility.Collapsed, ((Button)view.FindName("AddSessionButton")).Visibility);
         Capture(view, $"details-stale-{width}");
@@ -197,6 +221,104 @@ public class GamesLibraryTests(WpfTestHost host)
         Assert.True(text.ActualWidth <= 340);
         Capture(view, "settings-subscription-summary");
         return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task HierarchyReviewStatesRenderWithVerifiedProgress() => host.RunAsync(async () =>
+    {
+        using var trace = new BindingTrace();
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            string[] names = ["Orbital Drift", "Mosslight Valley", "Neon Circuit", "The Last Outpost", "Sable Atlas"];
+            for (var i = 0; i < names.Length; i++)
+            {
+                var game = new Game { Name = names[i], RatePerHour = 3.2m + i % 3 * .7m,
+                    MinutesCap = (8 + i * 2) * 60, IsArchived = i == 3, CapResetDate = new DateTime(2026, 10, 1) };
+                db.Games.Add(game); db.SaveChanges();
+                db.GameGenres.Add(new GameGenre { GameId = game.Id, Name = new[] { "Racing", "Adventure", "Action", "Strategy", "Simulation" }[i] });
+                if (i == 1) db.SubscriptionAvailability.Add(GamePassAvailabilityTests.Entry(game.Id, new DateTime(2026, 10, 17)));
+                db.GameMetadata.Add(new GameMetadata { GameId = game.Id, CatalogId = $"hierarchy-{i}", Reviewed = true,
+                    Summary = "Explore a richly detailed world with a long campaign, additional challenges and multiple editions. This description stays available without displacing acquisition prices and earning progress.",
+                    Provenance = "Isolated synthetic hierarchy review", VerifiedAt = DateTime.UtcNow });
+                if (i > 0) db.Sessions.Add(new Session { GameId = game.Id, GameName = game.Name,
+                    RecordedDate = new DateTime(2026, 10, 18), Date = new DateTime(2026, 10, 18),
+                    Status = EarningsTracker.Enums.SessionStatus.Verified, Duration = TimeSpan.FromMinutes(i * 45), Earnings = i * .75m * game.RatePerHour });
+                if (i == 0) db.GameOwnership.Add(new GameOwnership { GameId = game.Id, IsOwned = true, PurchaseAmount = 599, Currency = "PHP", Source = "Steam" });
+                if (i < 3) db.Bookmarks.Add(new Bookmark { GameId = game.Id });
+                if (i != 4)
+                {
+                    foreach (var edition in new[] { "Base game", "Deluxe edition" })
+                    {
+                        var offer = CatalogTests.Offer(); offer.GameId = game.Id; offer.Edition = edition;
+                        offer.Source = edition == "Deluxe edition" ? "Steam" : new[] { "Steam", "GOG", "Epic Games", "Steam", "GOG" }[i];
+                        offer.SalePrice = edition == "Base game" ? 349 + i * 150 : 1499;
+                        if (i == 2 && edition == "Base game") offer.SalePrice = 0;
+                        offer.VerifiedAt = new DateTime(2026, 10, edition == "Base game" ? 18 : 17); db.StoreOffers.Add(offer);
+                    }
+                }
+            }
+            db.SaveChanges();
+        }
+        var view = View(database);
+        var model = (GamesViewModel)view.DataContext;
+        model.SortGames("Game.Id", ListSortDirection.Ascending);
+        foreach (var width in new[] { 1212, 972, 740 })
+        {
+            await Layout(view, width, 900);
+            Capture(view, $"hierarchy-library-{width}");
+            foreach (var control in Descendants<CheckBox>((WrapPanel)view.FindName("GamesToolbar")))
+            {
+                var controlBounds = control.TransformToAncestor(view).TransformBounds(new Rect(control.RenderSize));
+                Assert.InRange(controlBounds.Right, 0, width);
+                Assert.Equal(Visibility.Visible, control.Visibility);
+                Assert.True(control.ActualHeight > 0);
+            }
+            var list = (ListBox)view.FindName("GamesList");
+            Assert.Equal(0, Descendants<ScrollViewer>(list).First().ScrollableWidth);
+            foreach (var row in Descendants<ListBoxItem>(list))
+            {
+                var comparisons = Descendants<Grid>(row).Single(grid => grid.Name == "Comparisons");
+                var bounds = comparisons.TransformToAncestor(view).TransformBounds(new Rect(comparisons.RenderSize));
+                Assert.InRange(bounds.Right, 0, width);
+            }
+        }
+        model.SearchGames("The Last Outpost");
+        await Layout(view, 1212, 900); Capture(view, "hierarchy-library-archived");
+        foreach (var (name, label) in new[] { ("Mosslight Valley", "active"), ("The Last Outpost", "archived"), ("Neon Circuit", "offers"), ("Orbital Drift", "no-sessions") })
+        {
+            var game = model.Games.Single(item => item.Game.Name == name).Game;
+            view.OpenGameDetails(game);
+            await Layout(view, 1212, 900);
+            Capture(view, $"hierarchy-details-{label}");
+            if (label == "offers")
+            {
+                var offers = ((GameDetailsViewModel)((Grid)view.FindName("GameDetailsView")).DataContext).Catalog!.OfferDetails;
+                Assert.Equal(2, offers.Count);
+                Assert.Contains(offers, offer => offer.Heading.Contains("Epic Games") && offer.Price == "Free-to-play");
+            }
+            if (label == "active")
+            {
+                var details = (GameDetailsViewModel)((Grid)view.FindName("GameDetailsView")).DataContext;
+                Assert.Equal(7.5m, details.ProgressPercentage);
+                Assert.Equal(2.925m, details.TotalEarnings);
+                await Layout(view, 972, 900); Capture(view, "hierarchy-details-narrow");
+                await Layout(view, 1212, 900); Capture(view, "hierarchy-details-144dpi", 1.5);
+                await Layout(view, 740, 900); Capture(view, "hierarchy-details-stacked");
+                await Layout(view, 1212, 900);
+                Descendants<Button>(view).Single(button => Equals(button.Content, "Session history ↓"))
+                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                await Layout(view, 1212, 900);
+                var filters = (ItemsControl)view.FindName("SessionFilterList");
+                var filterBounds = filters.TransformToAncestor(view).TransformBounds(new Rect(filters.RenderSize));
+                Assert.InRange(filterBounds.Bottom, 0, 900);
+                Assert.InRange(filterBounds.Top, 0, 900);
+                Capture(view, "hierarchy-session-navigation");
+            }
+            view.DetailsScroll!.ScrollToEnd();
+            await Layout(view, 1212, 900); Capture(view, $"hierarchy-details-{label}-bottom");
+            ((Button)view.FindName("DetailsBackButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
     });
 
     private static GamesView View(TestDatabase database) => new(database.Options)

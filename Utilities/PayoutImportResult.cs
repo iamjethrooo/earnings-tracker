@@ -9,6 +9,7 @@ namespace EarningsTracker.Utilities
     {
         internal Dictionary<int, PayoutService.EditState> ExpectedPayoutStates { get; } = [];
         internal Dictionary<int, SessionService.EditState> ExpectedSessionStates { get; } = [];
+        public List<PayoutCoveragePreview> CoveragePreviews { get; } = [];
         public List<Payout> NewPayouts { get; set; } = [];
         public List<Payout> Duplicates { get; set; } = [];
         public List<(int Id, Payout Existing, Payout Imported)> Updates { get; set; } = [];

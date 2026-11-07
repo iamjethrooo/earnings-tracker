@@ -14,6 +14,45 @@ namespace EarningsTracker.Tests;
 [Collection("Wpf")]
 public class GameDetailsPresentationTests(WpfTestHost host)
 {
+    [Theory]
+    [InlineData(740)]
+    [InlineData(1280)]
+    public Task GamePassDetailsUsePlainTextAndKeepOtherLinks(int width) => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        GamePassAvailabilityTests.Seed(database, DateTime.UtcNow);
+        Game game;
+        using (var db = database.CreateContext())
+        {
+            game = db.Games.Single(x => x.Id == 2);
+            var subscription = GamePassAvailabilityTests.Entry(game.Id, DateTime.UtcNow);
+            subscription.Service = "Other subscription";
+            subscription.Url = "https://example.com/other-subscription";
+            db.SubscriptionAvailability.Add(subscription);
+            var offer = CatalogTests.Offer(); offer.GameId = game.Id;
+            db.StoreOffers.Add(offer);
+            db.SaveChanges();
+        }
+        var view = new GamesView(database.Options) { Width = width, Height = 560 };
+        view.OpenGameDetails(game);
+        view.Measure(new Size(width, 560)); view.Arrange(new Rect(0, 0, width, 560)); view.UpdateLayout();
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        var evidence = (ItemsControl)view.FindName("SubscriptionEvidenceList");
+        evidence.BringIntoView(); view.UpdateLayout();
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        var status = Descendants<TextBlock>(evidence).Single(x => x.Text.StartsWith("PC Game Pass"));
+        Assert.Contains("Game Pass availability may have changed.", status.Text);
+        Assert.Equal("Synthetic reviewed evidence", status.ToolTip);
+        var links = Descendants<Button>(evidence).ToList();
+        Assert.Single(links);
+        Assert.Equal("https://example.com/other-subscription", links[0].Tag);
+        Assert.DoesNotContain(Descendants<Button>(view), x => Equals(x.Tag, "https://example.com/game-pass"));
+        Assert.Contains(Descendants<Button>(view), x => x.DataContext is OfferDisplay offer && offer.Heading.Length > 0);
+        Assert.True(status.ActualWidth > 0);
+        Assert.InRange(status.ActualWidth, 1, width);
+        Render(view, $"details-game-pass-{width}.png", width);
+    });
+
     [Fact]
     public Task DetailsOpenedBeforeCatalogLoadReceiveMetadata() => host.RunAsync(async () =>
     {
@@ -57,10 +96,10 @@ public class GameDetailsPresentationTests(WpfTestHost host)
         Assert.Equal(2, model.StatusFilters.Single(x => x.Status == SessionStatus.Verified).Count);
         Assert.Equal(75, model.TotalMinutes); // Filtering history must not change progress.
         model.FilterSessions(SessionStatus.Rejected);
-        Assert.Contains("match this status", model.SessionEmptyText);
+        Assert.Contains("with this status", model.SessionEmptyText);
         var empty = new GameDetailsViewModel(new Game { Name = "Empty", MinutesCap = 0 }, []);
         Assert.Equal(0, empty.ProgressPercentage);
-        Assert.Contains("Add a session", empty.SessionEmptyText);
+        Assert.Contains("Import sessions from Sessions", empty.SessionEmptyText);
         return Task.CompletedTask;
     });
 

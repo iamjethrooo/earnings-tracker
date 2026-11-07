@@ -19,12 +19,12 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="Paste the complete recordings copied from Nerve for this game, then review the import summary." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="Paste complete Nerve recordings for this game." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
             <TextBox Grid.Row="1" AutomationProperties.Name="Session import text" x:Name="ImportTextBox" Style="{StaticResource ImportInputTextBox}">
             </TextBox>
-            <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste session text before parsing." Style="{StaticResource InputValidationText}"/>
+            <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste session text first." Style="{StaticResource InputValidationText}"/>
 
-            <Button Grid.Row="3" Content="Parse Import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}" Margin="0 20 0 0" HorizontalAlignment="Right"/>
+            <Button Grid.Row="3" Content="Preview import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}" Margin="0 20 0 0" HorizontalAlignment="Right"/>
         </Grid>
         <Grid Grid.Row="1" x:Name="ImportResultContainer" Visibility="Collapsed">
             <local:ImportResultModal x:Name="ImportResultModal" />

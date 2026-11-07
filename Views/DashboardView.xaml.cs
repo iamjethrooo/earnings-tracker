@@ -68,17 +68,39 @@ namespace EarningsTracker.Views
         public string VerifiedShare { get; private set; } = "";
         public double VerifiedPercent { get; private set; }
         public string GameAttributionNotice { get; private set; } = "";
+        public string LifetimeSummary => $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}";
+        public string BalanceExclusionNotice { get; private set; } = "";
         internal decimal PeriodEarned => Trend.Sum(day => day.Earned);
         internal decimal PeriodPending => Trend.Sum(day => day.Pending);
         private static DateTime RecordedDay(Session session) => (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
 
         private sealed record PeriodReport(DateTime Start, DateTime End, List<Session> Sessions,
             List<DashboardDay> Days, List<SessionItemViewModel> Recent, List<DashboardGame> Games,
-            decimal Paid, double Hours, bool HasEarningsActivity);
+            decimal Paid, double Hours, bool HasEarningsActivity, string PayoutNotice);
 
         private PeriodReport BuildPeriod(List<Session> sessions, List<Payout> payouts, Dictionary<int, GameMetadata> artwork, DateTime today)
         {
             var start = today.AddDays(1 - new[] { 7, 30, 90 }[Math.Clamp(PeriodSelector.SelectedIndex, 0, 2)]);
+            var payoutNotice = string.Empty;
+            if ((PeriodSelector.SelectedItem as ComboBoxItem)?.Tag?.ToString() == "Payout")
+            {
+                var latestPaymentDate = payouts.Where(PayoutAccounting.IsCountedAsPaidPayment)
+                    .Select(payout => (DateTime?)payout.Date.Date).Max();
+                var undatedSessionCount = sessions.Count(session => session.Status == SessionStatus.Verified && !session.PostedDate.HasValue);
+                // Share settlement membership with Payments; chart by recording date.
+                sessions = PayoutAccounting.CurrentPayoutSessions(sessions, payouts)
+                    .Where(session => session.PostedDate!.Value.Date <= today).ToList();
+                payouts = payouts.Where(payout => !latestPaymentDate.HasValue
+                    || payout.Date.Date > latestPaymentDate.Value).ToList();
+                start = sessions.Select(RecordedDay)
+                    .Concat(payouts.Where(PayoutAccounting.IsSeparateEarnedAdjustment).Select(payout => payout.Date.Date))
+                    .Where(date => date <= today).DefaultIfEmpty(today).Min();
+                payoutNotice = latestPaymentDate.HasValue
+                    ? $"Current payout · historical cutoff: {latestPaymentDate.Value:MMM d, yyyy}"
+                    : "Current payout · no Paid or Processing payment yet";
+                if (undatedSessionCount > 0)
+                    payoutNotice += $" {undatedSessionCount:N0} {(undatedSessionCount == 1 ? "session" : "sessions")} excluded: missing posted dates.";
+            }
             var rows = sessions.Where(session => RecordedDay(session) >= start && RecordedDay(session) <= today).ToList();
             var adjustments = payouts.Where(PayoutAccounting.IsSeparateEarnedAdjustment)
                 .Where(row => row.Date.Date >= start && row.Date.Date <= today).ToList();
@@ -115,7 +137,7 @@ namespace EarningsTracker.Views
             var paid = PayoutAccounting.Calculate([], payouts.Where(row => row.Date.Date >= start && row.Date.Date <= today)).TotalPaidOut;
             var hours = rows.Where(row => row.Status is SessionStatus.Verified or SessionStatus.Pending).Sum(row => row.Duration.TotalHours);
             return new(start, today, rows, days, recent, games, paid, hours,
-                rows.Any(row => row.Status is SessionStatus.Verified or SessionStatus.Pending) || adjustments.Count > 0);
+                rows.Any(row => row.Status is SessionStatus.Verified or SessionStatus.Pending) || adjustments.Count > 0, payoutNotice);
         }
 
         private void PublishPeriod(PeriodReport report)
@@ -128,17 +150,22 @@ namespace EarningsTracker.Views
                 .Select(status => new DashboardStatus(status, report.Sessions.Count(row => row.Status == status),
                     report.Sessions.Where(row => row.Status == status).Sum(row => row.Earnings), BrushFor(status switch
                     { SessionStatus.Verified => "VerifiedTextColor", SessionStatus.Pending => "PendingTextColor", SessionStatus.Rejected => "RejectedTextColor", _ => "NotUploadedTextColor" }))).ToList();
-            Metrics = [new("Earned", CurrencyDisplay.FormatUsd(PeriodEarned), "Verified + signed adjustments · period", BrushFor("DefaultTextColor")),
-                new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "Not yet verified · period", BrushFor("PendingTextColor")),
-                new("Available balance", BalanceDisplay, "Lifetime posted-date balance", BrushFor("VerifiedTextColor")),
-                new("Payouts", CurrencyDisplay.FormatUsd(report.Paid), "Paid + Processing · payment date", BrushFor("DefaultTextColor")),
-                new("Hours played", $"{report.Hours:N1} h", "Verified + Pending · recording date", BrushFor("DefaultTextColor"))];
-            RangeLabel = $"{report.Start:MMM d} – {report.End:MMM d, yyyy} · inclusive recording dates; adjustments/payment dates are separate";
-            SessionCountLabel = $"{report.Sessions.Count:N0} sessions · recording date";
+            Metrics = [new("Earned", CurrencyDisplay.FormatUsd(PeriodEarned), "Verified + separate adjustments", BrushFor("DefaultTextColor")),
+                new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "", BrushFor("PendingTextColor")),
+                new("Available balance", BalanceDisplay, "All time", BrushFor("VerifiedTextColor")),
+                new("Payouts", CurrencyDisplay.FormatUsd(report.Paid), "Paid + Processing", BrushFor("DefaultTextColor")),
+                new("Hours played", $"{report.Hours:N1} h", "Verified + Pending", BrushFor("DefaultTextColor"))];
+            RangeLabel = $"{report.Start:MMM d} – {report.End:MMM d, yyyy}";
+            if (report.PayoutNotice.Length > 0)
+                RangeLabel += $". {report.PayoutNotice}";
+            SessionCountLabel = $"{report.Sessions.Count:N0} sessions";
             VerifiedPercent = report.Sessions.Count == 0 ? 0 : verified * 100d / report.Sessions.Count;
             VerifiedShare = report.Sessions.Count == 0 ? "No sessions" : $"{VerifiedPercent:0}% verified";
-            GameAttributionNotice = TopGames.Count == 0 ? "No verified session earnings in this period." : "Top four saved game identities. Unlinked history has no navigation target.";
+            GameAttributionNotice = TopGames.Count == 0 ? "No verified session earnings in this period." : "";
             ((BatchObservableCollection<SessionItemViewModel>)RecentSessions).ReplaceAll(report.Recent);
+            DashboardViewEmptyState.Text = TotalSessions == 0
+                ? "No sessions yet. Import sessions from Sessions."
+                : "No sessions in this period.";
             DashboardViewEmptyState.Visibility = report.Recent.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             TrendChart.Visibility = report.HasEarningsActivity ? Visibility.Visible : Visibility.Collapsed;
             TrendEmptyState.Visibility = report.HasEarningsActivity ? Visibility.Collapsed : Visibility.Visible;
@@ -236,8 +263,12 @@ namespace EarningsTracker.Views
                     TotalEarned = totals.TotalEarned;
                     TotalPaidOut = totals.TotalPaidOut;
                     Balance = totals.Balance;
+                    BalanceExclusionNotice = totals.UndatedVerifiedSessions > 0
+                        ? $"Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates." : "";
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LifetimeSummary)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BalanceExclusionNotice)));
                     var cutoff = payouts.Where(PayoutAccounting.IsCountedAsPaidPayment).Select(row => (DateTime?)row.Date.Date).Max();
-                    BalanceDescription = $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}. Balance uses verified posted dates {(cutoff.HasValue ? $"after {cutoff:MMM d, yyyy}" : "with no payment cutoff")}; independent of the selected period."
+                    BalanceDescription = $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}. Balance uses unpaid assignments; historical sessions use posted dates {(cutoff.HasValue ? $"after {cutoff:MMM d, yyyy}" : "with no payment cutoff")}. Independent of the selected period."
                         + (totals.UndatedVerifiedSessions > 0 ? $" Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates." : "");
                     TotalSessions = allSessions.Count;
                     TotalHoursPlayed = hours;

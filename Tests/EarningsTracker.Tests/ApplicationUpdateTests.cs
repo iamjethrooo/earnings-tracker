@@ -124,7 +124,7 @@ public class ApplicationUpdateTests(WpfTestHost host)
         var manager = new Manager { BrokenPending = true }; using var service = Service(manager);
         await service.CheckOnStartupAsync(true);
         Assert.Equal(ApplicationUpdateState.Unavailable, service.State); Assert.Equal(0, manager.Checks);
-        Assert.False(service.CanRestart); Assert.Contains("saved data remains usable", service.Message);
+        Assert.False(service.CanRestart); Assert.Contains("Application updates unavailable", service.Message);
     });
 
     [Fact]

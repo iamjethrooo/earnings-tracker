@@ -148,30 +148,42 @@ public class SharedControlTests(WpfTestHost host)
     });
 
     [Fact]
-    public Task SessionRowEnterOpensGameButEmbeddedControlsDoNot() => host.RunAsync(() =>
+    public Task SessionRowEnterInspectsSessionButEmbeddedControlsDoNot() => host.RunAsync(async () =>
     {
-        var view = new SessionsView(); // No Loaded event: do not open the production database.
-        var list = (ListBox)view.FindName("SessionsList");
+        using var database = new TestDatabase();
         var game = new Game { Name = "Example" };
-        var item = new SessionItemViewModel(new Session { Game = game });
-        var button = new Button { Content = "Edit" };
-        var row = new ListBoxItem { Content = button, DataContext = item };
-        list.ItemsSource = new[] { row };
+        using (var db = database.CreateContext())
+        {
+            db.Games.Add(game);
+            db.Sessions.Add(new Session { Game = game, GameName = game.Name, RecordedDate = DateTime.Today });
+            db.SaveChanges();
+        }
+        var view = new SessionsView(database.Options);
+        await view.RefreshSessionsAsync();
+        var model = (SessionsViewModel)view.DataContext;
+        var list = (ListView)view.FindName("SessionsList");
         view.Measure(new Size(1000, 700));
         view.Arrange(new Rect(0, 0, 1000, 700));
         view.UpdateLayout();
+        var item = Assert.Single(model.Sessions);
+        var row = (ListViewItem)list.ItemContainerGenerator.ContainerFromItem(item);
+        var button = Descendants<Button>(row).Single();
         var opened = 0;
-        view.ViewGameRequested += (_, value) => { Assert.Same(game, value); opened++; };
+        view.ViewGameRequested += (_, _) => opened++;
         KeyEventArgs Enter() => new(Keyboard.PrimaryDevice, new FakePresentationSource(), 0, Key.Enter)
-            { RoutedEvent = Keyboard.KeyDownEvent };
-        row.RaiseEvent(Enter());
-        Assert.Equal(1, opened);
+            { RoutedEvent = Keyboard.PreviewKeyDownEvent };
         button.RaiseEvent(Enter());
-        Assert.Equal(1, opened);
+        Assert.Null(model.SelectedSession);
+        row.RaiseEvent(Enter());
+        Assert.Same(item, model.SelectedSession);
+        Assert.Equal(Visibility.Visible, ((Border)view.FindName("DetailsPanel")).Visibility);
+        Assert.Equal(0, opened);
         item.BeginEdit();
         row.RaiseEvent(Enter());
-        Assert.Equal(1, opened);
-        return Task.CompletedTask;
+        Assert.True(item.IsEditing);
+        Assert.Same(item, model.SelectedSession);
+        Assert.Equal(0, opened);
+        await view.EvidenceCompletion;
     });
 
     private sealed class FakePresentationSource : PresentationSource

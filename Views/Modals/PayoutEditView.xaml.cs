@@ -4,19 +4,31 @@ using System.Windows.Controls;
 using EarningsTracker.Models;
 using EarningsTracker.Utilities;
 using EarningsTracker.Exceptions;
+using EarningsTracker.Controls;
+using EarningsTracker.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EarningsTracker.Views.Modals
 {
-    public partial class PayoutEditView : UserControl
+    public partial class PayoutEditView : UserControl, IDisposable
     {
         private readonly Payout? _existing;
         private readonly PayoutService.EditState? _expectedState;
         private bool _saveCompleted;
+        private readonly DbContextOptions<AppDbContext>? _databaseOptions;
+        private readonly DialogWork _work;
+        private PayoutCoveragePreview? _coverage;
+        internal Task OperationCompletion { get; private set; } = Task.CompletedTask;
         public event EventHandler? Saved;
 
-        public PayoutEditView(Payout? existing = null)
+        public PayoutEditView(Payout? existing = null) : this(existing, null) { }
+
+        internal PayoutEditView(Payout? existing, DbContextOptions<AppDbContext>? databaseOptions)
         {
             InitializeComponent();
+            _databaseOptions = databaseOptions;
+            _work = new DialogWork(this, BusyStatus);
+            Unloaded += (_, _) => Dispose();
             _existing = existing;
             _expectedState = existing == null ? null : PayoutService.CaptureEditState(existing);
             PayoutType.ItemsSource = new[] { "Payment", "Bonus", "Earnings correction", "Other" };
@@ -40,6 +52,13 @@ namespace EarningsTracker.Views.Modals
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_work.IsRunning && !_work.IsDisposed) OperationCompletion = SaveAsync();
+        }
+
+        public void Dispose() => _work.Dispose();
+
+        private async Task SaveAsync()
         {
             if (_saveCompleted)
             {
@@ -80,19 +99,49 @@ namespace EarningsTracker.Views.Modals
             string? refreshWarning = null;
             try
             {
-                if (_existing == null)
-                    PayoutService.Create(payout, Reason.Text);
-                else
-                    PayoutService.Update(_existing.Id, payout, Reason.Text, expectedState: _expectedState);
+                PayoutService.Validate(payout);
+                if (PayoutAssignments.NeedsCoverage(payout, _existing))
+                {
+                    if (_coverage == null || _coverage.PaymentState != (payout.Date, payout.Type, payout.Status, payout.Amount))
+                    {
+                        _coverage = await _work.RunAsync("Preparing session coverage…", () =>
+                        {
+                            using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
+                            return PayoutAssignments.Preview(db, payout);
+                        });
+                        if (_work.IsDisposed) return;
+                        CoveragePanel.Content = new PayoutCoverageView { DataContext = _coverage };
+                        SaveButton.Content = "Save payout and coverage";
+                        ValidationMessage.Text = "Review the sessions below, then save the payout and coverage.";
+                        ValidationMessage.SetResourceReference(TextBlock.ForegroundProperty, "PendingTextColor");
+                        ValidationMessage.Visibility = Visibility.Visible;
+                        SaveButton.Focus();
+                        SaveButton.BringIntoView();
+                        return;
+                    }
+                }
+                else { _coverage = null; CoveragePanel.Content = null; }
+                var reason = Reason.Text;
+                await _work.RunAsync("Saving payout and coverage…", () =>
+                {
+                    if (_existing == null)
+                        PayoutService.Create(payout, reason, _databaseOptions, _coverage);
+                    else
+                        PayoutService.Update(_existing.Id, payout, reason, _databaseOptions, _expectedState, _coverage);
+                    return true;
+                }, committing: true);
             }
             catch (PostCommitRefreshException ex) { refreshWarning = ex.Message; }
             catch (Exception ex)
             {
+                _coverage = null;
+                CoveragePanel.Content = null;
                 ShowValidation(ex.Message, SaveButton);
                 return;
             }
 
             _saveCompleted = true;
+            if (_work.IsDisposed) return;
             SaveButton.Content = "Done";
             if (refreshWarning != null)
                 MessageBox.Show(refreshWarning, "Saved — refresh failed", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -102,6 +151,7 @@ namespace EarningsTracker.Views.Modals
         private void ShowValidation(string message, Control field)
         {
             ValidationMessage.Text = message;
+            ValidationMessage.SetResourceReference(TextBlock.ForegroundProperty, "RejectedTextColor");
             ValidationMessage.Visibility = Visibility.Visible;
             field.Focus();
             field.BringIntoView();

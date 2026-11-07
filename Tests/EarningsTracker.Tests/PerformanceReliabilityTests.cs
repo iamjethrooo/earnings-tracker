@@ -330,7 +330,7 @@ public class PerformanceReliabilityTests(WpfTestHost host)
         ((TextBox)view.FindName("ImportTextBox")).Text = kind == "Payouts" ? "|6/5/2026|—|Payment|Example|Paid|-$1.00|"
             : kind == "Selected game" ? "recording-20260605120000123.mkv\n6/5/2026 · 1m\n+$1.00\nVerified"
             : "Example\nvideo.mkv · 6/5/2026 12:00 PM · 1m\n+$1.00\nVerified";
-        Click(view, "Parse Import");
+        Click(view, "Preview import");
         var task = Completion(view);
         await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
         try
@@ -339,7 +339,7 @@ public class PerformanceReliabilityTests(WpfTestHost host)
             Assert.False(view.IsEnabled);
             Assert.Equal(Visibility.Visible, ((TextBlock)view.FindName("BusyStatus")).Visibility);
             await Dispatcher.Yield(DispatcherPriority.Input);
-            Click(view, "Parse Import"); Assert.Same(task, Completion(view));
+            Click(view, "Preview import"); Assert.Same(task, Completion(view));
             modal.Close(); Assert.Null(modal.ModalContent);
             Assert.Empty(disposals); // The paused context is still owned by its operation.
         }
@@ -367,7 +367,7 @@ public class PerformanceReliabilityTests(WpfTestHost host)
         var modal = new Modal { ModalContent = view, Width = 740, Height = 560 };
         modal.Measure(new Size(740, 560)); modal.Arrange(new Rect(0, 0, 740, 560)); modal.UpdateLayout();
         ((TextBox)view.FindName("ImportTextBox")).Text = "|6/5/2026|—|Payment|Example|Paid|-$1.00|";
-        Click(view, "Parse Import"); await view.OperationCompletion;
+        Click(view, "Preview import"); await view.OperationCompletion;
         EventHandler failure = (_, _) => throw new InvalidOperationException("Test refresh failure");
         if (failRefresh) PayoutService.DataChanged += failure;
         try
@@ -411,7 +411,7 @@ public class PerformanceReliabilityTests(WpfTestHost host)
         ((TextBox)view.FindName("ImportTextBox")).Text = selectedGame
             ? "recording-20260605120000123.mkv\n6/5/2026 · 1m\n+$1.00\nVerified"
             : "Example\nvideo.mkv · 6/5/2026 12:00 PM · 1m\n+$1.00\nVerified";
-        Click(view, "Parse Import"); await SessionCompletion(view);
+        Click(view, "Preview import"); await SessionCompletion(view);
         EventHandler failure = (_, _) => throw new InvalidOperationException("Test refresh failure");
         if (failRefresh) PayoutService.DataChanged += failure;
         try
@@ -435,7 +435,7 @@ public class PerformanceReliabilityTests(WpfTestHost host)
             Assert.False(modal.IsBusy);
             Assert.True(view.IsEnabled);
             var summary = (ImportResultModal)view.FindName("ImportResultModal");
-            Assert.Equal(failRefresh ? "Import Saved — Display Update Failed" : "Import Complete",
+            Assert.Equal(failRefresh ? "Saved · refresh failed" : "Import complete",
                 ((TextBlock)summary.FindName("ResultTitle")).Text);
             Click(view, "Import Sessions"); await SessionCompletion(view);
             using var read = database.CreateContext();

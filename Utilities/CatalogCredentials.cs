@@ -26,9 +26,9 @@ internal static class CatalogCredentials
     private static extern bool Delete(string target, uint type, uint flags);
     [DllImport("advapi32.dll")] private static extern void CredFree(IntPtr credential);
 
-    internal static string? Get()
+    internal static string? Get(string target = Target)
     {
-        if (!Read(Target, 1, 0, out var ptr))
+        if (!Read(target, 1, 0, out var ptr))
         {
             if (Marshal.GetLastWin32Error() == 1168) return null;
             throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -41,22 +41,22 @@ internal static class CatalogCredentials
         finally { CredFree(ptr); }
     }
 
-    internal static void Save(string key)
+    internal static void Save(string key, string target = Target)
     {
         if (key.Length > 1000) throw new ArgumentException("API key is too long.");
         var ptr = Marshal.StringToCoTaskMemUni(key);
         try
         {
-            var credential = new Credential { Type = 1, TargetName = Target, UserName = "IsThereAnyDeal",
-                Comment = "Optional game price refresh", CredentialBlob = ptr,
+            var credential = new Credential { Type = 1, TargetName = target, UserName = target == Target ? "IsThereAnyDeal" : "Steam",
+                Comment = target == Target ? "Optional game price refresh" : "Steam library sync", CredentialBlob = ptr,
                 CredentialBlobSize = (uint)key.Length * 2, Persist = 2, TargetAlias = "" };
             if (!Write(ref credential, 0)) throw new Win32Exception(Marshal.GetLastWin32Error());
         }
         finally { Marshal.ZeroFreeCoTaskMemUnicode(ptr); }
     }
 
-    internal static void Remove()
+    internal static void Remove(string target = Target)
     {
-        if (!Delete(Target, 1, 0) && Marshal.GetLastWin32Error() != 1168) throw new Win32Exception(Marshal.GetLastWin32Error());
+        if (!Delete(target, 1, 0) && Marshal.GetLastWin32Error() != 1168) throw new Win32Exception(Marshal.GetLastWin32Error());
     }
 }

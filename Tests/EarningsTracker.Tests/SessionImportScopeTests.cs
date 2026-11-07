@@ -48,7 +48,7 @@ public class SessionImportScopeTests(WpfTestHost host)
         Assert.Empty(Descendants<ComboBox>(view));
         Assert.Empty(Descendants<RadioButton>(view));
         ((TextBox)view.FindName("ImportTextBox")).Text = text;
-        Descendants<Button>(view).Single(button => button.Content as string == "Parse Import")
+        Descendants<Button>(view).Single(button => button.Content as string == "Preview import")
             .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         await view.OperationCompletion;
         var summary = (ImportResultModal)view.FindName("ImportResultModal");
@@ -57,7 +57,7 @@ public class SessionImportScopeTests(WpfTestHost host)
         if (supported)
             Assert.Equal("1 sessions found", ((TextBlock)summary.FindName("SessionsFoundText")).Text);
         else
-            Assert.Equal("Import Failed", ((TextBlock)summary.FindName("ResultTitle")).Text);
+            Assert.Equal("Import failed", ((TextBlock)summary.FindName("ResultTitle")).Text);
         using var read = database.CreateContext();
         Assert.Empty(read.Sessions);
         Assert.Empty(read.SessionChanges);

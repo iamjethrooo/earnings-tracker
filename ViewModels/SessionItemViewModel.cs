@@ -41,7 +41,31 @@ namespace EarningsTracker.ViewModels
         public string Identifier => $"Session #{Session.Id}";
         public string SourceId => Session.Payout?.SourceId ?? "Not recorded";
         public string SourceLabel { get; private set; } = "Not recorded";
-        public string PostedText => Session.PostedDate?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown — no posting date recorded";
+        public string PostedText => Session.PostedDate?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown";
+        public IReadOnlyList<SessionPayoutOption> PayoutOptions { get; private set; } = [];
+        public SessionPayoutOption? DraftPayout { get; set; }
+        public string PayoutAssignmentText => PayoutOptions.FirstOrDefault(p => p.IsExplicit == Session.HasExplicitPayoutAssignment
+            && p.PayoutId == Session.AssignedPayoutId)?.Label ?? "Payment unavailable · counted in Current payout";
+        internal void SetPayoutOptions(IEnumerable<Payout> payouts)
+        {
+            var draft = DraftPayout;
+            var allPayments = payouts.ToList();
+            var options = PayoutAssignments.Options(allPayments);
+            if (Session.HasExplicitPayoutAssignment) options.RemoveAt(0);
+            if (Session.AssignedPayoutId is int id && options.All(p => p.PayoutId != id))
+            {
+                var payment = allPayments.FirstOrDefault(p => p.Id == id);
+                options.Add(new(true, id, $"{(payment == null ? $"Payment #{id}" : PayoutAssignments.PaymentLabel(payment))} · inactive, counted in Current payout"));
+            }
+            PayoutOptions = options;
+            OnPropertyChanged(nameof(PayoutOptions));
+            if (IsEditing)
+            {
+                DraftPayout = options.FirstOrDefault(p => p.IsExplicit == draft?.IsExplicit && p.PayoutId == draft.PayoutId) ?? draft;
+                OnPropertyChanged(nameof(DraftPayout));
+            }
+            OnPropertyChanged(nameof(PayoutAssignmentText));
+        }
         public IReadOnlyList<SessionChange> Evidence { get; private set; } = [];
         internal void SetSource(string source) { SourceLabel = source; OnPropertyChanged(nameof(SourceLabel)); OnPropertyChanged(nameof(SourceId)); }
         internal void SetEvidence(IReadOnlyList<SessionChange> evidence) { Evidence = evidence; OnPropertyChanged(nameof(Evidence)); }
@@ -96,6 +120,7 @@ namespace EarningsTracker.ViewModels
         public SessionItemViewModel(Session session)
         {
             Session = session;
+            SetPayoutOptions([]);
         }
 
         internal void RefreshSession(Session session)
@@ -109,6 +134,7 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(Identifier));
             OnPropertyChanged(nameof(SourceId));
             OnPropertyChanged(nameof(PostedText));
+            OnPropertyChanged(nameof(PayoutAssignmentText));
         }
 
         internal void RestoreDraftGame(Game? game)
@@ -131,6 +157,7 @@ namespace EarningsTracker.ViewModels
             DraftStatus = Session.Status;
             DraftIsForceVerified = Session.IsForceVerified;
             DraftGame = Session.Game;
+            DraftPayout = PayoutOptions.FirstOrDefault(p => p.IsExplicit == Session.HasExplicitPayoutAssignment && p.PayoutId == Session.AssignedPayoutId);
             EditError = null;
             IsEditing = true;
             OnPropertyChanged(nameof(DraftRecordedDate));
@@ -140,6 +167,7 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(DraftStatus));
             OnPropertyChanged(nameof(DraftIsForceVerified));
             OnPropertyChanged(nameof(DraftGame));
+            OnPropertyChanged(nameof(DraftPayout));
         }
 
         public void CancelEdit()
@@ -157,13 +185,18 @@ namespace EarningsTracker.ViewModels
             ClearValidation();
             if (EditState != null && Utilities.SessionService.CaptureEditState(Session) != EditState)
                 return Fail("This session changed while you were editing. Cancel the draft and edit the refreshed session again.", out error);
+            if (DraftPayout == null)
+                return Fail("Choose a payout assignment before saving.", out error);
+            var assignmentChanged = DraftPayout.IsExplicit &&
+                (!Session.HasExplicitPayoutAssignment || DraftPayout.PayoutId != Session.AssignedPayoutId);
             if (!DraftRecordedDate.HasValue)
                 return FieldError(nameof(DraftRecordedDate), "Choose the date the session was recorded.", out error);
             if (!decimal.TryParse(DraftDurationMinutes, NumberStyles.Number, CultureInfo.CurrentCulture, out var minutes) || minutes < 0)
                 return FieldError(nameof(DraftDurationMinutes), "Enter a valid non-negative duration in minutes.", out error);
             if (!decimal.TryParse(DraftEarnings, NumberStyles.Number, CultureInfo.CurrentCulture, out var earnings) || earnings < 0)
                 return FieldError(nameof(DraftEarnings), "Enter valid non-negative session earnings.", out error);
-            if (DraftStatus == SessionStatus.Verified && DraftIsForceVerified && !DraftPostedDate.HasValue)
+            if (DraftStatus == SessionStatus.Verified && DraftIsForceVerified && !DraftPostedDate.HasValue
+                && !(assignmentChanged && Session.Status == SessionStatus.Verified && Session.IsForceVerified && !Session.PostedDate.HasValue))
                 return FieldError(nameof(DraftPostedDate), "Choose a posted date for a force-verified session.", out error);
 
             // Display rounding must not change stored precision when another field is edited.
@@ -182,7 +215,7 @@ namespace EarningsTracker.ViewModels
             var postedDate = DraftPostedDate;
             if (postedDate.HasValue && Session.PostedDate.HasValue)
                 postedDate = WithOriginalTime(postedDate.Value, Session.PostedDate.Value);
-            if (DraftStatus == SessionStatus.Verified && !postedDate.HasValue)
+            if (DraftStatus == SessionStatus.Verified && (!assignmentChanged || Session.Status != SessionStatus.Verified) && !postedDate.HasValue)
                 postedDate = recordedDate;
 
             edited = new Session
@@ -193,6 +226,8 @@ namespace EarningsTracker.ViewModels
                 Game = CanSelectGame && DraftGame != null ? DraftGame : Session.Game,
                 PayoutId = Session.PayoutId,
                 Payout = Session.Payout,
+                HasExplicitPayoutAssignment = DraftPayout?.IsExplicit ?? Session.HasExplicitPayoutAssignment,
+                AssignedPayoutId = DraftPayout?.PayoutId,
                 Date = recordedDate,
                 RecordedDate = recordedDate,
                 PostedDate = postedDate,

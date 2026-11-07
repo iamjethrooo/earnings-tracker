@@ -110,7 +110,7 @@ native pixel scrolling, a recycling VirtualizingStackPanel and a one-page cache.
 table scroller or expanded editor inside a row.
 
 Search matches game names, recorded source IDs and the internal `Session #id` identifier. Verification
-includes the existing Ambiguous/unlinked choice. Game filters distinguish saved game IDs (including
+includes the existing Unlinked choice. Game filters distinguish saved game IDs (including
 duplicate names/rate versions); unlinked historical names have their own choices. Recording-date
 filters use All recording dates, Last 7 days and Last 30 days, inclusive through the current local day.
 All dates remains the production default so historical rows are visible. Clear resets search,
@@ -132,6 +132,18 @@ positive-duration rule or sample duration cap is introduced. Original timestamp 
 monetary/duration precision are retained when a displayed value is unchanged. History status colors
 continue to use SessionHistoryStatusBadge/Text, including labeled Not Uploaded; details expose
 force-verification separately.
+
+Payout assignment appears in session details and the editor. Choose Current payout or a named
+Paid/Processing Payment; untouched historical rows show their inferred-date treatment explicitly.
+Payment labels include date, USD amount, status and source/local ID to distinguish same-day payments.
+The choice stays separate from source evidence and preserves draft selection during refresh.
+New-session import previews offer the same payment choice for the new batch.
+
+Payment creation and first transition to Paid/Processing show a coverage review before saving.
+`PayoutCoverageView` uses shared surfaces and a bounded recycling checkbox list, with a live selected
+total and any difference from the payment amount. Unchecked sessions remain current. A review prompt
+uses pending-color feedback; validation errors retain rejected-color feedback. See
+[assignment and accounting rules](Database.md#session-payout-assignments).
 
 Source labels come from recorded import audit types. Source IDs are linked payout IDs when recorded;
 they are not invented session-provider identifiers. Unknown historical IDs/posting dates remain
@@ -161,25 +173,45 @@ rate, cycle cap and full-cycle potential. Below 1,050 DIPs of page-region width 
 fields move beneath the title. Missing artwork has a readable fallback. Selecting a row keeps
 the library open; its title or Enter opens details. Returning to Library retains filters,
 selection and scroll position and restores focus when the original item is still available.
+The identity and comparison columns share the available row width; rate, cycle cap, full-cycle
+potential and acquisition align across games without a fixed-width inset. Cycle bars use verified
+linked sessions after the saved cap-reset date; pending, rejected, unlinked and pre-reset sessions
+do not contribute. An empty track says “No verified play.” The visual clamps to 100%; displayed
+minutes and percentages retain over-cap values.
 
-Search, sorting, genre/store and combinable access filters remain production filters. Clear
+The primary toolbar band contains search, Owned/Playable now, sorting and Clear. The second
+contains genre/store, bookmarks, archived visibility, Free-to-play and PC Game Pass. Both bands
+wrap at narrower widths; access flags remain independently combinable. Search, sorting,
+genre/store and access filters remain production filters. Clear
 resets search and filters, retaining sorting and the current archived visibility choice.
 Settings still supplies the saved starting sort, bookmarks-only and archived preferences;
 temporary browsing choices do not overwrite them. Lowest price retains the existing comparison
 of saved PH offers across editions using saved exchange rates. Outdated purchase prices remain
 visible with checked dates; the prototype's synthetic price assumptions do not replace these rules.
 
-Details has a pinned Library action and a bounded, recycling session-history viewport. Its finite
-header places earnings/cap and personal ownership beside acquisition/editions and subscription
-evidence, stacking below 900 DIPs of page-region width. Archived opportunities are labeled
-historical. Saved same-name rate identities and cap-reset audit values are read-only disclosures.
-Existing audited cap-reset and ownership dialogs remain authoritative. Steam ownership and
-installation are explicitly unconnected placeholders; no account or local Steam library is read.
+Details has a pinned Games action and a bounded, recycling session-history viewport. Its finite
+header uses prominent artwork, identity, rate, ownership and bookmark controls. Below it, one earnings
+card groups verified cycle usage/progress, full-cycle potential, stored verified earnings and
+the audited cap-reset editor. Ownership, purchase cost and subscription evidence
+occupy the left column; individual acquisition cards and History & evidence occupy the right.
+The columns stack below 900 DIPs of page-region width. Descriptions remain fully visible after the
+primary cards. Offer headings identify store/edition/region, with prominent source-currency prices;
+checked dates, saved quotes and source evidence remain accessible. Archived opportunities are labeled
+historical. Saved same-name rate identities and cap-reset audit values are separate read-only
+disclosures. Session history scrolls to the existing status filters and bounded session rows.
+Existing audited cap-reset and ownership dialogs remain authoritative. Steam ownership uses the
+last successful library sync configured in Settings; manual ownership and purchase costs remain
+separate. Game details does not show an installation placeholder.
+Acquisition offers remain separate, individually selectable cards. Archived details keep normal
+text contrast and identify the saved rate as historical. When a game has no sessions, guidance
+directs the user to the Sessions page for importing them.
 
 The PC Game Pass filter includes previously verified PH/PC inclusion even after seven days or
 recorded expiry. Rows and details show the actual saved verification date and **Game Pass
 availability may have changed.** Stale evidence uses warning text/color and never claims current
 availability. A newer recorded not-included result replaces older inclusion in this filter.
+Game Pass uses compact status and checked/expiry dates. In game details it is plain text,
+with source evidence in a tooltip instead of a subscription link or a second source paragraph.
 Settings separately counts current inclusion, stale/expired inclusion, currently verified
 not-included and other unverified records; stale verification does not confirm removal.
 
@@ -202,7 +234,15 @@ scrolls vertically while the heading and period selector stay available. Recent 
 to five recordings in a 240-DIP recycling viewport; Daily values has a separate bounded viewport.
 
 The 7/30/90-day selector defaults to 30 days, includes the complete snapshot day and starts 6/29/89
-days earlier. Recording dates use `RecordedDate`, falling back to legacy `Date` when absent. No
+days earlier. The Current payout option matches Statistics: sessions need a known posted date
+through the snapshot day and unpaid settlement membership. Explicitly current sessions remain
+eligible even on or before the latest payment day; untouched historical sessions retain the
+posted-day cutoff. Sessions assigned to visible Paid/Processing Payments are excluded. It charts those sessions by recording date and includes
+qualifying separate adjustments after that cutoff through the snapshot day. The range expands to
+the earliest eligible recording/adjustment, and the heading reports excluded undated verified
+sessions. Dashboard status, pending and activity panels use the same assignment selection;
+the lifetime balance remains independent of the filter.
+Recording dates use `RecordedDate`, falling back to legacy `Date` when absent. No
 timestamps or historical earnings are rewritten. The view reads persisted sessions, payouts and
 catalog artwork, calculates the complete presentation, then publishes on its dispatcher. A saved
 change arriving during a read queues another read. Failed reads keep the previous snapshot and
@@ -212,7 +252,7 @@ expose stale/retry feedback; first-load failures hide unavailable totals.
 | --- | --- |
 | Earned KPI / purple trend | Verified stored session earnings by recording day, plus qualifying signed separate Bonus/Earnings correction amounts by payout date, using `EarningsPeriods` and `PayoutAccounting.IsSeparateEarnedAdjustment`. Included-in-session, unresolved and ineligible adjustments are excluded. |
 | Pending KPI / dashed trend | Stored Pending session earnings by recording day; separate from earned amounts. |
-| Available balance | Existing lifetime `PayoutAccounting` balance: verified earnings with known posted dates strictly after the latest Paid/Processing Payment day. It is independent of period selection and is not total earned minus payouts. Unknown posted dates are excluded and counted in the notice. |
+| Available balance | Lifetime `PayoutAccounting` balance: verified unpaid assignments with known posted dates, plus historical sessions after the latest Paid/Processing Payment day. Hidden/ineligible assigned payments return their sessions to current. It is independent of period selection and is not total earned minus payouts. Unknown posted dates are excluded and counted in the notice. |
 | Payouts KPI | Existing `PayoutAccounting` Paid/Processing Payment amounts in the selected payment-date range; payment signs retain the shared accounting treatment. Payments can pay earnings recorded in another period. |
 | Hours played | Stored duration of Verified + Pending period recordings, summed without modifying duration precision. Rejected/Not Uploaded hours are excluded. Statistics' verified-only hours are a subset. |
 | Session mix | All four stored statuses by period recording date. Verified percentage denominator is **all period sessions**, including Rejected/Not Uploaded; no sessions displays “No sessions.” Status amounts are recorded values, not a claim that Rejected/Not Uploaded earnings were earned. Adjustments do not add sessions. |
@@ -244,3 +284,16 @@ Measure currency tick labels before reserving the axis gutter. Reduce date-label
 Charts stack below 820 DIPs of chart-region width; period cards stack below 640 DIPs of card-region width.
 Empty ranges show guidance instead of a zero line, while real zero-valued or offsetting activity retains
 its chart. The bounded, recycling cap and trend-value viewports remain available.
+
+## In-app copy
+
+Use short headings, explicit action labels and field units. Omit page-description subtitles,
+instructions for obvious controls and repeated success/audit reassurance. Imports use
+**Preview import** before saving; unresolved game links appear under **Unlinked** in Sessions.
+
+Dashboard, Payments and Statistics expose accounting rules through **How calculated**.
+Keep relevant exclusions, stale-data warnings, unknown dates, historical rates, offer editions,
+currencies and verification dates visible. Distinguish a failed save from **Saved · refresh failed**.
+Steam sync/privacy guidance lives in Settings' **Sync details**. Keep destructive-action and
+restore consequences at confirmation. Visible-copy reductions must preserve accessible names,
+keyboard help, live feedback, exact values and source/audit evidence.

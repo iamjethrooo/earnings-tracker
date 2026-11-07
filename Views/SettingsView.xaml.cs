@@ -14,17 +14,78 @@ public partial class SettingsView : UserControl
     private readonly SettingsViewModel model;
     private readonly DbContextOptions<AppDbContext>? options;
     private bool loadingPreferences = true;
+    private CancellationTokenSource? steamWork;
+    private readonly SteamLibrary steamLibrary;
     public SettingsView() : this(null) { }
-    internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions, ApplicationUpdates? applicationUpdates = null)
+    internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions, ApplicationUpdates? applicationUpdates = null,
+        SteamLibrary? steamLibrary = null)
     {
         options = databaseOptions;
+        this.steamLibrary = steamLibrary ?? new SteamLibrary(options);
         InitializeComponent(); model = new(options, applicationUpdates); DataContext = model;
         GamePass.IsChecked = model.GamePass; Automatic.IsChecked = model.AutomaticUpdates;
         GamesDefaultSort.SelectedIndex = model.GamesDefaultSort;
         GamesBookmarksOnly.IsChecked = model.GamesBookmarksOnly;
         GamesShowArchived.IsChecked = model.GamesShowArchived;
+        SteamProfile.Text = model.SteamProfile;
+        SteamAutomatic.IsChecked = model.SteamAutomatic;
         loadingPreferences = false;
-        UpdateKeyStatus(); Unloaded += (_, _) => ApiKey.Clear();
+        UpdateKeyStatus();
+        Unloaded += (_, _) => { ApiKey.Clear(); SteamKey.Clear(); steamWork?.Cancel(); };
+    }
+    private async void SteamLink_Click(object sender, RoutedEventArgs e)
+    {
+        var profile = SteamProfile.Text;
+        var key = SteamKey.Password;
+        SteamKey.Clear();
+        await RunSteamAsync(async token =>
+        {
+            await steamLibrary.LinkAsync(profile, key, token);
+            return "Steam linked and synced. Matching catalog games are now marked owned.";
+        });
+    }
+    private async void SteamSync_Click(object sender, RoutedEventArgs e)
+        => await RunSteamAsync(token => steamLibrary.RefreshAsync(true, token));
+    private async void SteamUnlink_Click(object sender, RoutedEventArgs e)
+        => await RunSteamAsync(async token =>
+        {
+            await steamLibrary.UnlinkAsync(token);
+            return "Steam unlinked. Manual ownership and purchase costs are kept.";
+        });
+    private async Task RunSteamAsync(Func<CancellationToken, Task<string>> action)
+    {
+        if (steamWork != null) return;
+        using var cancellation = new CancellationTokenSource();
+        steamWork = cancellation;
+        SteamControls.IsEnabled = false;
+        SteamFeedback.Text = "Working with Steam…";
+        try
+        {
+            var message = await action(cancellation.Token);
+            model.Reload();
+            SteamProfile.Text = model.SteamProfile;
+            SteamFeedback.Text = message;
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        { SteamFeedback.Text = "Steam operation cancelled. Reopen Settings to see the saved link."; }
+        catch (ArgumentException ex) { SteamFeedback.Text = ex.Message; }
+        catch (Exception ex)
+        {
+            // Never log HTTP exception messages: they can contain the Steam key.
+            System.Diagnostics.Trace.TraceWarning($"Steam operation failed ({ex.GetType().Name}).");
+            SteamFeedback.Text = "Steam could not complete the request. Check your profile, API key and Game details privacy, then retry. Saved ownership is kept.";
+        }
+        finally { steamWork = null; SteamControls.IsEnabled = true; SteamKey.Clear(); }
+    }
+    private void SteamAutomatic_Click(object sender, RoutedEventArgs e)
+    {
+        try { model.SetSteamAutomatic(SteamAutomatic.IsChecked == true); SteamFeedback.Text = "Steam sync preference saved."; }
+        catch { SteamAutomatic.IsChecked = SteamAutomatic.IsChecked != true; SteamFeedback.Text = "Steam sync preference could not be saved. Retry."; }
+    }
+    private void SteamKeyHelp_Click(object sender, RoutedEventArgs e)
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://steamcommunity.com/dev/apikey") { UseShellExecute = true }); }
+        catch { SteamFeedback.Text = "Open https://steamcommunity.com/dev/apikey in your browser to obtain your personal key."; }
     }
     private void UpdateKeyStatus()
     {

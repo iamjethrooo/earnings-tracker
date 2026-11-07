@@ -160,7 +160,7 @@ namespace EarningsTracker.Tests
             Assert.Equal(1, view.UnlinkedSessionCount);
             await Dispatcher.Yield();
             var notice = Assert.IsType<TextBlock>(view.FindName("GameAssociationNoticeText"));
-            Assert.Contains("1 recording has no linked game", notice.Text);
+            Assert.Contains("1 unlinked session excluded from cap usage", notice.Text);
             Assert.Equal(Visibility.Visible, notice.Visibility);
 
             var importer = new SessionImporter(database.Options);

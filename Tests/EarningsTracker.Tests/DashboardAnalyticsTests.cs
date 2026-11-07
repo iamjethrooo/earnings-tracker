@@ -23,6 +23,66 @@ public class DashboardAnalyticsTests(WpfTestHost host)
 {
     private static readonly DateTime Day = new(2027, 1, 1);
 
+    [Theory]
+    [InlineData("Paid")]
+    [InlineData("Processing")]
+    [InlineData(null)]
+    public Task CurrentPayoutMatchesStatisticsAndKeepsLifetimeBalance(string? paymentStatus) => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var cutoff = Day.AddDays(-5);
+        Session Posted(DateTime recorded, DateTime? posted, decimal amount, SessionStatus status = SessionStatus.Verified) => new()
+        {
+            GameName = "Payout game", Date = recorded, RecordedDate = recorded, PostedDate = posted,
+            Earnings = amount, Status = status, Duration = TimeSpan.FromMinutes(30)
+        };
+        using (var db = database.CreateContext())
+        {
+            db.Sessions.AddRange(
+                Posted(Day.AddDays(-120), cutoff.AddDays(1), 10),
+                Posted(Day, cutoff, 20),
+                Posted(Day, cutoff.AddDays(-1), 30),
+                Posted(Day, null, 40),
+                Posted(Day, Day.AddDays(1), 50),
+                Posted(Day.AddDays(1), Day, 60),
+                Posted(Day, Day, 7, SessionStatus.Pending));
+            db.Payouts.AddRange(Adjustment(cutoff, 3), Adjustment(cutoff.AddDays(1), -2),
+                Adjustment(Day.AddDays(1), 100),
+                new Payout { Date = Day, Type = "Payment", Status = "Failed", Amount = -999 });
+            if (paymentStatus != null)
+                db.Payouts.Add(new Payout { Date = cutoff, Type = "Payment", Status = paymentStatus, Amount = -25 });
+            db.SaveChanges();
+        }
+        var dashboard = View(database);
+        await dashboard.LoadDashboardData(asOfDate: Day);
+        var balance = dashboard.Balance;
+        var selector = (ComboBox)dashboard.FindName("PeriodSelector");
+        selector.SelectedItem = selector.Items.Cast<ComboBoxItem>().Single(item => Equals(item.Tag, "Payout"));
+        var statistics = new StatisticsView(database.Options);
+        await statistics.LoadStatistics(asOfDate: Day);
+        var statisticsSelector = (ComboBox)statistics.FindName("EarningsRangeComboBox");
+        statisticsSelector.SelectedItem = statisticsSelector.Items.Cast<ComboBoxItem>().Single(item => Equals(item.Tag, "Payout"));
+        Assert.Equal(paymentStatus == null ? 61m : 8m, dashboard.PeriodEarned);
+        Assert.Equal(statistics.TrendPeriods.Sum(period => period.TotalEarnings), dashboard.PeriodEarned);
+        Assert.Equal(7m, dashboard.PeriodPending);
+        Assert.Equal(Day.AddDays(-120), dashboard.Trend[0].Date);
+        Assert.Equal(balance, dashboard.Balance);
+        Assert.Contains("1 session excluded: missing posted dates.", dashboard.RangeLabel);
+        Assert.DoesNotContain(dashboard.RecentSessions, item => !item.Session.PostedDate.HasValue || item.Session.PostedDate > Day || Recorded(item.Session) > Day);
+        await Layout(dashboard, 740, 560);
+        var calculations = (Expander)dashboard.FindName("CalculationDetails");
+        Assert.False(calculations.IsExpanded);
+        var exclusion = (TextBlock)dashboard.FindName("BalanceExclusions");
+        Assert.Equal(Visibility.Visible, exclusion.Visibility);
+        Assert.Same(calculations.Parent, exclusion.Parent);
+        Assert.Contains("without posted dates", exclusion.Text);
+        Assert.True(Bounds(selector, dashboard).Right <= 740);
+        Capture(dashboard, $"current-payout-{paymentStatus ?? "no-payment"}");
+        selector.SelectedIndex = 1;
+        Assert.Equal(30, dashboard.Trend.Count);
+        Assert.DoesNotContain("Current payout", dashboard.RangeLabel);
+    });
+
     [Fact]
     public Task PeriodsReconcileWithStatisticsSharedAccountingAndSessionsWithoutChangingHistory() => host.RunAsync(async () =>
     {

@@ -168,6 +168,8 @@ namespace EarningsTracker.Views
 
         private void PayoutList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SessionReadOnlyNotice.Visibility = PayoutList.SelectedItem is PayoutHistoryItem { Payout: null }
+                ? Visibility.Visible : Visibility.Collapsed;
             if (PayoutList.SelectedItem is not PayoutHistoryItem item || item.Payout is null)
             {
                 EditButton.IsEnabled = DeleteButton.IsEnabled = false;
@@ -289,19 +291,19 @@ namespace EarningsTracker.Views
             if (payout.ReconciliationState == "IncludedInSessions" && payout.IsAdjustmentIncludedInSessionEarnings)
             {
                 ReconciliationText = "Included in sessions";
-                ReconciliationExplanation = "Already reflected in session earnings. This adjustment is not added to Total Earned again.";
+                ReconciliationExplanation = "Already included; not added again.";
             }
             else if (payout.ReconciliationState == "Separate" && !payout.IsAdjustmentIncludedInSessionEarnings)
             {
                 if (PayoutAccounting.IsSeparateEarnedAdjustment(payout))
                 {
                     ReconciliationText = "Counted separately";
-                    ReconciliationExplanation = "The original signed amount is added to Total Earned separately from session earnings. Negative corrections reduce earnings.";
+                    ReconciliationExplanation = "Added separately. Negative corrections reduce earnings.";
                 }
                 else
                 {
                     ReconciliationText = "Separate · excluded";
-                    ReconciliationExplanation = "Reconciled as separate, but excluded from Total Earned because its status is not Verified, Paid, or Processing.";
+                    ReconciliationExplanation = "Excluded: status must be Verified, Paid, or Processing.";
                     ReconciliationForeground = Brush(PresentationPalette.NeutralText);
                     ReconciliationBackground = Brush(PresentationPalette.NeutralBackground);
                 }
@@ -310,7 +312,7 @@ namespace EarningsTracker.Views
             {
                 NeedsReconciliation = true;
                 ReconciliationText = "Needs reconciliation";
-                ReconciliationExplanation = "Excluded from Total Earned until you explicitly mark it as separate from, or already included in, session earnings. Choose Edit selected to reconcile it.";
+                ReconciliationExplanation = "Excluded from Total earned. Edit to choose how this adjustment counts.";
                 ReconciliationForeground = Brush(PresentationPalette.WarningText);
                 ReconciliationBackground = Brush(PresentationPalette.WarningBackground);
             }

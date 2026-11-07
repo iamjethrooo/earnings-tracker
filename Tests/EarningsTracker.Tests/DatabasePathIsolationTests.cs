@@ -120,7 +120,7 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
                 Assert.Empty(db.GameChanges);
                 Assert.Empty(db.Bookmarks);
                 Assert.Empty(db.GameOwnership);
-                Assert.Single(db.Database.GetAppliedMigrations());
+                Assert.Equal(db.Database.GetMigrations(), db.Database.GetAppliedMigrations());
                 Assert.False(db.Database.HasPendingModelChanges());
                 var totals = PayoutAccounting.Calculate(db.Sessions.ToList(), db.Payouts.ToList());
                 Assert.Equal(0m, totals.TotalEarned);

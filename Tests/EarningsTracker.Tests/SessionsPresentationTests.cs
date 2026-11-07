@@ -351,7 +351,7 @@ public class SessionsPresentationTests(WpfTestHost host)
         var section = (Expander)summary.FindName("ConflictsSection");
         var list = (ListBox)summary.FindName("ConflictRows");
         Assert.Equal(Visibility.Visible, section.Visibility);
-        Assert.Equal("View conflicts (1000)", section.Header);
+        Assert.Equal("Conflicts (1000)", section.Header);
         Assert.False(section.IsExpanded);
         Assert.Equal(1000, list.Items.Count);
         Assert.Contains("Assassin's Creed Odyssey", (string)list.Items[0]);
@@ -379,7 +379,7 @@ public class SessionsPresentationTests(WpfTestHost host)
         summary.ShowPreview(result);
         await Layout(summary, 600, 400);
         Assert.Same(Application.Current.FindResource("PendingTextColor"), ((TextBlock)summary.FindName("AmbiguousSessionsText")).Foreground);
-        Assert.Contains("1 ambiguous game matches will be saved unlinked", ((TextBlock)summary.FindName("AmbiguousSessionsText")).Text);
+        Assert.Contains("1 will be saved without a game link", ((TextBlock)summary.FindName("AmbiguousSessionsText")).Text);
         Assert.Same(Application.Current.FindResource("RejectedTextColor"), ((TextBlock)summary.FindName("InvalidSessionsText")).Foreground);
         Save(summary, "session-import-preview");
         summary.ShowError("Unable to parse the imported data: line 4 has an incomplete duration. Return to input to correct it.");

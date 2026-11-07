@@ -130,7 +130,7 @@ namespace EarningsTracker.ViewModels
             StatusFilters.Add(new SessionStatusFilterItem("Verified", SessionStatus.Verified));
             StatusFilters.Add(new SessionStatusFilterItem("Rejected", SessionStatus.Rejected));
             StatusFilters.Add(new SessionStatusFilterItem("Pending", SessionStatus.Pending));
-            StatusFilters.Add(new SessionStatusFilterItem("Ambiguous", null, onlyUnlinked: true));
+            StatusFilters.Add(new SessionStatusFilterItem("Unlinked", null, onlyUnlinked: true));
         }
 
         public string SessionHistoryText
@@ -141,7 +141,8 @@ namespace EarningsTracker.ViewModels
                     return "Loading sessions…";
                 if (LoadError != null)
                     return $"Unable to load sessions: {LoadError}";
-                return $"Showing {SessionsView.Cast<SessionItemViewModel>().Count()} of {Sessions.Count} sessions";
+                var visibleCount = SessionsView.Cast<SessionItemViewModel>().Count();
+                return visibleCount == Sessions.Count ? $"{Sessions.Count} sessions" : $"{visibleCount} of {Sessions.Count} sessions";
             }
         }
 
@@ -186,10 +187,11 @@ namespace EarningsTracker.ViewModels
                             var games = await db.Games.AsNoTracking().OrderBy(game => game.IsArchived)
                                 .ThenBy(game => game.Name).ThenBy(game => game.Id).ToListAsync();
                             var artwork = await db.GameMetadata.AsNoTracking().ToDictionaryAsync(x => x.GameId);
+                            var payouts = await db.Payouts.IgnoreQueryFilters().AsNoTracking().ToListAsync();
                             var sources = await db.SessionChanges.AsNoTracking()
                                 .Where(change => change.ChangeType == "Imported" || change.ChangeType == "Imported update" || change.ChangeType == "Payout import update")
                                 .Select(change => new { change.SessionId, change.ChangeType }).Distinct().ToListAsync();
-                            return (sessions, games, artwork, sources);
+                            return (sessions, games, artwork, sources, payouts);
                         });
                         if (_reloadRequested) continue; // A change during the read requires a fresh snapshot.
                         var previous = Sessions.ToDictionary(item => item.Session.Id);
@@ -198,6 +200,7 @@ namespace EarningsTracker.ViewModels
                         {
                             var item = previous.GetValueOrDefault(session.Id) ?? new SessionItemViewModel(session);
                             item.RefreshSession(session);
+                            item.SetPayoutOptions(snapshot.payouts);
                             item.SetSource(sources[session.Id].Any(type => type.StartsWith("Imported"))
                                 ? "Session import" : sources[session.Id].Any() ? "Payout import" : "Not recorded");
                             item.SetArtwork(session.GameId is int id ? snapshot.artwork.GetValueOrDefault(id) : null);

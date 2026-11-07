@@ -10,6 +10,17 @@ Requires Python 3.11+ (standard library only). Configure `IGDB_CLIENT_ID` and `I
 
 Back up `Data/IgdbCache` and `Data/igdb-candidates.json` to retain the one-time provider fetch. They remain on disk but are excluded from Git and the desktop bundle; the reviewed metadata and checksummed artwork are bundled separately.
 
+## Steam ownership identities
+
+`Data/steam-app-mappings.json` is embedded in the desktop app for matching linked Steam libraries. It maps reviewed ITAD identities to a single Steam app ID, using the existing local `Data/itad-steam-cache.json` shop-61 cache prepared by `populate_catalog.py`. The cache itself remains local and is not needed to build the application. Prepare a reviewable candidate offline:
+
+```powershell
+python Tools/build_steam_app_mappings.py --catalog Data/catalog.json --cache Data/itad-steam-cache.json --output .local-docs/steam-app-mappings-candidate.json
+python -m unittest discover -s Tools -p "test_*.py"
+```
+
+Compare the candidate with the bundled map before copying reviewed changes into `Data/steam-app-mappings.json`. Only reviewed catalog identities with exactly one app ID are included; package/subscription/bundle IDs and ambiguous multiple-app results are omitted. Runtime matching also accepts reviewed direct Steam app links, rejects conflicting app IDs and skips edition-only Steam offers. The map does not establish a user's ownership; the linked account's successful owned-games response does. A catalog update introducing a new identity without a bundled mapping/direct app link remains manual until a later reviewed map ships. This command makes no network requests, changes no financial records and publishes nothing; existing publication gates still apply.
+
 ## Review and enrichment
 
 1. Run `python Tools/catalog.py candidates --output candidates.json`. This resumable search fetches descriptions, genres, and cover identifiers along with match candidates and saves full responses in `Data/IgdbCache`. Completed searches require no further credentials. Back up the cache and candidates file; they contain data, not credentials.

@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using FluentIcons.Wpf;
 using EarningsTracker.Models;
+using EarningsTracker.Enums;
 using EarningsTracker.ViewModels;
 using EarningsTracker.Views;
 using EarningsTracker.Utilities;
@@ -30,6 +31,29 @@ public class GamesRefinementTests(WpfTestHost host)
         db.GameOwnership.Add(new GameOwnership { GameId = bookmarked.Id, IsOwned = true });
         db.SaveChanges();
     }
+
+    [Fact]
+    public Task LibraryCycleProgressUsesOnlyVerifiedSessionsAfterTheSavedResetDate() => host.RunAsync(() =>
+    {
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            var game = new Game { Name = "Cycle progress", RatePerHour = 2m, MinutesCap = 120m, CapResetDate = new DateTime(2026, 10, 1) };
+            db.Games.Add(game);
+            db.SaveChanges();
+            db.Sessions.AddRange(
+                new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 10, 2), RecordedDate = new DateTime(2026, 10, 2), Duration = TimeSpan.FromMinutes(45), Status = SessionStatus.Verified },
+                new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 10, 3), RecordedDate = new DateTime(2026, 10, 3), Duration = TimeSpan.FromMinutes(40), Status = SessionStatus.Pending },
+                new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 9, 30), RecordedDate = new DateTime(2026, 9, 30), Duration = TimeSpan.FromMinutes(60), Status = SessionStatus.Verified });
+            db.SaveChanges();
+        }
+
+        var item = Assert.Single(new GamesViewModel(database.Options).Games);
+        Assert.True(item.HasCycleProgress);
+        Assert.Equal(37.5m, item.CycleProgressPercent);
+        Assert.Equal("45 min · 38%", item.CycleProgressText);
+        return Task.CompletedTask;
+    });
 
     [Fact]
     public Task InactiveStateChangesAndUnchangedInputsDoNotResetView() => host.RunAsync(() =>

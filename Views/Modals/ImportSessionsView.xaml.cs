@@ -138,7 +138,7 @@ namespace EarningsTracker.Views.Modals
             {
                 FindParentModal()?.SetHeaderVisible(false);
                 if (refreshWarning == null)
-                    ImportResultModal.ShowSuccess($"Successfully imported {importResult!.InsertedCount + importResult.UpdatedCount} sessions.");
+                    ImportResultModal.ShowSuccess($"{importResult!.InsertedCount + importResult.UpdatedCount} sessions imported.");
                 else
                     ImportResultModal.ShowSavedWarning(refreshWarning);
                 ImportResultContainer.Visibility = Visibility.Visible;

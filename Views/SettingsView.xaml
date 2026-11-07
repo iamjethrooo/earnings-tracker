@@ -17,7 +17,7 @@
   <StackPanel Margin="20" MaxWidth="760" HorizontalAlignment="Stretch">
    <StackPanel Margin="0,0,0,12">
                 <TextBlock Text="Settings" Style="{StaticResource TabName}"/>
-                <TextBlock Text="Manage catalog access, preferences and application data." Style="{StaticResource PageDescription}"/>
+
             </StackPanel>
    <TextBlock x:Name="Feedback" Foreground="{StaticResource SecondaryTextColor}" AutomationProperties.LiveSetting="Polite">
     <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
@@ -28,7 +28,7 @@
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Subscriptions" Style="{StaticResource CompactSectionHeading}"/>
+     <TextBlock Text="Active subscriptions" Style="{StaticResource CompactSectionHeading}"/>
      <CheckBox x:Name="GamePass" Content="PC Game Pass" Click="Subscription_Click" MinHeight="32" VerticalContentAlignment="Center" ToolTip="Select if your membership is active. Changes save automatically."/>
      <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" ToolTip="Playable now requires current Philippine PC availability and an active membership. The PC Game Pass filter retains previously verified inclusion with a stale warning after seven days or expiry."/></Expander>
     </StackPanel></Border>
@@ -36,7 +36,7 @@
      <TextBlock Text="Catalog updates" Style="{StaticResource CompactSectionHeading}"/>
      <DockPanel>
       <Button x:Name="Refresh" DockPanel.Dock="Right" Content="Refresh now" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="8,0,0,0"/>
-      <CheckBox x:Name="Automatic" Content="Auto-check" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
+      <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
      </DockPanel>
      <Expander Header="Update details"><TextBlock Text="{Binding UpdateStatus}" Margin="0,8,0,0"/></Expander>
     </StackPanel></Border>
@@ -66,31 +66,55 @@
      </StackPanel>
     </StackPanel></Border>
    </Grid>
+   <Border x:Name="SteamPanel" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="Steam account" Style="{StaticResource CompactSectionHeading}"/>
+    <TextBlock Text="Sync Steam to mark matching games as owned." Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock Text="{Binding SteamStatus}" AutomationProperties.LiveSetting="Polite"/>
+    <TextBlock x:Name="SteamFeedback" AutomationProperties.LiveSetting="Polite"/>
+    <StackPanel x:Name="SteamControls">
+     <Label Target="{Binding ElementName=SteamProfile}" Content="Steam profile URL or ID" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
+     <TextBox x:Name="SteamProfile" Style="{StaticResource ModalTextBox}" MaxLength="250" Margin="0,0,0,8" AutomationProperties.Name="Steam profile URL or SteamID64"/>
+     <Label Target="{Binding ElementName=SteamKey}" Content="Steam Web API key" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
+     <PasswordBox x:Name="SteamKey" MaxLength="32" Padding="8" Background="{StaticResource DefaultBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" AutomationProperties.Name="Personal Steam Web API key"/>
+     <TextBlock Text="Stored in Windows Credential Manager." Foreground="{StaticResource SecondaryTextColor}" Margin="0,6,0,8"/>
+     <WrapPanel>
+      <Button x:Name="SteamLink" Content="Link account" Click="SteamLink_Click" Style="{StaticResource PrimaryButton}" Padding="10,7" Margin="0,0,8,8"/>
+      <Button x:Name="SteamSync" Content="Sync now" Click="SteamSync_Click" IsEnabled="{Binding SteamLinked}" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8"/>
+      <Button x:Name="SteamUnlink" Content="Unlink" ToolTip="Removes Steam ownership only. Manual ownership and purchase costs are kept." Click="SteamUnlink_Click" IsEnabled="{Binding SteamLinked}" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8"/>
+      <Button Content="Get a Steam API key" Click="SteamKeyHelp_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8"/>
+     </WrapPanel>
+     <CheckBox x:Name="SteamAutomatic" Content="Sync when Games opens (at most daily)" Click="SteamAutomatic_Click" Margin="0,0,0,4"/>
+     <Expander Header="Sync details"><StackPanel Margin="0,8,0,0">
+      <TextBlock Text="Use your own API key. If your library is unavailable, set Steam → Edit Profile → Privacy Settings → Game details to Public." Foreground="{StaticResource SecondaryTextColor}"/>
+      <TextBlock Text="Owned and Playable now use the last successful sync. Refresh catalog also syncs Steam. Unavailable libraries keep saved ownership. Unlinking removes Steam ownership only; manual ownership and purchase costs stay saved. Unmatched games remain manual." Foreground="{StaticResource SecondaryTextColor}"/>
+     </StackPanel></Expander>
+    </StackPanel>
+   </StackPanel></Border>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Games display" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="Starting choices when you open Games. You can still change sorting and filters on the page." Foreground="{StaticResource SecondaryTextColor}"/>
+
     <TextBlock Text="Default sort" Style="{StaticResource FilterLabel}"/>
     <ComboBox x:Name="GamesDefaultSort" AutomationProperties.Name="Default Games sort" SelectionChanged="GamesDefaultSort_SelectionChanged" HorizontalAlignment="Left" MinWidth="160" Margin="0,0,0,8">
-     <ComboBoxItem Content="Highest Pay"/><ComboBoxItem Content="Game A-Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest price"/>
+     <ComboBoxItem Content="Highest rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest price"/>
     </ComboBox>
-    <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarks only" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
+    <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarked games" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
     <CheckBox x:Name="GamesShowArchived" Content="Show archived games" Click="GamesShowArchived_Click" ToolTip="Include archived games in the Games list. Archived game history remains available."/>
    </StackPanel></Border>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Backup &amp; restore" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="A backup includes sessions, payouts, adjustments, audit history, games, and saved settings. Cached artwork and the API key in Windows Credential Manager are excluded." Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock Text="Includes saved records and settings, Steam account ID and cached library. Excludes API keys and cached artwork." Foreground="{StaticResource SecondaryTextColor}"/>
     <WrapPanel Margin="0,4,0,0">
      <Button x:Name="BackupButton" Content="Create backup" Click="Backup_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8" AutomationProperties.Name="Create application data backup"/>
      <Button x:Name="RestoreButton" Content="Restore backup" Click="Restore_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8" AutomationProperties.Name="Restore application data from backup"/>
     </WrapPanel>
-    <TextBlock Text="Restore validates the backup and asks before replacement. The application then closes; reopen it to apply the backup after a recovery copy is saved." Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+    <TextBlock Text="Restore replaces saved data and requires reopening the app." Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
    </StackPanel></Border>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Application updates" Style="{StaticResource CompactSectionHeading}"/>
     <CheckBox x:Name="ApplicationStartup" Content="Check when the application starts" IsChecked="{Binding CheckApplicationOnStartup, Mode=OneWay}" Click="ApplicationStartup_Click" Margin="0,0,0,8"/>
     <StackPanel DataContext="{Binding ApplicationUpdates}">
-     <TextBlock Text="{Binding CurrentVersion, StringFormat=Installed version: {0}}" Foreground="{StaticResource SecondaryTextColor}"/>
-     <TextBlock Text="{Binding Message, TargetNullValue=Application updates are unavailable in this launch. Your saved data remains usable.}" AutomationProperties.LiveSetting="Polite"/>
+     <TextBlock Text="{Binding CurrentVersion}" Foreground="{StaticResource SecondaryTextColor}"/>
+     <TextBlock Text="{Binding Message, TargetNullValue=Application updates unavailable.}" AutomationProperties.LiveSetting="Polite"/>
      <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Height="6" Margin="0,0,0,8">
       <ProgressBar.Style><Style TargetType="ProgressBar"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsDownloading}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ProgressBar.Style>
      </ProgressBar>
@@ -101,7 +125,7 @@
       <Button Content="Restart and update" Click="RestartApplication_Click" IsEnabled="{Binding CanRestart, FallbackValue=False}" Style="{StaticResource PrimaryButton}" Margin="0,0,0,8" Padding="10,7"/>
      </WrapPanel>
      <TextBlock Text="{Binding RestartHint}" Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
-     <TextBlock Text="You can keep working and restart later. Updates never download or restart automatically." Foreground="{StaticResource SecondaryTextColor}" Margin="0,4,0,0"/>
+     <TextBlock Text="Downloads and restarts are manual." Foreground="{StaticResource SecondaryTextColor}" Margin="0,4,0,0"/>
     </StackPanel>
    </StackPanel></Border>
   </StackPanel>
