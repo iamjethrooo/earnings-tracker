@@ -67,7 +67,7 @@ public class GamesLibraryTests(WpfTestHost host)
         var view = View(database);
         var model = (GamesViewModel)view.DataContext;
         await Layout(view, width, height);
-        Descendants<CheckBox>(view).Single(box => Equals(box.Content, "PC Game Pass")).IsChecked = true;
+        ((CheckBox)view.FindName("GamePassFilter")).IsChecked = true;
         ((TextBox)view.FindName("SearchBox")).Text = "availability 2";
         await Layout(view, width, height);
         var item = Assert.Single(model.GamesView.Cast<GameItemViewModel>());

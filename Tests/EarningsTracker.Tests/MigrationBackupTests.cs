@@ -62,7 +62,8 @@ public class MigrationBackupTests
         {
             ["20261013055107_InitialCreate"] = typeof(InitialCreate).GetTypeInfo(),
             ["20261107145034_AddSessionPayoutAssignments"] = typeof(AddSessionPayoutAssignments).GetTypeInfo(),
-            ["20261108000000_BackupProbe"] = typeof(FailingMigration).GetTypeInfo()
+            ["20261108103539_AddGameMultiplayerMetadata"] = typeof(AddGameMultiplayerMetadata).GetTypeInfo(),
+            ["20990101000000_BackupProbe"] = typeof(FailingMigration).GetTypeInfo()
         };
         public ModelSnapshot? ModelSnapshot { get; } = new AppDbContextModelSnapshot();
         public Assembly Assembly => typeof(AppDbContext).Assembly;
@@ -75,7 +76,7 @@ public class MigrationBackupTests
         }
     }
 
-    [Migration("20261108000000_BackupProbe")]
+    [Migration("20990101000000_BackupProbe")]
     public sealed class FailingMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder) => throw new InvalidOperationException("synthetic migration failure");

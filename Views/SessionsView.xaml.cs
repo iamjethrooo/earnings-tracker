@@ -424,7 +424,7 @@ namespace EarningsTracker.Views
         }
 
         private void Table_SizeChanged(object sender, SizeChangedEventArgs e) =>
-            GameColumn.Width = Math.Max(170, SessionsList.ActualWidth - 754);
+            GameColumn.Width = Math.Max(170, SessionsList.ActualWidth - 522);
 
         private void CloseDetails_Click(object sender, RoutedEventArgs e) => CloseDetails();
         private void CloseDetails()

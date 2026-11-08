@@ -158,6 +158,13 @@ namespace EarningsTracker.Migrations
                     b.Property<string>("ItadId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("MultiplayerProvenance")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("MultiplayerVerifiedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Provenance")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -168,6 +175,9 @@ namespace EarningsTracker.Migrations
                     b.Property<string>("Summary")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool?>("SupportsMultiplayer")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("VerifiedAt")
                         .HasColumnType("TEXT");

@@ -57,11 +57,11 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         await dashboard.LoadDashboardData(asOfDate: Day);
         var balance = dashboard.Balance;
         var selector = (ComboBox)dashboard.FindName("PeriodSelector");
-        selector.SelectedItem = selector.Items.Cast<ComboBoxItem>().Single(item => Equals(item.Tag, "Payout"));
+        Assert.Equal("Payout", Assert.IsType<ComboBoxItem>(selector.SelectedItem).Tag);
         var statistics = new StatisticsView(database.Options);
         await statistics.LoadStatistics(asOfDate: Day);
         var statisticsSelector = (ComboBox)statistics.FindName("EarningsRangeComboBox");
-        statisticsSelector.SelectedItem = statisticsSelector.Items.Cast<ComboBoxItem>().Single(item => Equals(item.Tag, "Payout"));
+        Assert.Equal("Payout", Assert.IsType<ComboBoxItem>(statisticsSelector.SelectedItem).Tag);
         Assert.Equal(paymentStatus == null ? 61m : 8m, dashboard.PeriodEarned);
         Assert.Equal(statistics.TrendPeriods.Sum(period => period.TotalEarnings), dashboard.PeriodEarned);
         Assert.Equal(7m, dashboard.PeriodPending);
@@ -124,6 +124,7 @@ public class DashboardAnalyticsTests(WpfTestHost host)
             Assert.Contains(sessions.Sessions, row => row.Session.Id == selected[0].Id);
         }
         ((ComboBox)dashboard.FindName("PeriodSelector")).SelectedIndex = 1;
+        ((ComboBox)statistics.FindName("EarningsRangeComboBox")).SelectedIndex = 0;
         Assert.Equal(statistics.TrendPeriods.Sum(period => period.TotalEarnings), dashboard.PeriodEarned);
         var today = dashboard.Trend.Single(row => row.Date == Day);
         Assert.Equal(-3.4567m, today.Earned);
@@ -217,6 +218,7 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         using var database = new TestDatabase(); Seed(database);
         var view = View(database);
         await view.LoadDashboardData(asOfDate: Day);
+        ((ComboBox)view.FindName("PeriodSelector")).SelectedIndex = 1;
         await Layout(view, width, height);
         Assert.Equal(5, view.Metrics.Count);
         Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));

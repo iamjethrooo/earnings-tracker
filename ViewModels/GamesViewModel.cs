@@ -20,7 +20,11 @@ namespace EarningsTracker.ViewModels
         private string _searchText = "";
         private bool _bookmarkedOnly = false;
         private bool _showArchived = true;
-        public bool BookmarkedOnly => _bookmarkedOnly;
+        public bool BookmarkedOnly
+        {
+            get => _bookmarkedOnly;
+            set { if (_bookmarkedOnly == value) return; _bookmarkedOnly = value; OnPropertyChanged(nameof(BookmarkedOnly)); ApplyFilters(); }
+        }
         public bool ShowArchived
         {
             get => _showArchived;
@@ -42,7 +46,7 @@ namespace EarningsTracker.ViewModels
         public List<string> GenreOptions { get; private set; } = ["All genres"];
         public List<string> StoreOptions { get; private set; } = ["All stores"];
         private string _selectedGenre = "All genres", _selectedStore = "All stores";
-        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly, _steamOnly;
+        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly, _steamOnly, _multiplayerOnly;
         public string SelectedGenre { get => _selectedGenre; set { if (_selectedGenre == value) return; _selectedGenre = value; ApplyFilters(); } }
         public string SelectedStore { get => _selectedStore; set { if (_selectedStore == value) return; _selectedStore = value; ApplyFilters(); } }
         public bool FreeOnly { get => _freeOnly; set { if (_freeOnly == value) return; _freeOnly = value; ApplyFilters(); OnPropertyChanged(nameof(FreeOnly)); } }
@@ -50,6 +54,14 @@ namespace EarningsTracker.ViewModels
         public bool SteamOnly { get => _steamOnly; set { if (_steamOnly == value) return; _steamOnly = value; ApplyFilters(); OnPropertyChanged(nameof(SteamOnly)); } }
         public bool GamePassOnly { get => _gamePassOnly; set { if (_gamePassOnly == value) return; _gamePassOnly = value; ApplyFilters(); OnPropertyChanged(nameof(GamePassOnly)); } }
         public bool PlayableOnly { get => _playableOnly; set { if (_playableOnly == value) return; _playableOnly = value; ApplyFilters(); OnPropertyChanged(nameof(PlayableOnly)); } }
+        public bool MultiplayerOnly { get => _multiplayerOnly; set { if (_multiplayerOnly == value) return; _multiplayerOnly = value; ApplyFilters(); OnPropertyChanged(nameof(MultiplayerOnly)); } }
+        // Clearing preserves the separate archived-visibility preference and current sort.
+        public bool CanClearFilters => !string.IsNullOrEmpty(_searchText) || _bookmarkedOnly
+            || _selectedGenre != "All genres" || _selectedStore != "All stores"
+            || _freeOnly || _ownedOnly || _gamePassOnly || _playableOnly || _steamOnly || _multiplayerOnly;
+        public int SecondaryFilterCount => (_freeOnly ? 1 : 0) + (_steamOnly ? 1 : 0)
+            + (_gamePassOnly ? 1 : 0) + (_showArchived ? 1 : 0);
+        public string MoreFiltersText => SecondaryFilterCount == 0 ? "More filters" : $"More filters ({SecondaryFilterCount})";
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
         public string SteamStatus { get; private set; } = "";
@@ -257,21 +269,16 @@ namespace EarningsTracker.ViewModels
             ApplyFilters();
         }
 
-        public void FilterBookmarked(bool bookmarkedOnly)
-        {
-            if (_bookmarkedOnly == bookmarkedOnly) return;
-            _bookmarkedOnly = bookmarkedOnly;
-            ApplyFilters();
-        }
+        public void FilterBookmarked(bool bookmarkedOnly) => BookmarkedOnly = bookmarkedOnly;
 
         internal void ClearFilters()
         {
             _searchText = "";
             _selectedGenre = "All genres"; _selectedStore = "All stores";
-            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = _steamOnly = false;
+            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = _steamOnly = _multiplayerOnly = false;
             _bookmarkedOnly = false;
             foreach (var property in new[] { nameof(SelectedGenre), nameof(SelectedStore), nameof(FreeOnly), nameof(OwnedOnly),
-                nameof(GamePassOnly), nameof(PlayableOnly), nameof(SteamOnly), nameof(BookmarkedOnly) }) OnPropertyChanged(property);
+                nameof(GamePassOnly), nameof(PlayableOnly), nameof(SteamOnly), nameof(BookmarkedOnly), nameof(MultiplayerOnly) }) OnPropertyChanged(property);
             ApplyFilters();
         }
 
@@ -302,6 +309,7 @@ namespace EarningsTracker.ViewModels
                 if (_freeOnly && !gameItem.FreeToPlay) return false;
                 if (_ownedOnly && !gameItem.IsOwned) return false;
                 if (_steamOnly && !gameItem.IsSteamOwned) return false;
+                if (_multiplayerOnly && gameItem.Metadata is not { Reviewed: true, SupportsMultiplayer: true }) return false;
                 var now = DateTime.UtcNow;
                 if (_gamePassOnly && (CatalogPresentation.GamePassEntry(gameItem.Subscriptions) is not { } gamePass
                     || !CatalogPresentation.PreviouslyIncluded(gamePass, now))) return false;
@@ -315,6 +323,9 @@ namespace EarningsTracker.ViewModels
             _availableGamesCount = GamesView.Cast<GameItemViewModel>().Count();
             OnPropertyChanged(nameof(AvailableGamesCount));
             OnPropertyChanged(nameof(AvailableGamesText));
+            OnPropertyChanged(nameof(CanClearFilters));
+            OnPropertyChanged(nameof(SecondaryFilterCount));
+            OnPropertyChanged(nameof(MoreFiltersText));
             OnPropertyChanged(nameof(ShowEmptyState)); OnPropertyChanged(nameof(EmptyStateText));
         }
 

@@ -21,6 +21,53 @@ redistribution-rights verification. See [distribution policy](Distribution.md).
 
 ## Development requirements
 
+### In-app release history
+
+Settings → **Release history** opens a read-only, offline list of every published version included
+in the build, newest first. The installed version expands automatically when explicit `ReleaseVersion`
+metadata matches an entry; development builds do not infer a product version from assembly defaults.
+Unreleased changes are listed separately. Publication dates are displayed as UTC calendar dates.
+Older builds contain history through their build date; this dialog does not fetch future releases.
+
+`Resources/ReleaseHistory.json` is the maintained source for summaries, grouped changes and upgrade
+instructions. It is embedded in the application. Keep all historical entries; never trim it to a
+recent-version limit. The initial backfill was checked against the published GitHub bodies for
+[1.0.0](https://github.com/iamjethrooo/earnings-tracker/releases/tag/v1.0.0),
+[1.1.0](https://github.com/iamjethrooo/earnings-tracker/releases/tag/v1.1.0),
+[1.2.0](https://github.com/iamjethrooo/earnings-tracker/releases/tag/v1.2.0), and
+[1.3.0](https://github.com/iamjethrooo/earnings-tracker/releases/tag/v1.3.0).
+Dates use GitHub's `published_at`, which can differ from a local announcement date.
+
+For development, append changes to the single `unreleased: true` entry (no version or publication
+date). When a release is approved, prepare its entry with the chosen three-part `version`,
+`publishedAt` timestamp, and `unreleased: false`; reconcile that timestamp with actual publication
+before preparing later builds. Do not label unpublished changes as a historical release.
+Entries need a summary; sections have a heading and nonempty changes. If no detailed record can be
+verified, leave `sections` empty to show “Detailed release notes unavailable.” Keep migration or
+backup guidance in `upgradeNotes`, above ordinary changes.
+
+`Tools/Release.ps1` generates the changes section of new package notes from this same file using
+`Tools/ReleaseHistory.ps1`. It chooses the exact version, or the sole Unreleased entry for a new
+candidate. Installation/distribution notices remain in `Docs/RELEASE_NOTES_TEMPLATE.md` and need
+their normal release review. This does not change existing packages, feeds, tags or public notes.
+Missing or invalid embedded history shows an error in the dialog without disabling Settings or updates.
+
+For new public/package notes, follow [Release notes writing guidelines](Release-Notes-Guidelines.md)
+before authoring the history entry. The shared generator places a bold summary and optional
+introduction first, groups features under What's New, Improvements and Bug Fixes, then renders
+Upgrade Information and the template's distribution disclosures. The in-app history retains its
+existing upgrade-first display. Complete the guidelines' editorial review before requesting
+publication approval; generation checks formatting, not the truth of prose.
+
+Offline note generation can be checked without packaging or touching user data:
+
+```powershell
+. ./Tools/ReleaseHistory.ps1
+Get-ReleaseNotes -RepositoryPath (Get-Location).Path -Version 1.4.0 -Configuration Production
+```
+
+### SDK and commands
+
 Build on Windows with the .NET 10 SDK and Windows Desktop runtime. Catalog maintainer scripts require Python 3.11+ and use the standard library. The solution is `EarningsTracker.slnx`.
 
 `global.json` pins SDK `10.0.403`, with roll-forward disabled and prerelease SDKs excluded.
@@ -37,6 +84,35 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 ```
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
+
+## v1.4.0 candidate preparation — 2026-11-08
+
+The owner selected v1.4.0 with all current working-tree changes: reviewed multiplayer metadata
+and filtering, Games toolbar and card refinements, searchable dropdowns, smooth scrolling,
+presentation updates, and offline release history. Prepare an unsigned, self-contained Windows x64
+Production candidate with package identity `EarningsTracker.App`, channel `win-x64-app-stable`,
+product/package version 1.4.0 and assembly/file version 1.4.0.0. Use full packages only.
+
+Fresh Debug and Release builds passed with zero warnings/errors using separate verification
+output folders. Both complete suites passed 782 tests with no failures or skips; all 34 Python
+tool tests passed with workspace-local temporary storage. Narrow Games, More filters and release
+history renders were inspected; this is partial layout evidence, not interactive certification.
+Packaging reported NU1900 because NuGet vulnerability data could not be refreshed; dependency
+vulnerability status was not verified by that run.
+
+First launch applies `20261108103539_AddGameMultiplayerMetadata`. Existing catalog entries start
+with unknown multiplayer support until reviewed metadata is imported; financial records, ownership
+and history are preserved. Keep an independent backup before upgrading. The release-history
+entry is now prepared as v1.4.0 for the requested release so the installed version is marked.
+Its timestamp is provisional until reconciled with actual GitHub publication; local preparation
+does not establish that v1.4.0 has been published.
+
+Record fresh verification results, exact candidate hashes and the dirty source inventory under
+`.local-docs/` and `artifacts/`. Current changes are uncommitted; a HEAD SHA alone does not identify
+this candidate's source. Local preparation does not approve commits, pushes, tags, uploads or
+stable/latest publication. Exact-candidate installation/update, clean-Windows operation, native
+keyboard/screen-reader behavior and physical monitor-DPI transitions remain unverified unless
+separately exercised in an explicitly isolated environment.
 
 ## v1.3.0 preparation — 2026-11-08
 

@@ -63,7 +63,7 @@
                 <TextBlock Text="Earnings analysis" Style="{StaticResource SectionHeading}"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,8,0,12">
                     <TextBlock Text="Period" Style="{StaticResource FilterLabel}" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="EarningsRangeComboBox" Width="165" AutomationProperties.Name="Earnings chart date range" SelectedIndex="0" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
+                    <ComboBox Style="{StaticResource FilterDropdown}" x:Name="EarningsRangeComboBox" Width="165" AutomationProperties.Name="Earnings chart date range" SelectedIndex="4" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
                         <ComboBoxItem Content="Last 30 days" Tag="30"/>
                         <ComboBoxItem Content="Last 90 days" Tag="90"/>
                         <ComboBoxItem Content="This year" Tag="Year"/>

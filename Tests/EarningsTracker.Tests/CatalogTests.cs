@@ -55,6 +55,53 @@ public class CatalogTests
     };
 
     [Fact]
+    public void MultiplayerMetadataRequiresEvidenceRoundTripsAndLegacyCatalogsStayCompatible()
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        db.Games.Add(new Game { Name = "Example" }); db.SaveChanges();
+        var snapshot = Snapshot();
+        var entry = snapshot.Games[0];
+        entry.SupportsMultiplayer = true;
+        Assert.Throws<InvalidDataException>(() => CatalogService.Validate(snapshot));
+        entry.MultiplayerProvenance = "Synthetic structured modes; https://www.igdb.com/games/example";
+        entry.MultiplayerVerifiedAt = DateTime.UtcNow.AddHours(-1);
+        var parsed = CatalogService.Parse(JsonSerializer.Serialize(snapshot, CatalogService.JsonOptions));
+        CatalogService.Import(db, parsed);
+        CatalogService.Import(db, parsed);
+        var saved = db.GameMetadata.Single();
+        Assert.True(saved.SupportsMultiplayer);
+        Assert.Equal(entry.MultiplayerProvenance, saved.MultiplayerProvenance);
+        Assert.Equal(entry.MultiplayerVerifiedAt, saved.MultiplayerVerifiedAt);
+        entry.Reviewed = false;
+        Assert.Throws<InvalidDataException>(() => CatalogService.Validate(snapshot));
+        entry.Reviewed = true;
+        entry.MultiplayerVerifiedAt = DateTime.UtcNow.AddDays(1);
+        Assert.Throws<InvalidDataException>(() => CatalogService.Validate(snapshot));
+        var legacy = new { SchemaVersion = 1, Version = "legacy-no-modes", PublishedAt = DateTime.UtcNow,
+            Games = new[] { new { CatalogId = "stable-id", Name = "Example", Reviewed = true } } };
+        CatalogService.Import(db, CatalogService.Parse(JsonSerializer.Serialize(legacy)));
+        Assert.Null(saved.SupportsMultiplayer);
+        Assert.Equal("", saved.MultiplayerProvenance);
+        Assert.Null(saved.MultiplayerVerifiedAt);
+    }
+
+    [Fact]
+    public void BundledMultiplayerEvidenceIsStructuredAndDoesNotGuessUnknownGames()
+    {
+        var snapshot = CatalogService.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Data", "catalog.json")));
+        Assert.Contains(snapshot.Games, entry => entry.SupportsMultiplayer == true);
+        Assert.Contains(snapshot.Games, entry => entry.SupportsMultiplayer == false);
+        Assert.Contains(snapshot.Games, entry => entry.SupportsMultiplayer == null);
+        Assert.All(snapshot.Games.Where(entry => entry.SupportsMultiplayer.HasValue), entry =>
+        {
+            Assert.True(entry.Reviewed);
+            Assert.Contains("https://www.igdb.com/games/", entry.MultiplayerProvenance);
+            Assert.NotNull(entry.MultiplayerVerifiedAt);
+        });
+    }
+
+    [Fact]
     public void MigrationAndRepeatedImportsPreserveFinancialAndPersonalData()
     {
         using var database = new TestDatabase();

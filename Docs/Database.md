@@ -49,6 +49,12 @@ New development and scratch profiles initialize from migrations and bundled asse
 
 Automated persistence tests must pass explicit isolated `DbContextOptions<AppDbContext>` using `TestDatabase` or equivalent. Do not run destructive initialization against the default context.
 
+`20261108103539_AddGameMultiplayerMetadata` adds nullable `GameMetadata.SupportsMultiplayer`,
+`MultiplayerVerifiedAt`, and a `MultiplayerProvenance` text column. Existing rows start unknown
+(null support/date, empty evidence); the migration does not infer support or modify financial,
+ownership or history records. Catalog import saves the support claim and dated evidence together.
+Legacy catalogs without these optional fields remain valid and represent unknown support.
+
 ### Startup failure and interrupted-upgrade recovery
 
 Startup keeps financial views closed until migrations, game seeding and default settings succeed. Missing or malformed game seed assets, unsupported migration history, unavailable storage and write failures display **Unable to start tracker** and exit with code 1 after dismissal. Preserve the profile; correct the installation assets, free space or file access, then retry. A seed failure may leave the successfully migrated schema in place; it does not require deleting the database. Existing games do not require re-seeding. Bundled catalog import failure is traced separately and must not block access to financial history.
@@ -62,6 +68,69 @@ Copy-only relocation publishes the final profile only after preparation succeeds
 PRO-10's disposable filesystem rehearsal covers actual app startup/restarts, missing/malformed seeds, unsupported history, file locks, a read-only database, bounded SQLite page-limit failure, abrupt synthetic upgrade/relocation exits and recovery. It does not certify physical power-loss durability, an actually full volume, arbitrary ACL policies, all historical schemas, or native installer/update lifecycle behavior. PRO-21's later real-account Stages 1–4A satisfied its owner-revised lifecycle criteria; do not repeat them. Installed synthetic Settings restore on the exact v1.1.0 candidate remains NOT VERIFIED and owner-approved deferred for personal use. Other release checks and audience boundaries remain governed by [Build and release](Release.md). Detailed earlier receipts are local-only under `.local-docs/PRO-10-STARTUP-RECOVERY.md` and `artifacts/pro10/evidence`.
 
 For the migration and recovery audit trail, consult the local-only `.local-docs/DATA-LOCATION-MIGRATION.md`, `.local-docs/DATABASE-STORAGE-ISOLATION.md`, and `.local-docs/LEGACY-DATABASE-RECOVERY.md` when available.
+
+## Proposed catalog identity persistence (PRO-44)
+
+This is a design for owner review, not current storage behavior or an applied
+migration. The representation, examples and transition fixtures are specified
+in the [shared catalog identity contract](../Tools/CATALOG.md#proposed-shared-identity-contract-pro-44).
+
+`Game.Id` remains the local earning/history identity. `GameMetadata.GameId`
+is its primary/foreign key and `GameMetadata.CatalogId` has a unique index.
+Provider IDs are references, never keys for sessions or a reason to merge
+duplicate/rate-version games. Preserve existing links through renames,
+archiving, removal and reintroduction. Initial linking retains the current
+unambiguous name/alias and reviewed occurrence rules. Catalog import creates
+or deletes no earning games and reassigns no session history.
+
+The minimum proposed persistence is one versioned JSON document in existing
+`CatalogSettings`, key `catalog.steam-identities`. It contains the active
+schema, snapshot Version, exact payload SHA-256, and a CatalogId-keyed dictionary
+of the complete snapshot membership and SteamIdentity objects, including
+unmatched catalog entries and explicit empty/withdrawn decisions. Store no
+account IDs or user library in this catalog-owned document. Validate the
+document against the enclosing snapshot before committing. Retain it across
+restart and Settings backup/restore; it is not a disposable download cache.
+Keep provenance with the mapping rather than trying to reconstruct it from
+mutable StoreOffers or the embedded ITAD map.
+
+This reuses `CatalogSettings` because matching loads a bounded catalog snapshot
+and needs no relational provider query. No EF schema change is necessary for
+this decision, and no migration is authorized by PRO-44. Do not add a SteamId
+column to Game or overload ItadId. If implementation establishes a need for
+relational indexing, reconsider that specific persistence requirement with an
+actual migration and persistence regressions rather than silently changing
+the design.
+
+Activation must write the full mapping document, imported metadata and
+`catalog.version`/`catalog.published` in the same existing catalog transaction.
+An absent schema-2 mapping document on a profile marked as schema 2 is an
+unavailable/corrupt state; it must not silently enable the legacy inference.
+Do not mutate an already activated snapshot under the same version/hash.
+PRO-51 must retain snapshot membership even for unmatched CatalogIds: current
+`CatalogService.Import` skips unmatched entries and leaves metadata for omitted
+entries, so current GameMetadata alone cannot implement removal semantics.
+Retain omitted local metadata links for history, but use active document
+membership to disable their Steam mappings. Removal is not permission to
+delete personal or financial rows.
+
+Observed Steam matches remain derived from active catalog mappings and the
+account-scoped `steam.library` snapshot already stored in CatalogSettings.
+Invalidate derived results on mapping activation/withdrawal/removal/rollback
+and account/cache changes; publish after commit on the UI dispatcher. Never
+rewrite GameOwnership, purchase costs, library AppIDs, rates, caps, session
+links or audit history to save a derived match. Failed activation leaves both
+the previous complete catalog and account snapshot available. A mapping change
+alone requires no Steam request or credential access.
+
+PRO-52's previous-known-good artifact must retain the complete catalog-owned
+mapping/membership document and its version/hash with compatible metadata.
+Rollback restores those together through the catalog transaction; it must not
+restore the whole database or revert manual ownership or the newer account
+snapshot. Existing timestamp/version guards need a reviewed catalog-only
+activation path; no bypass is implemented here. Old app execution against a
+v2-activated profile remains unsupported pending a verified compatibility
+guard under PRO-51. Existing Settings database restore rules remain unchanged.
 
 ## Concurrent edits and import previews
 

@@ -92,6 +92,11 @@ public partial class SettingsView : UserControl
         try { KeyStatus.Text = string.IsNullOrEmpty(CatalogCredentials.Get()) ? "Not configured" : "Saved"; }
         catch { KeyStatus.Text = "Credential status unavailable"; }
     }
+    private void ReleaseHistory_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new EarningsTracker.Views.Modals.ReleaseHistoryWindow { Owner = Window.GetWindow(this) };
+        dialog.ShowDialog();
+    }
     private async void CheckApplication_Click(object sender, RoutedEventArgs e)
     { if (model.ApplicationUpdates != null) await model.ApplicationUpdates.CheckAsync(); }
     private async void DownloadApplication_Click(object sender, RoutedEventArgs e)

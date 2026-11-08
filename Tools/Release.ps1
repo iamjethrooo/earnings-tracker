@@ -70,7 +70,8 @@ function Assert-SafePath([string]$Name, [bool]$Delta = $false) {
 }
 Push-Location $repository
 try {
-    $notes = [IO.File]::ReadAllText((Join-Path $repository 'Docs/RELEASE_NOTES_TEMPLATE.md')).Replace('{{version}}', $Version).Replace('{{configuration}}', $UpdateConfiguration)
+    . (Join-Path $PSScriptRoot 'ReleaseHistory.ps1')
+    $notes = Get-ReleaseNotes -RepositoryPath $repository -Version $Version -Configuration $UpdateConfiguration
     [IO.File]::WriteAllText((Join-Path $output 'RELEASE_NOTES.md'), $notes)
     Invoke-CheckedDotnet @('tool', 'restore')
     $manifest = Get-Content -LiteralPath (Join-Path $repository '.config/dotnet-tools.json') -Raw | ConvertFrom-Json
@@ -100,7 +101,7 @@ try {
     }
     foreach ($game in $catalog.Games) {
         foreach ($property in $game.PSObject.Properties.Name) {
-            if ($property -notin @('CatalogId', 'Name', 'Aliases', 'NameOccurrence', 'ExpectedNameCount', 'IgdbId', 'ItadId', 'Summary', 'Genres', 'CoverUrl', 'CoverSha256', 'Reviewed', 'VerifiedAt', 'Provenance', 'Offers', 'Subscriptions')) { throw "Personal/unknown catalog entry data: $property" }
+            if ($property -notin @('CatalogId', 'Name', 'Aliases', 'NameOccurrence', 'ExpectedNameCount', 'IgdbId', 'ItadId', 'Summary', 'Genres', 'CoverUrl', 'CoverSha256', 'Reviewed', 'VerifiedAt', 'Provenance', 'Offers', 'Subscriptions', 'SupportsMultiplayer', 'MultiplayerVerifiedAt', 'MultiplayerProvenance')) { throw "Personal/unknown catalog entry data: $property" }
         }
         $cover = $game.PSObject.Properties['CoverSha256']
         if ($cover -and $cover.Value -and -not (Test-Path -LiteralPath (Join-Path $publish ("Data/Artwork/" + $cover.Value + '.img')))) { throw 'Published catalog artwork is missing.' }

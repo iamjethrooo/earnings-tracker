@@ -218,7 +218,7 @@ public class UiConsistencyTests(WpfTestHost host)
         card.Measure(new Size(1000, 400));
         card.Arrange(new Rect(0, 0, 1000, 400));
         await Dispatcher.Yield();
-        Assert.Contains(Descendants<TextBlock>(card), text => text.Text == "$1.50");
+        Assert.Contains(Descendants<TextBlock>(card), text => text.Text == "$1.50/h");
         var game = model.Games.Single(g => g.Game.Name == "Example").Game;
         using (var db = database.CreateContext())
         {

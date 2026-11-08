@@ -31,6 +31,9 @@ public sealed class CatalogEntry
     public string Provenance { get; set; } = "Unresolved";
     public bool Reviewed { get; set; }
     public DateTime? VerifiedAt { get; set; }
+    public bool? SupportsMultiplayer { get; set; }
+    public string MultiplayerProvenance { get; set; } = "";
+    public DateTime? MultiplayerVerifiedAt { get; set; }
     public List<string> Genres { get; set; } = [];
     public List<StoreOffer> Offers { get; set; } = [];
     public List<SubscriptionAvailability> Subscriptions { get; set; } = [];
@@ -52,6 +55,7 @@ internal static class CatalogService
         foreach (var entry in snapshot.Games)
         {
             entry.VerifiedAt = entry.VerifiedAt?.ToUniversalTime();
+            entry.MultiplayerVerifiedAt = entry.MultiplayerVerifiedAt?.ToUniversalTime();
             foreach (var offer in entry.Offers)
             {
                 offer.VerifiedAt = offer.VerifiedAt.ToUniversalTime();
@@ -93,6 +97,14 @@ internal static class CatalogService
                 throw new InvalidDataException("Artwork requires HTTPS and a SHA-256 checksum.");
             if (entry.Genres.Any(string.IsNullOrWhiteSpace) || entry.Genres.Distinct(StringComparer.OrdinalIgnoreCase).Count() != entry.Genres.Count)
                 throw new InvalidDataException("Invalid genres.");
+            if (entry.SupportsMultiplayer.HasValue)
+            {
+                if (!entry.Reviewed || string.IsNullOrWhiteSpace(entry.MultiplayerProvenance) || entry.MultiplayerProvenance.Length > 4096
+                    || entry.MultiplayerVerifiedAt is not { } checkedAt || checkedAt == default || checkedAt.ToUniversalTime() > DateTime.UtcNow.AddMinutes(5))
+                    throw new InvalidDataException("Multiplayer metadata requires a reviewed identity and dated source evidence.");
+            }
+            else if (entry.MultiplayerProvenance != "" || entry.MultiplayerVerifiedAt.HasValue)
+                throw new InvalidDataException("Multiplayer metadata requires a reviewed identity and dated source evidence.");
             if (!entry.Reviewed && (entry.CoverUrl != "" || entry.Genres.Count > 0 || entry.Offers.Count > 0 || entry.Subscriptions.Count > 0))
                 throw new InvalidDataException("Unreviewed matches cannot publish enrichment.");
             foreach (var offer in entry.Offers)
@@ -149,6 +161,9 @@ internal static class CatalogService
             existing.Summary = entry.Summary; existing.CoverUrl = entry.CoverUrl;
             existing.CoverSha256 = entry.CoverSha256; existing.Provenance = entry.Provenance;
             existing.Reviewed = entry.Reviewed; existing.VerifiedAt = entry.VerifiedAt;
+            existing.SupportsMultiplayer = entry.SupportsMultiplayer;
+            existing.MultiplayerProvenance = entry.MultiplayerProvenance;
+            existing.MultiplayerVerifiedAt = entry.MultiplayerVerifiedAt;
             var preserveLivePrices = DateTime.TryParse(GetSetting(db, "prices.live." + game.Id), CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind, out var liveAt) && liveAt > snapshot.PublishedAt;
             db.GameGenres.RemoveRange(db.GameGenres.Where(x => x.GameId == game.Id));

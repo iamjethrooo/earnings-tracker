@@ -10,6 +10,38 @@ Requires Python 3.11+ (standard library only). Configure `IGDB_CLIENT_ID` and `I
 
 Back up `Data/IgdbCache` and `Data/igdb-candidates.json` to retain the one-time provider fetch. They remain on disk but are excluded from Git and the desktop bundle; the reviewed metadata and checksummed artwork are bundled separately.
 
+## Multiplayer metadata
+
+Schema 1 accepts optional `SupportsMultiplayer` (boolean or null), `MultiplayerProvenance`, and
+`MultiplayerVerifiedAt`. A known value requires a reviewed identity, nonempty source evidence and
+a real verification date. Missing fields mean unknown; legacy readers can ignore these additive
+fields. No identity mapping or account ownership contract changes.
+
+`Tools/multiplayer.py` fetches [IGDB structured game modes](https://api-docs.igdb.com/#game-mode)
+for existing reviewed IGDB IDs only. Multiplayer, Co-operative, Split screen, MMO and Battle Royale
+count as support, as do explicit PC multiplayer/co-op records. An explicit Single player mode alone
+records false; missing modes and identities stay unknown. Game-level modes may span platforms:
+the filter includes local modes and does not guarantee a particular PC mode, current servers,
+cross-play or player count. Descriptions and title keywords never supply a claim.
+
+```powershell
+python Tools/multiplayer.py collect --catalog Data/catalog.json --output .local-docs/multiplayer/igdb-modes.json
+python Tools/multiplayer.py apply --catalog Data/catalog.json --collection .local-docs/multiplayer/igdb-modes.json --output .local-docs/multiplayer/catalog.json
+```
+
+Collection uses the configured IGDB credentials; the saved response contains public metadata only.
+Apply is offline. Review its candidate before copying it to `Data/catalog.json`. Only mode fields
+and a deterministic version suffix change. The existing publication cutoff stays intact so old
+offer quotes do not overwrite newer live prices; mode evidence has its own check date. Use the
+current catalog as input: clients with a later published snapshot retain the normal downgrade guard.
+Re-run collection explicitly to refresh modes. Standard enrichment preserves modes for unchanged
+IGDB identities and clears them when an identity changes; manual metadata can supply the same
+three evidence fields. Older full snapshots without mode fields restore unknown support on import.
+Desktop users need no provider credentials. Publishing still requires the existing approval gates.
+
+The 2026-11-08 bundled enrichment records 403 multiplayer entries, 156 single-player-only entries,
+and 20 unknown entries, retaining duplicate/rate-version catalog identities independently.
+
 ## Steam ownership identities
 
 `Data/steam-app-mappings.json` is embedded in the desktop app for matching linked Steam libraries. It maps reviewed ITAD identities to a single Steam app ID, using the existing local `Data/itad-steam-cache.json` shop-61 cache prepared by `populate_catalog.py`. The cache itself remains local and is not needed to build the application. Prepare a reviewable candidate offline:
@@ -20,6 +52,251 @@ python -m unittest discover -s Tools -p "test_*.py"
 ```
 
 Compare the candidate with the bundled map before copying reviewed changes into `Data/steam-app-mappings.json`. Only reviewed catalog identities with exactly one app ID are included; package/subscription/bundle IDs and ambiguous multiple-app results are omitted. Runtime matching also accepts reviewed direct Steam app links, rejects conflicting app IDs and skips edition-only Steam offers. The map does not establish a user's ownership; the linked account's successful owned-games response does. A catalog update introducing a new identity without a bundled mapping/direct app link remains manual until a later reviewed map ships. This command makes no network requests, changes no financial records and publishes nothing; existing publication gates still apply.
+
+## Proposed shared identity contract (PRO-44)
+
+Design prepared on 2026-11-08 for [PRO-44](https://linear.app/botlog/issue/PRO-44).
+**Proposed for owner review; not implemented or approved for publication.** The
+Steam ownership section above describes the current app. This section specifies
+the target for PRO-45 and the compatibility boundary for PRO-51/PRO-52. It does
+not authorize provider collection, mapping approval, catalog replacement, or a
+new application release. PRO-17 still owns account access/privacy, freshness,
+and effective Owned/Playable now semantics.
+
+### Verified baseline and offline evidence
+
+The issue's original baseline predates `Utilities/SteamLibrary.cs` and
+`Tools/build_steam_app_mappings.py`. Current matching uses reviewed metadata,
+the embedded ITAD-keyed map, and direct Steam offer AppIDs. Any non-base-game
+Steam offer blocks matching; otherwise exactly one runtime candidate is
+required. This is not yet per-AppID review: `GameMetadata.Reviewed` reviews the
+catalog identity, and neither the embedded map nor extracted offer IDs carry
+their own review/provenance. Cached candidates are not read at runtime.
+
+Offline inventory of `catalog-20261012T034024414899Z`, with no provider calls:
+
+| Current matcher eligibility (not user ownership) | All identities | Active seed identities |
+| --- | ---: | ---: |
+| Single runtime AppID, reviewed, no edition blocker | 484 | 431 |
+| Reviewed, no runtime AppID | 62 | 57 |
+| Reviewed, blocked by a non-base Steam offer | 18 | 18 |
+| Unreviewed catalog identity | 15 | 0 |
+| Total | 579 | 506 |
+
+Active/archive classification uses the original `Data/games.json` name and
+occurrence, as `catalog.is_archived` does; it is not a query of personal data.
+Of the 579 entries, 564 have reviewed metadata. Across reviewed `SteamIds`,
+the local shop-61 cache, embedded mappings and direct Steam offer links, 500
+entries have one distinct candidate, 73 have none and six have multiple.
+These are evidence coverage counts, **not 500 approved ownership mappings**.
+The source sets overlap: 28 entries have reviewed `SteamIds`, 485 have cached
+AppIDs, 479 use the 471 embedded ITAD mappings, and 91 have direct app links.
+There are zero multiple-ID conflicts within the runtime sources alone; the
+six broader candidate conflicts below still need explicit disposition.
+
+| Entry | Local AppID candidates | Current behavior |
+| --- | --- | --- |
+| SCP Containment Breach | 2178380, 3831680 | Maps direct offer 2178380; cache has both |
+| Portal 2 | 620, 659 | Unmapped |
+| Borderlands 2 | 49520, 217490 | Unmapped |
+| Metro Exodus | 412020, 1449560 | Unmapped |
+| Cold War | 260650, 834490 | Unmapped; reviewed `SteamIds` contains only 260650 |
+| SWORN | 1034530, 1763250 | Edition-blocked; direct offer is 1763250 |
+
+Seven AppIDs are shared by multiple currently matchable catalog identities:
+2051620 (Enlisted), 1190460 (Death Stranding), 3280350 (Death Stranding 2),
+220200 (Kerbal Space), 585420 (Trailmakers), 954850 (Kerbal Space Program 2),
+and 645630 (the two Car Mechanic Simulator 2018 names). Sharing is not itself
+a conflict; each catalog identity needs its own review.
+
+Inventory inputs and SHA-256 receipts:
+
+| Local input | SHA-256 |
+| --- | --- |
+| `Data/catalog.json` | `56c03800acbd2bf801dd1a3cb060de2faf5c6755d600a951163c8ac3ef1a1f31` |
+| `Data/catalog-review.json` | `75e846b810e7aa9aebff8e77a2c4d45eba763c820699f647b897577095f6faa4` |
+| `Data/steam-app-mappings.json` | `e66f94e701635def8f78068ad32452054231020c2fc22fd641c5cd273533c630` |
+| `Data/itad-steam-cache.json` (local only) | `83c43767f1619132150d94d90304a7f591f483bf1099f3af2c377e19ba23e66f` |
+| `Data/games.json` | `91eb2f5bd0c4f6f8aef313aa03c991e34871b39a92399bd56546642af1b7d0e8` |
+
+The local-only receipt/script are `.local-docs/PRO-44/inventory.json` and
+`inventory.py`; run `python .local-docs/PRO-44/inventory.py` when available.
+They enumerate every CatalogId and each source's IDs. To reproduce elsewhere,
+join reviews on CatalogId and bundle/cache on ItadId, accept only positive
+uint32 `app/<ASCII digits>` tokens, extract HTTPS Steam `/app/` offer IDs,
+union per identity, and apply the current matcher gates separately. Missing
+local cache means incomplete inventory, not evidence of no Steam identity.
+Nothing here re-verifies current store availability, editions or entitlements.
+
+### Identity, review and cardinality
+
+`CatalogId` is the durable catalog identity. Treat it as an opaque,
+case-sensitive nonempty ID, retaining every existing value; do not derive it
+from a title or provider ID. `Game.Id` is the local earning/history identity.
+IGDB, ITAD and Steam IDs are external references and never replace either.
+The existing unique `GameMetadata.CatalogId` and primary key `GameId` keep one
+catalog link per local financial row. Duplicate/rate-version rows retain
+distinct CatalogIds even when they describe the same Steam game.
+
+The proposed schema-2 `CatalogEntry.SteamIdentity` object is required for every
+entry. Its complete value replaces the previous mapping on activation:
+
+```json
+{
+  "State": "Reviewed",
+  "ReviewedAt": "2026-11-08T00:00:00Z",
+  "Provenance": "Synthetic example: exact PC experience and alternatives checked",
+  "Apps": [
+    { "AppId": 1001, "Kind": "FullGame" },
+    { "AppId": 1002, "Kind": "FullGame" }
+  ]
+}
+```
+
+IDs and timestamp in this example are synthetic, not catalog approvals.
+
+- `State` is `Reviewed`, `Unresolved`, `NotApplicable`, or `Withdrawn`.
+  `Reviewed` requires reviewed catalog metadata, a nonempty Apps array, a real
+  UTC review timestamp no later than publication, and nonempty provenance
+  identifying the checked PC experience, source evidence and review decision.
+  Identity review alone must not promote an AppID. Copying a cache hit or
+  parsing a price URL does not constitute that decision.
+- Each `AppId` is a JSON integer from 1 through 4294967295. No strings,
+  fractions, signed coercion or URL values. IDs must be unique within an entry;
+  serialize in ascending order. Limit Apps to 32 per entry. Unknown states,
+  kinds, duplicate IDs or invalid fields reject the snapshot before writes.
+- `Kind` is `FullGame`, `Demo`, `Prologue`, `Dlc`, or `Tool`. A reviewed entry
+  may list several Apps only as independently sufficient alternatives for
+  the **same** PC experience, with one consistent Kind. This is explicit OR,
+  not a list of unresolved candidates and not an AND entitlement recipe.
+  Composite/deluxe entitlement requirements are unsupported and unresolved.
+- `Unresolved` has empty Apps, a reason in Provenance, and null ReviewedAt;
+  `NotApplicable` and `Withdrawn` have empty Apps plus a review timestamp and
+  reason/evidence. NotApplicable records reviewed absence of a Steam mapping,
+  not an automatic conclusion from a missing cache. Withdrawn explicitly
+  retracts a prior accepted mapping. Keep candidate IDs and rejected evidence
+  in maintainer review data, outside runtime Apps. Bound the review/provenance
+  text to 4096 characters and include it in snapshot checksum coverage.
+- The same AppID can occur in several CatalogIds after separate reviews.
+  For example, both existing Enlisted identities may reference app 2051620:
+  both can display the same observed Steam evidence while their rates, caps,
+  sessions and costs remain separate. Never collapse them or choose a winner.
+
+Base games, demos and prologues are distinct experiences: owning a base game
+does not match its demo/prologue, and the reverse is also forbidden. An exact
+demo/prologue ID may establish only observed evidence for that demo/prologue
+identity. DLC/tool entries can retain exact identity evidence but cannot grant
+full-game ownership or Playable now through this contract. The same restriction
+applies to edition upgrades. A base AppID cannot prove deluxe content.
+Package/subscription (`sub/`) and bundle IDs must never be stored as AppId,
+even if their numeric part equals a valid AppID. There is no untyped numeric
+provider-import path: review must establish the `app/` namespace first.
+
+Remasters, sequels and materially different editions use distinct identities;
+do not substitute the original's ID. A reviewed equivalent PC rerelease may
+join an existing entry's alternative Apps only with explicit equivalence
+evidence, not merely a common title. An unrelated replacement gets a new
+CatalogId. Non-Steam entries can be NotApplicable; uncertain entries stay
+Unresolved. Renames/aliases change display or initial linking only, and
+archiving changes financial-row visibility, neither changes identity.
+
+### Exact matching and catalog transitions
+
+Match only the committed snapshot's Reviewed SteamIdentity for the exact
+persisted CatalogId, then intersect its accepted AppIDs with the account's
+successful cached library snapshot. No title, alias, offer URL, ITAD fallback,
+package expansion, first-candidate selection or fuzzy match may grant evidence
+in schema 2. One or more accepted equivalent IDs yields one observation per
+local row; it never duplicates earnings or counts a multi-app entry twice.
+An unresolved/unreviewed/missing mapping yields unresolved evidence, not proof
+of non-ownership. A valid reviewed map with no library intersection means
+not observed in that snapshot, not proof of non-purchase. PRO-17 determines
+the UI/filter vocabulary and stale/private/offline treatment.
+
+On successful catalog activation, rematch the existing account snapshot on
+the next Games load/refresh, without fetching Steam again. Changed mappings,
+withdrawals, removals, rollback and app restart must all invalidate derived
+results using snapshot identity/hash plus account/sync identity. Do not store
+derived booleans as manual ownership or write to the cached library AppIDs.
+Failures keep the complete last committed catalog and existing Steam cache;
+never publish half of a changed mapping set. See the persistence decision in
+[Database and storage](../Docs/Database.md#proposed-catalog-identity-persistence-pro-44).
+
+Removal from a complete schema-2 snapshot disables that CatalogId's active
+Steam mapping but retains its local metadata link and financial row. It is
+not a financial archive/delete operation. A reintroduced identical CatalogId
+uses the same link. A new identity can link only to a single existing unlinked
+earning row through the current exact name/alias or reviewed occurrence rules;
+otherwise report unmatched. Never create an earning game, steal a linked row,
+reuse a removed CatalogId for another experience, renumber local IDs or move
+historical sessions. Catalog-only entries may retain mappings without a local
+GameId but cannot appear as new earning rows. Duplicate initial matching still
+requires exact ExpectedNameCount and stable ascending Game.Id order, with no
+aliases on occurrence mappings; changing the count leaves the link unresolved.
+
+### Schema and older clients
+
+Use catalog **SchemaVersion 2**, not optional identity fields silently added
+to v1. Current C# and Python validators require exactly 1, while unknown JSON
+properties can otherwise be ignored; a v1 extension cannot safely withdraw the
+legacy embedded/direct-link inference. A schema-2-capable client must continue
+reading v1 with its documented legacy behavior until it activates v2. The
+first v2 activation replaces that fallback completely, including for empty,
+unmatched and withdrawn entries. A later automatic v1 delivery must not
+silently restore the legacy rules. A deliberate compatible rollback restores
+a full validated prior v2 mapping/membership set (PRO-52).
+
+Old clients must reject v2 and keep their last v1 data; no partial metadata
+import or financial startup failure. Preserve a pinned v1 feed/artifact for
+them and introduce a separate v2 channel under PRO-51, whose manifest must
+declare a supported catalog schema and minimum application version before
+activation. Application release versions are not chosen by this design.
+Independent snapshot versions remain immutable, and a mapping-only change
+requires a new snapshot Version/hash. Existing same-version and older-date
+import guards must be addressed explicitly in PRO-51/PRO-52, not bypassed here.
+
+Old executables cannot honor new withdrawals from their embedded map. Keeping
+their v1 feed does not fix that limitation; corrected mapping behavior requires
+an application upgrade. Running an old executable on a profile already
+activated as v2 is unsupported until an explicit downgrade guard is delivered
+and verified. This design does not claim one exists today.
+
+### Transition fixtures for implementation acceptance
+
+These are design fixtures, not passing automated tests. C1/C2/C3, G1/G2 and
+AppIDs 1001/1002/2001 are synthetic. A library contains `{1001}` unless stated.
+Every transition must preserve sessions, audit history, financial IDs, rates,
+caps/reset history, manual ownership, costs, bookmarks and library cache.
+
+| Fixture / input transition | Expected mapping or activation result |
+| --- | --- |
+| C1 → G1, Reviewed FullGame [1001] | One observed match on G1 |
+| C1 → G1, C2 → G2, both reviewed [1001] | Both rows observed; no merge, session move or financial write |
+| C1 reviewed alternatives [1001,1002]; library {1002}, then {1001,1002} | One observation in either case |
+| Candidates [1001,1002] without equivalence review | Unresolved, even if both in library |
+| C1 base [1001], C2 prologue [2001] | C1 observed, C2 not observed; no cross-match |
+| Deluxe or DLC C2 with only base licence 1001 | Unresolved deluxe; DLC cannot grant full-game evidence |
+| `sub/1001`, `bundle/1001`, zero, fraction or uint overflow | Reject invalid runtime mapping; no writes |
+| C1 renamed/aliased or local G1 archived | Keep C1 → G1; do not change history or unarchive |
+| Reviewed [1001] replaced by [1002] | Old observation disappears; cached library unchanged |
+| Reviewed mapping becomes Withdrawn or Unresolved | No accepted mapping; no legacy fallback |
+| C1 omitted, then reintroduced | Disable active mapping while absent; retain and reuse C1 → G1 |
+| New C3 with no local row, or colliding with linked G1 | Report unmatched/conflict; never create/reassign earning rows |
+| Duplicate name count differs from ExpectedNameCount | Leave initial link unresolved; existing CatalogId links still win |
+| Identity metadata unreviewed but SteamIdentity Reviewed | Reject snapshot, retain prior committed state |
+| Old v1 client receives v2 | Reject unsupported schema and retain saved v1/financial data |
+| New client loads v1, then v2 with empty Apps, then attempts v1 | Legacy only before v2 activation; later v1 cannot restore inference |
+| Invalid checksum/partial update or crash before commit | Retain prior complete mapping/membership/version |
+| Validated v2 rollback changes [1002] back to [1001] | Recompute evidence from cached library; no database-wide restore |
+| Account switch or offline reload after mapping change | Use only selected account cache; refresh derived results without a request |
+
+PRO-45 should implement this representation/validation and exact matching;
+PRO-51 should implement activation/compatibility and complete-snapshot removal;
+PRO-52 should retain and restore catalog-owned mapping state only. Coordinate
+the replacement of already-present Steam behavior with PRO-17/PRO-49 rather
+than treating those issues' Backlog labels as proof that no implementation
+exists. No mapping is newly approved by this inventory. Owner review of this
+contract precedes these behavior changes.
 
 ## Review and enrichment
 

@@ -70,6 +70,12 @@ and relevant `SettingsTests` cover saved defaults, catalog imports/rollback, nav
 history. Fixtures use synthetic isolated databases and do not start the production application.
 Native input, screen readers and monitor-DPI transitions remain unverified.
 
+The Games toolbar cases in `GamesRefinementTests` verify bookmark reset bindings, saved defaults,
+combined multiplayer/access filters, unknown-mode exclusion, popover focus/Escape and narrow/wide
+layout. `CatalogTests` checks dated multiplayer evidence and legacy snapshots; `PersistenceTests`
+checks the nullable-column upgrade and retained history. `Tools/test_multiplayer.py` covers
+structured-mode classification and an offline update that preserves prices and publication dates.
+
 ## Concurrent editing and imports
 
 `PayoutAssignmentTests` verifies same-day and delayed verification, manual reassignment, source

@@ -72,7 +72,6 @@ namespace EarningsTracker.Views
 
             DataContext = new GamesViewModel(databaseOptions, loadImmediately: databaseOptions != null);
             var preferences = (GamesViewModel)DataContext;
-            BookmarkFilter.IsChecked = preferences.BookmarkedOnly;
             SortComboBox.SelectedIndex = preferences.DefaultSortIndex;
             ((GamesViewModel)DataContext).Games.CollectionChanged += (_, _) => UpdateSelectedCatalog();
             GameDetailsView.DataContext = null;
@@ -102,18 +101,22 @@ namespace EarningsTracker.Views
             viewModel.SearchGames(SearchBox.Text);
         }
 
-        private void BookmarkFilter_Checked(object sender, RoutedEventArgs e)
+        private void MoreFilters_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is not GamesViewModel viewModel)
-                return;
-            viewModel.FilterBookmarked(true);
+            MoreFiltersPopup.IsOpen = !MoreFiltersPopup.IsOpen;
         }
 
-        private void BookmarkFilter_Unchecked(object sender, RoutedEventArgs e)
+        private void MoreFiltersPopup_Opened(object? sender, EventArgs e)
         {
-            if (DataContext is not GamesViewModel viewModel)
-                return;
-            viewModel.FilterBookmarked(false);
+            MoreFiltersPanel.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+        }
+
+        private void MoreFilters_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape) return;
+            MoreFiltersPopup.IsOpen = false;
+            MoreFiltersButton.Focus();
+            e.Handled = true;
         }
 
         private void GameDetailsBackButton_Click(object sender, RoutedEventArgs e)

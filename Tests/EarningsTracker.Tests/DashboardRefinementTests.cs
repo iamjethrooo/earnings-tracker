@@ -64,22 +64,25 @@ public class DashboardRefinementTests(WpfTestHost host)
     });
 
     [Theory]
-    [InlineData(740, 420, false)]
-    [InlineData(1000, 688, false)]
-    [InlineData(1480, 688, false)]
-    [InlineData(740, 568, true)]
-    public Task CardsAndRecentActivityStayWithinTheirViewports(double width, double height, bool empty) => host.RunAsync(async () =>
+    [InlineData(740, 420, 7)]
+    [InlineData(1000, 688, 7)]
+    [InlineData(1480, 688, 7)]
+    [InlineData(740, 568, 0)]
+    [InlineData(1000, 688, 1)]
+    [InlineData(740, 568, 1)]
+    public Task CardsAndRecentActivityStayWithinTheirViewports(double width, double height, int sessionCount) => host.RunAsync(async () =>
     {
+        var empty = sessionCount == 0;
         using var database = new TestDatabase();
         if (!empty)
         {
             using var db = database.CreateContext();
             var game = new Game { Name = "A long game title with an expansion and complete edition" };
             db.Games.Add(game);
-            for (var i = 0; i < 7; i++)
+            for (var i = 0; i < sessionCount; i++)
             {
                 var session = Recording(DateTime.Today.AddHours(i), 123456.78m);
-                session.Game = game; session.GameName = game.Name;
+                session.Game = game; session.GameName = game.Name; session.PostedDate = DateTime.Today;
                 db.Sessions.Add(session);
             }
             db.SaveChanges();
@@ -97,23 +100,37 @@ public class DashboardRefinementTests(WpfTestHost host)
         Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
         scroll.ScrollToBottom(); view.UpdateLayout();
         var list = (ListBox)view.FindName("SessionsList");
-        Assert.True(list.ActualHeight >= 70, $"List height: {list.ActualHeight}");
+        Assert.Equal(240, list.ActualHeight);
         Assert.True(Bounds(list, view).Bottom <= height + 1);
         Assert.Equal(empty ? Visibility.Visible : Visibility.Collapsed,
             ((TextBlock)view.FindName("DashboardViewEmptyState")).Visibility);
         if (!empty)
         {
-            Assert.Equal(5, list.Items.Count);
-            list.ScrollIntoView(list.Items[4]); view.UpdateLayout();
-            var last = Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(4));
+            Assert.Equal(Math.Min(5, sessionCount), list.Items.Count);
+            list.ScrollIntoView(list.Items[^1]); view.UpdateLayout();
+            var last = Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(list.Items.Count - 1));
             Assert.True(Bounds(last, list).Bottom <= list.ActualHeight + 1, $"Last row: {Bounds(last, list)}, viewport: {list.ActualHeight}");
         }
+        if (width >= 890)
+        {
+            Assert.Equal(((Border)view.FindName("TrendPanel")).ActualHeight,
+                ((Border)view.FindName("DistributionPanel")).ActualHeight);
+            Assert.Equal(((Border)view.FindName("ActivityPanel")).ActualHeight,
+                ((Border)view.FindName("GamesPanel")).ActualHeight);
+        }
+        var cards = Descendants<Border>((ItemsControl)view.FindName("MetricCards"))
+            .Where(border => border.DataContext is EarningsTracker.ViewModels.DashboardMetric).ToList();
+        Assert.Equal(5, cards.Count);
+        var contentHeight = cards.Max(card => card.Child.DesiredSize.Height + card.Padding.Top + card.Padding.Bottom
+            + card.BorderThickness.Top + card.BorderThickness.Bottom);
+        Assert.All(cards, card => Assert.InRange(card.ActualHeight - contentHeight, -1, 1));
+        scroll.ScrollToTop(); view.UpdateLayout();
         var directory = Path.Combine(AppContext.BaseDirectory, "DashboardVisuals");
         Directory.CreateDirectory(directory);
         var bitmap = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(view);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
-        using var file = File.Create(Path.Combine(directory, $"dashboard-{width}-{height}-{empty}.png"));
+        using var file = File.Create(Path.Combine(directory, $"dashboard-{width}-{height}-{sessionCount}.png"));
         encoder.Save(file);
     });
 
@@ -122,6 +139,16 @@ public class DashboardRefinementTests(WpfTestHost host)
         GameName = "Recorded game", Date = day, RecordedDate = day, PostedDate = null,
         Status = status, Earnings = amount, Duration = TimeSpan.FromMinutes(5)
     };
+
+    private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+        {
+            var child = VisualTreeHelper.GetChild(root, index);
+            if (child is T match) yield return match;
+            foreach (var descendant in Descendants<T>(child)) yield return descendant;
+        }
+    }
 
     private static Rect Bounds(FrameworkElement element, Visual parent) =>
         element.TransformToAncestor(parent).TransformBounds(new Rect(element.RenderSize));

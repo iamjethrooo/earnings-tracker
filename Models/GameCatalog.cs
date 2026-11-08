@@ -12,6 +12,9 @@ public class GameMetadata
     public string Provenance { get; set; } = "Unresolved";
     public bool Reviewed { get; set; }
     public DateTime? VerifiedAt { get; set; }
+    public bool? SupportsMultiplayer { get; set; }
+    public string MultiplayerProvenance { get; set; } = "";
+    public DateTime? MultiplayerVerifiedAt { get; set; }
 }
 
 public class GameGenre

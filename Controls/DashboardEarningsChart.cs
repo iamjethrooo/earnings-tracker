@@ -64,9 +64,9 @@ public sealed class DashboardEarningsChart : Canvas
         }
         for (var i = 0; i < days.Count; i++)
         {
-            var target = new Rectangle { Width = Math.Max(6, width / days.Count), Height = height, Fill = Brushes.Transparent,
+            var target = new Rectangle { Width = Math.Min(width, Math.Max(6, width / days.Count)), Height = height, Fill = Brushes.Transparent,
                 ToolTip = new ToolTip { Style = (Style)FindResource("ChartToolTip"), Content = days[i].Description } };
-            SetLeft(target, Math.Clamp(X(i) - target.Width / 2, left, ActualWidth - right - target.Width));
+            SetLeft(target, Math.Clamp(X(i) - target.Width / 2, left, Math.Max(left, ActualWidth - right - target.Width)));
             SetTop(target, top); Children.Add(target);
         }
         void Label(string text, double x, double y, double labelWidth, TextAlignment alignment = TextAlignment.Center)

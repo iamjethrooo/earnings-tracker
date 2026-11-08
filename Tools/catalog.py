@@ -93,6 +93,9 @@ def enrich(args):
         mapping = mappings.get(game["CatalogId"])
         if not mapping or not mapping.get("Reviewed"):
             continue
+        if game.get("IgdbId") != mapping.get("IgdbId"):
+            for field in ("SupportsMultiplayer", "MultiplayerVerifiedAt", "MultiplayerProvenance"):
+                game.pop(field, None)
         if mapping.get("ManualMetadata") is not None:
             # Provider-absent prologues and platform experiences keep explicit, reviewed official metadata.
             metadata = mapping["ManualMetadata"]
@@ -102,6 +105,9 @@ def enrich(args):
                 "ItadId": mapping.get("ItadId"), "Aliases": mapping.get("Aliases", []),
                 "Summary": metadata.get("Summary", ""), "Genres": metadata.get("Genres", []),
                 "VerifiedAt": mapping["ReviewedAt"], "Provenance": metadata["Provenance"]})
+            for field in ("SupportsMultiplayer", "MultiplayerVerifiedAt", "MultiplayerProvenance"):
+                if field in metadata:
+                    game[field] = metadata[field]
             url = metadata.get("CoverUrl", "")
             if url:
                 if not url.startswith("https://"): raise ValueError("HTTPS artwork URL is required")
@@ -236,6 +242,15 @@ def validate(catalog):
                 raise ValueError("Missing or ambiguous name/alias")
             names.add(identity_name)
         enriched = game.get("CoverUrl") or game.get("Genres") or game.get("Offers") or game.get("Subscriptions")
+        multiplayer = game.get("SupportsMultiplayer")
+        if multiplayer is not None:
+            if type(multiplayer) is not bool or not game.get("Reviewed") or not game.get("MultiplayerProvenance", "").strip() or len(game["MultiplayerProvenance"]) > 4096:
+                raise ValueError("Multiplayer metadata requires a reviewed identity and source evidence")
+            checked_at = parsedate(game.get("MultiplayerVerifiedAt") or "")
+            if checked_at > dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=5):
+                raise ValueError("Multiplayer verification cannot be in the future")
+        elif game.get("MultiplayerProvenance") or game.get("MultiplayerVerifiedAt"):
+            raise ValueError("Unknown multiplayer support cannot have verification evidence")
         if enriched and not game.get("Reviewed"):
             raise ValueError(f'Unreviewed enrichment: {game["Name"]}')
         if game.get("CoverUrl"):

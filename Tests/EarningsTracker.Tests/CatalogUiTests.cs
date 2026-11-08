@@ -218,6 +218,7 @@ public class CatalogUiTests(WpfTestHost host)
             db.SaveChanges();
         }
         var dashboard = new DashboardView(database.Options) { Width = 1280, Height = 900 };
+        ((ComboBox)dashboard.FindName("PeriodSelector")).SelectedIndex = 1;
         await dashboard.LoadDashboardData();
         var sessions = new SessionsView(database.Options) { Width = 1280, Height = 900 };
         var model = (SessionsViewModel)sessions.DataContext;

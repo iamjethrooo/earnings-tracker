@@ -100,21 +100,37 @@ namespace EarningsTracker.ViewModels
         private decimal _cycleMinutes;
         public bool HasCycleProgress => _cycleMinutes > 0;
         public decimal CycleProgressPercent => Game.MinutesCap > 0 ? _cycleMinutes / Game.MinutesCap * 100m : 0;
-        public string CycleProgressText => HasCycleProgress
-            ? $"{_cycleMinutes:0.##} min · {CycleProgressPercent:0}%"
-            : "No verified play";
+        public string CycleProgressText => $"{_cycleMinutes / 60m:0.##} / {Game.MinutesCap / 60m:0.##}h";
+        public string CycleStatusText => !HasCycleProgress ? "Not started"
+            : Game.MinutesCap > 0 && _cycleMinutes >= Game.MinutesCap ? "Cap reached" : "In progress";
         internal void SetCycleMinutes(decimal minutes)
         {
             _cycleMinutes = minutes;
             OnPropertyChanged(nameof(HasCycleProgress));
             OnPropertyChanged(nameof(CycleProgressPercent));
             OnPropertyChanged(nameof(CycleProgressText));
+            OnPropertyChanged(nameof(CycleStatusText));
         }
         public string PotentialText => Game.IsArchived ? "History only" : CurrencyDisplay.FormatUsd(Game.RatePerHour * Game.MinutesCap / 60m);
         public string PotentialBasis => Game.IsArchived ? "Archived earning opportunity" : "";
         public string PriceEvidence => BestOffer is { } offer
             ? $"{offer.Source} · {offer.Edition} · {offer.Region} · checked {offer.VerifiedAt:yyyy-MM-dd}"
             : "No current comparable purchase offer. See acquisition details.";
+
+        public string LibraryPriceEvidence
+        {
+            get
+            {
+                // Retain dated evidence even when there is no currently comparable price.
+                var offer = BestOffer ?? Offers.OrderByDescending(x => x.VerifiedAt).FirstOrDefault();
+                if (offer == null) return "No saved purchase offer";
+                var now = DateTime.UtcNow;
+                var checkedDate = offer.VerifiedAt == default ? "Check date unknown" : $"Checked {offer.VerifiedAt:MMM d, yyyy}";
+                var status = offer.ExpiresAt <= now ? " · Expired offer"
+                    : offer.ExpiresAt.HasValue ? $" · Expires {offer.ExpiresAt:MMM d, yyyy}" : "";
+                return $"{offer.Source} · {checkedDate}{status}";
+            }
+        }
 
         internal void SetCatalog(GameMetadata? metadata, List<string> genres, List<StoreOffer> offers,
             List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates,
@@ -129,7 +145,7 @@ namespace EarningsTracker.ViewModels
             foreach (var property in new[] { nameof(Metadata), nameof(Genres), nameof(Offers), nameof(Subscriptions), nameof(Rates),
                 nameof(GenreText), nameof(SourceText), nameof(Summary), nameof(MetadataStatus), nameof(FreeToPlay),
                 nameof(PriceSortValue), nameof(LowestPrice), nameof(PriceText), nameof(PriceTooltip), nameof(AccessStatusText),
-                nameof(OfferDetails), nameof(SubscriptionDetails), nameof(GamePassStatus), nameof(GamePassNeedsVerification), nameof(GamePassCurrentlyAvailable), nameof(PriceEvidence) }) OnPropertyChanged(property);
+                nameof(OfferDetails), nameof(SubscriptionDetails), nameof(GamePassStatus), nameof(GamePassNeedsVerification), nameof(GamePassCurrentlyAvailable), nameof(PriceEvidence), nameof(LibraryPriceEvidence) }) OnPropertyChanged(property);
             NotifyOwnership();
         }
 

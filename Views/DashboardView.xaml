@@ -10,7 +10,7 @@
   <Grid Margin="0,0,0,12">
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
    <StackPanel><TextBlock Text="Dashboard" Style="{StaticResource TabName}"/><TextBlock Text="{Binding RangeLabel}" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel>
-   <ComboBox x:Name="PeriodSelector" Grid.Column="1" Width="156" VerticalAlignment="Center" SelectedIndex="1" SelectionChanged="Period_Changed" AutomationProperties.Name="Dashboard period">
+   <ComboBox Style="{StaticResource FilterDropdown}" x:Name="PeriodSelector" Grid.Column="1" Width="156" VerticalAlignment="Center" SelectedIndex="3" SelectionChanged="Period_Changed" AutomationProperties.Name="Dashboard period">
     <ComboBoxItem Content="7 days"/><ComboBoxItem Content="30 days"/><ComboBoxItem Content="90 days"/><ComboBoxItem Content="Current payout" Tag="Payout"/>
    </ComboBox>
   </Grid>
@@ -20,9 +20,9 @@
   </DockPanel></Border>
   <ScrollViewer x:Name="TotalsScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
    <StackPanel x:Name="TotalsPanel" Visibility="Collapsed">
-    <ItemsControl ItemsSource="{Binding Metrics}" Margin="-4,0,-4,8">
+    <ItemsControl x:Name="MetricCards" ItemsSource="{Binding Metrics}" Margin="-4,0,-4,8">
      <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="5"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-     <ItemsControl.ItemTemplate><DataTemplate><Border Style="{StaticResource MetricPanel}" Margin="4,0,4,8" Padding="12" MinHeight="128"><StackPanel>
+     <ItemsControl.ItemTemplate><DataTemplate><Border Style="{StaticResource MetricPanel}" Margin="4,0,4,8" Padding="12"><StackPanel>
       <TextBlock Text="{Binding Label}" Style="{StaticResource DashboardStatLabel}" FontSize="12"/>
       <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Height="36" Margin="0,4"><TextBlock Text="{Binding Value}" Style="{StaticResource DashboardStatValue}" Foreground="{Binding ValueBrush}"/></Viewbox>
       <TextBlock Text="{Binding Detail}" Style="{StaticResource Caption}"/>

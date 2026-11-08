@@ -9,6 +9,7 @@ Read the relevant documentation instead of duplicating it:
 - [Design system](Docs/Design-System.md) — the established design document; there is no root `DESIGN_SYSTEM.md`.
 - [Database and storage](Docs/Database.md) — database locations, migration boundaries, and isolation rules.
 - [Build and release](Docs/Release.md) — development commands and Velopack release gates.
+- [Release notes writing guidelines](Docs/Release-Notes-Guidelines.md) — follow the approved v1.4.0 editorial style for new notes; complete its editorial review and offline preview before requesting publication approval. Preserve required disclosures and immutable release artifacts.
 - [Testing and financial invariants](Tests/README.md).
 - [Catalog maintenance and publication gates](Tools/CATALOG.md).
 

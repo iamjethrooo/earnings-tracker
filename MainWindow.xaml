@@ -7,7 +7,7 @@
         xmlns:enums="clr-namespace:EarningsTracker.Enums"
         xmlns:controls="clr-namespace:EarningsTracker.Controls"
         mc:Ignorable="d"
-        Title="Earnings Tracker" Height="720" Width="1200"
+        Title="Earnings Tracker" Height="770" Width="1320"
         Icon="/EarningsTracker;component/Resources/App.ico"
         FontFamily="{StaticResource AppFont}"
         xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"

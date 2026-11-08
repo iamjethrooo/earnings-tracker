@@ -63,7 +63,7 @@
                    FontSize="{StaticResource FontSizeBody}"/>
                 <StackPanel x:Name="NewSessionsPayoutPanel" Margin="0,12,0,8">
                     <TextBlock Text="Payout for new sessions" Style="{StaticResource FilterLabel}"/>
-                    <ComboBox x:Name="NewSessionsPayout" AutomationProperties.Name="Payout for new sessions"
+                    <ComboBox x:Name="NewSessionsPayout" Style="{StaticResource SearchableComboBox}" AutomationProperties.Name="Payout for new sessions"
                               DisplayMemberPath="Label" SelectionChanged="NewSessionsPayout_SelectionChanged" MaxDropDownHeight="300"/>
                     <TextBlock Text="For past sessions, choose the payment that covered them." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
                 </StackPanel>

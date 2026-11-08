@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using EarningsTracker.Models;
+using EarningsTracker.Data;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EarningsTracker.Tests
 {
@@ -47,6 +50,39 @@ namespace EarningsTracker.Tests
             }
             using var read = second.CreateContext();
             Assert.Empty(read.Games);
+        }
+
+        [Fact]
+        public void MultiplayerUpgradeRetainsLegacyMetadataAndFinancialHistoryAndCanRepeat()
+        {
+            using var connection = new SqliteConnection("Data Source=:memory:;Foreign Keys=True");
+            connection.Open();
+            var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+            using var db = new AppDbContext(options);
+            db.GetService<IMigrator>().Migrate("20261107145034_AddSessionPayoutAssignments");
+            db.Games.Add(new Game { Name = "Legacy game", RatePerHour = 1.2345m, MinutesCap = 90.5m });
+            db.SaveChanges();
+            var game = db.Games.Single();
+            db.Database.ExecuteSqlRaw("INSERT INTO GameMetadata (GameId,CatalogId,Summary,CoverUrl,CoverSha256,Provenance,Reviewed) VALUES ({0},'legacy-id','Original summary','','','Original provenance',1)", game.Id);
+            db.Sessions.Add(new Session { GameId = game.Id, GameName = game.Name, Earnings = 1.2345m });
+            db.SessionChanges.Add(new SessionChange { SessionId = 1, ChangeType = "Imported", SourceText = "Original evidence" });
+            db.Bookmarks.Add(new Bookmark { GameId = game.Id });
+            db.GameOwnership.Add(new GameOwnership { GameId = game.Id, IsOwned = true, PurchaseAmount = 42.50m });
+            db.SaveChanges();
+            db.Database.Migrate(); db.Database.Migrate();
+            var metadata = db.GameMetadata.Single();
+            Assert.Null(metadata.SupportsMultiplayer);
+            Assert.Null(metadata.MultiplayerVerifiedAt);
+            Assert.Equal("", metadata.MultiplayerProvenance);
+            Assert.Equal("Original summary", metadata.Summary);
+            Assert.Equal("Original provenance", metadata.Provenance);
+            Assert.Equal(1.2345m, db.Sessions.Single().Earnings);
+            Assert.Equal("Original evidence", db.SessionChanges.Single().SourceText);
+            Assert.Equal(42.50m, db.GameOwnership.Single().PurchaseAmount);
+            Assert.Single(db.Bookmarks);
+            Assert.Equal(1.2345m, db.Games.Single().RatePerHour);
+            Assert.Equal(90.5m, db.Games.Single().MinutesCap);
+            Assert.False(db.Database.HasPendingModelChanges());
         }
 
         [Fact]

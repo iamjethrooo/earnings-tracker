@@ -44,11 +44,66 @@ Use `DynamicResource` for token references inside shared dictionaries: WPF may r
 
 ## Hosting and accessibility
 
+The shared ScrollViewer style enables `Controls/SmoothScroll.cs`: discrete mouse-wheel input
+follows its destination with a 100 ms settling interval in pixel viewports, accumulating repeated
+input without restarting the easing and responding immediately to direction changes. Updates
+follow WPF rendering frames with elapsed-time weighting instead of a fixed-rate timer.
+It preserves content scrolling, recycling and existing viewport bounds.
+Logical item-scrolling lists, nested input controls, modified wheel gestures and high-resolution
+wheel packets retain native handling. Windows' client-area animation preference disables easing.
+Keyboard input, mouse clicks, unload and viewport size changes cancel pending animation.
+Extent changes clamp the destination without stopping, so virtualized row-height estimates can
+adjust while scrolling. The rendering handler is subscribed only during an active animation.
+Set `SmoothScroll.IsEnabled="False"`
+on an individual ScrollViewer to opt out. Physical touchpad/wheel feel and large artwork-heavy
+lists still require interactive performance checks; offscreen tests do not measure frame pacing.
+
 Apply `PageHost` explicitly to `MainContent`. Pages own their 20-DIP inset on all sides, so the host defaults to zero padding. The template consumes explicit padding, border and content alignment, forwards content templates, and applies margin only through normal layout. Ordinary ContentControls retain their normal WPF templates.
 
 Preserve the shared focus visual, primary-button contrast, popup parts, accessible names, live feedback, modal keyboard containment, commit close protection, and virtualization established in Phases 1–3. A visual extraction must not remove a local trigger, hide an action, reset a binding context, or add an unintended tab stop.
 
 Editor focus must remain visible while hovered: `ModalTextBox` applies its keyboard-focus border after its hover border and uses the shared disabled-opacity treatment. Search hints use `SecondaryTextColor` without an extra opacity reduction. Preserve these behaviors when updating the shared styles and verify keyboard focus, contrast, and compact layouts as part of UI changes.
+
+### Filter toolbars
+
+Games and Sessions share an open, two-row toolbar: search, sort and clear actions first,
+then wrapping filters. Use `FilterSearchBox` for the search icon and focus border,
+`FilterDropdown` for sort and period selectors, `ActiveFilterDropdown` for simple filters,
+and `SearchableFilterDropdown` for game/genre filters. Active filters use the purple border
+and background; index zero is the unfiltered choice. `FilterCheckBox` supplies the Games
+quick-filter chips, and `FilterToolbarButton` keeps toolbar actions at the same density.
+Controls are 34 DIPs high with compact body text. Dashboard and Statistics use the same
+period-selector style. Keep page-specific bindings, accessible names and filter behavior.
+
+### Dropdowns and explanatory disclosures
+
+Standard ComboBoxes use a single charcoal field, an outline chevron, a rounded popup and compact
+checkmarked choices. Selection and keyboard focus use the purple accent. Native selection bindings,
+editable parts and popup names remain available; popup viewports recycle their rows.
+
+Use `SearchableComboBox` for game, genre and payout pickers. Its popup opens with a search field,
+matches labels without case sensitivity and shows “No matching choices” when empty. Labels come
+from `DisplayMemberPath`, `TextSearch.TextPath`, or `DropdownSearch.MemberPath` for a custom item
+template (the session game editor uses `Name`). Duplicate game/rate versions remain separate items
+with their existing identifying details. Short status, period, store and sort lists remain simple selectors.
+
+`Controls/DropdownSearch.cs` filters a popup-only snapshot, preserving the source collection, its
+view and the bound selection. Arrow keys move the result highlight; Enter or clicking a result
+commits the original item identity. Escape cancels; Tab closes without committing and moves focus.
+Closing clears the search, and reopening includes current items. Changes to the source while open
+refresh results; removed items cannot be committed. Source bindings and audited save paths remain
+owned by their existing views and view models.
+
+Expanders use `InlineDisclosure`: a quiet inline label and chevron, purple while expanded, with
+the existing content revealed underneath. This includes “How calculated”, source evidence and
+history sections. Existing header templates, expansion bindings, content, warnings and bounded
+inner lists remain in place. Local Expander styles should derive from `InlineDisclosure` to keep
+this treatment while retaining their own defaults and triggers.
+
+`DropdownDisclosureTests` checks selection isolation, identity-preserving commit, cancel/Tab,
+live source changes and native expansion automation. It exports narrow/wide popup and disclosure
+layouts at 96/144 DPI under `DropdownDisclosureVisuals` in the test output. These are offscreen
+checks; physical mouse/wheel input, screen readers and actual monitor-DPI transitions remain manual.
 
 Check resource lookup and trigger precedence in real WPF fixtures, not just XML compilation. Render minimum/default/wide layouts and inspect both loaded artwork and missing covers. Check final foregrounds explicitly when replacing a local style: an explicit TextBlock style does not automatically inherit the implicit one.
 
@@ -168,22 +223,35 @@ Owner-operated checks are not required; those limits remain recorded.
 
 ## Compact Games library and details (PRO-48)
 
-Games uses compact recycling rows with artwork, title, genre, ownership, acquisition evidence,
-rate, cycle cap and full-cycle potential. Below 1,050 DIPs of page-region width the comparison
+Games uses four primary columns: Game, Rate, Cycle and Acquisition. Game includes compact artwork,
+title, genre, stores, ownership and bookmarking. Full-cycle potential stays in Game Details.
+Below 1,050 DIPs of page-region width the comparison
 fields move beneath the title. Missing artwork has a readable fallback. Selecting a row keeps
 the library open; its title or Enter opens details. Returning to Library retains filters,
 selection and scroll position and restores focus when the original item is still available.
-The identity and comparison columns share the available row width; rate, cycle cap, full-cycle
-potential and acquisition align across games without a fixed-width inset. Cycle bars use verified
+The identity and comparison columns share the available row width; rate, cycle
+progress and acquisition align across games without a fixed-width inset. Cycle bars use verified
 linked sessions after the saved cap-reset date; pending, rejected, unlinked and pre-reset sessions
-do not contribute. An empty track says “No verified play.” The visual clamps to 100%; displayed
-minutes and percentages retain over-cap values.
+do not contribute. Zero progress hides the track and says “Not started.” Hours use `played / cap`
+with In progress or Cap reached status; the bar clamps to 100% while text retains over-cap hours.
+Library acquisition evidence shows the store, checked date and stale/expired warnings; edition
+and region remain available in Game Details.
 
-The primary toolbar band contains search, Owned/Playable now, sorting and Clear. The second
-contains genre/store, bookmarks, archived visibility, Free-to-play and PC Game Pass. Both bands
-wrap at narrower widths; access flags remain independently combinable. Search, sorting,
-genre/store and access filters remain production filters. Clear
-resets search and filters, retaining sorting and the current archived visibility choice.
+The primary toolbar row contains an expanding search field with an icon, a separately labeled
+sort selector and a secondary Clear filters action. The quick-filter row contains Playable now,
+Owned, Bookmarked, Multiplayer, genre/store and More filters; it wraps at narrower widths. Toolbar controls
+are 34 DIPs high, with 8-DIP filter gaps and purple selected states. More filters holds
+Free-to-play, Steam owned, PC Game Pass and Show archived. Its count includes every checked
+secondary option, including Show archived. Toggling an option keeps the popover open; Escape
+closes it and returns focus to More filters. Tab stays within the open popover.
+Access flags remain independently combinable, and the existing matching count stays above the
+library. Clear filters is enabled only for a search or filter it can reset; it retains sorting
+and the current archived visibility choice. Bookmark selection uses a two-way binding so the
+checkbox follows resets as well as user changes.
+Multiplayer matches only reviewed catalog identities with recorded multiplayer/co-op support;
+unknown and single-player-only entries are excluded. It combines independently with access,
+ownership, bookmarks, search and archived visibility, and Clear filters unchecks it. The tooltip
+explains that local modes count and current servers/player counts still need checking at the store.
 Settings still supplies the saved starting sort, bookmarks-only and archived preferences;
 temporary browsing choices do not overwrite them. Lowest price retains the existing comparison
 of saved PH offers across editions using saved exchange rates. Outdated purchase prices remain
@@ -232,9 +300,11 @@ activity beside top earning games. It uses the shared shell, typography, panels,
 variants and buttons. Below 850 DIPs of page-region width the paired panels stack. The page body
 scrolls vertically while the heading and period selector stay available. Recent activity is limited
 to five recordings in a 240-DIP recycling viewport; Daily values has a separate bounded viewport.
+Paired panels retain equal heights. The five KPI cards share the height of their tallest content
+with standard padding, without a fixed minimum height that leaves unused space below the values.
 
-The 7/30/90-day selector defaults to 30 days, includes the complete snapshot day and starts 6/29/89
-days earlier. The Current payout option matches Statistics: sessions need a known posted date
+Dashboard and Statistics default to Current payout. The alternative 7/30/90-day ranges include
+the complete snapshot day and start 6/29/89 days earlier. The Current payout option matches Statistics: sessions need a known posted date
 through the snapshot day and unpaid settlement membership. Explicitly current sessions remain
 eligible even on or before the latest payment day; untouched historical sessions retain the
 posted-day cutoff. Sessions assigned to visible Paid/Processing Payments are excluded. It charts those sessions by recording date and includes

@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:enums="clr-namespace:EarningsTracker.Enums"
+    xmlns:controls="clr-namespace:EarningsTracker.Controls"
     xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf">
 
     <!-- Keep the supplied surfaces when disabled behind a modal. The Windows
@@ -38,6 +39,7 @@
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" Padding="1" SnapsToDevicePixels="True">
                         <ScrollViewer Focusable="False" Padding="{TemplateBinding Padding}"
+                                      controls:SmoothScroll.IsEnabled="True"
                                       Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
                             <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                         </ScrollViewer>

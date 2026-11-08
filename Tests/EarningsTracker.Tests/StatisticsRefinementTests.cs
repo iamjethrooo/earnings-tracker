@@ -70,6 +70,7 @@ public class StatisticsRefinementTests(WpfTestHost host)
             db.SaveChanges();
         }
         var view = new StatisticsView(database.Options);
+        ((ComboBox)view.FindName("EarningsRangeComboBox")).SelectedIndex = 0;
         await view.LoadStatistics();
         Assert.Empty(view.GameEarnings);
         var capResets = 0;
@@ -109,6 +110,7 @@ public class StatisticsRefinementTests(WpfTestHost host)
             db.SaveChanges();
         }
         var view = new StatisticsView(database.Options) { FontFamily = (FontFamily)Application.Current.FindResource("AppFont") };
+        ((ComboBox)view.FindName("EarningsRangeComboBox")).SelectedIndex = 0;
         await view.LoadStatistics();
         view.Measure(new Size(width, 900)); view.Arrange(new Rect(0, 0, width, 900)); view.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle); view.UpdateLayout();

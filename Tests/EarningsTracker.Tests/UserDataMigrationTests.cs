@@ -59,7 +59,8 @@ public sealed class UserDataMigrationTests : IDisposable
         using (var history = command.ExecuteReader())
         {
             Assert.True(history.Read()); Assert.Equal("20261013055107_InitialCreate", history.GetString(0));
-            Assert.True(history.Read()); Assert.Equal("20261107145034_AddSessionPayoutAssignments", history.GetString(0)); Assert.False(history.Read());
+            Assert.True(history.Read()); Assert.Equal("20261107145034_AddSessionPayoutAssignments", history.GetString(0));
+            Assert.True(history.Read()); Assert.Equal("20261108103539_AddGameMultiplayerMetadata", history.GetString(0)); Assert.False(history.Read());
         }
         command.CommandText = "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name";
         var tables = new List<string>();
@@ -99,7 +100,7 @@ public sealed class UserDataMigrationTests : IDisposable
         Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(Destination, "Backups", "nested", "saved.db")));
         Assert.Equal("cached artwork", File.ReadAllText(Path.Combine(Destination, "Artwork", "saved.img")));
         Assert.False(Directory.Exists(Path.Combine(Destination, "current")));
-        output.WriteLine($"Source/working/recovery all-table fingerprint: {expected}; integrity=ok; FK violations=0; migrations=InitialCreate,AddSessionPayoutAssignments");
+        output.WriteLine($"Source/working/recovery all-table fingerprint: {expected}; integrity=ok; FK violations=0; migrations=InitialCreate,AddSessionPayoutAssignments,AddGameMultiplayerMetadata");
         output.WriteLine($"Retained source/existing-backup SHA256: {Convert.ToHexString(SHA256.HashData(bytes))}");
         UserDataMigration.Migrate(Destination, Former); // Never re-import stale former data on reinstall.
         Assert.Equal(expected, Fingerprint(Database(Destination)));
@@ -127,7 +128,7 @@ public sealed class UserDataMigrationTests : IDisposable
         var recovered = Path.Combine(root, "recovered.db");
         DatabaseInitialization.CopyVerified(recovery, recovered);
         Assert.Equal(before, Fingerprint(recovered));
-        output.WriteLine($"WAL/working/recovered all-table fingerprint after synthetic install-folder removal: {before}; integrity=ok; FK violations=0; migrations=InitialCreate,AddSessionPayoutAssignments");
+        output.WriteLine($"WAL/working/recovered all-table fingerprint after synthetic install-folder removal: {before}; integrity=ok; FK violations=0; migrations=InitialCreate,AddSessionPayoutAssignments,AddGameMultiplayerMetadata");
         UserDataMigration.Migrate(Destination, Former);
         Assert.Equal(before, Fingerprint(Database(Destination)));
     }

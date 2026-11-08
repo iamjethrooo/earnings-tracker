@@ -79,7 +79,8 @@ public class UiReleaseIntegrationTests(WpfTestHost host)
         {
             window.Show(); await Settle();
             var first = (DashboardView)content.Content;
-            Assert.Equal(.2345m, first.PeriodEarned);
+            // Current payout excludes the unposted session until the audited edit fills its posted date.
+            Assert.Equal(-1m, first.PeriodEarned);
             Assert.Equal(0, first.Balance); Assert.Contains("without posted dates", first.BalanceDescription);
             await Capture(window, $"shell-dashboard-{width}");
             Descendants<Button>(first).Single(button => Equals(button.Content, "Sessions →")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

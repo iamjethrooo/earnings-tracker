@@ -1,7 +1,9 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:controls="clr-namespace:EarningsTracker.Controls"
+    xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf">
 
     <Style x:Key="KeyboardFocusVisual">
         <Setter Property="Control.Template">
@@ -206,6 +208,7 @@
     <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
 
     <Style TargetType="ScrollViewer">
+        <Setter Property="controls:SmoothScroll.IsEnabled" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollViewer">
@@ -342,37 +345,35 @@
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="32" />
             </Grid.ColumnDefinitions>
             <Border
               x:Name="Border"
               Grid.ColumnSpan="2"
-              CornerRadius="5"
-              Background="{DynamicResource InputBackgroundColor}"
-              BorderBrush="{DynamicResource DefaultBorderColor}"
+              CornerRadius="6"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="1" />
-            <Border
-              Grid.Column="0"
-              CornerRadius="5,0,0,5"
-              Margin="1"
-              Background="{DynamicResource InputBackgroundColor}"
-              BorderBrush="{DynamicResource DefaultBorderColor}"
-              BorderThickness="0,0,1,0" />
             <Path
               x:Name="Arrow"
               Grid.Column="1"
-              Fill="{DynamicResource DefaultTextColor}"
+              Stroke="{DynamicResource SecondaryTextColor}" StrokeThickness="1.5"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
-              Data="M 0 0 L 4 4 L 8 0 Z"/>
+              Data="M 0 0 L 4 4 L 8 0"/>
         </Grid>
         <ControlTemplate.Triggers>
             <Trigger Property="ToggleButton.IsMouseOver" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource InputBackgroundColor}" />
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ControlHoverBorderColor}" />
             </Trigger>
             <Trigger Property="ToggleButton.IsChecked" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource InputBackgroundColor}" />
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentTextColor}" />
+                <Setter TargetName="Arrow" Property="Data" Value="M 0 4 L 4 0 L 8 4"/>
+                <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource AccentTextColor}"/>
             </Trigger>
+            <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=ComboBox}}" Value="True">
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentTextColor}"/>
+            </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
@@ -380,7 +381,49 @@
         <Border x:Name="PART_ContentHost" Focusable="False" Background="{TemplateBinding Background}" />
     </ControlTemplate>
 
+    <!-- Both native choices and search results share the same selection and focus treatment. -->
+    <Style x:Key="DropdownOption" TargetType="Control">
+        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control">
+            <Border x:Name="OptionBorder" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="4">
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/></Grid.ColumnDefinitions>
+                    <ContentPresenter VerticalAlignment="Center" Content="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                        ContentTemplate="{Binding ContentTemplate, RelativeSource={RelativeSource TemplatedParent}}"
+                        ContentTemplateSelector="{Binding ContentTemplateSelector, RelativeSource={RelativeSource TemplatedParent}}">
+                        <ContentPresenter.Resources>
+                            <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Control}}"/></Style>
+                        </ContentPresenter.Resources>
+                    </ContentPresenter>
+                    <Path x:Name="SelectionMark" Grid.Column="1" Visibility="Hidden" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Stroke="{DynamicResource AccentTextColor}" StrokeThickness="1.5" Data="M 0 4 L 3 7 L 9 0"/>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="OptionBorder" Property="Background" Value="{DynamicResource ControlHoverColor}"/></Trigger>
+                <Trigger Property="Selector.IsSelected" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentTextColor}"/>
+                    <Setter TargetName="OptionBorder" Property="Background" Value="{DynamicResource AccentBackgroundColor}"/>
+                    <Setter TargetName="SelectionMark" Property="Visibility" Value="Visible"/>
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="OptionBorder" Property="Background" Value="{DynamicResource AccentBackgroundColor}"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource DropdownOption}">
+        <Style.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="{DynamicResource ControlHoverColor}"/></Trigger></Style.Triggers>
+    </Style>
+    <Style x:Key="DropdownSearchResult" TargetType="ListBoxItem" BasedOn="{StaticResource DropdownOption}"/>
+
     <Style TargetType="ComboBox">
+        <Setter Property="ItemsPanel"><Setter.Value><ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate></Setter.Value></Setter>
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}"/>
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="OverridesDefaultStyle" Value="true"/>
@@ -388,7 +431,9 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
         <Setter Property="MinWidth" Value="120"/>
-        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -397,6 +442,7 @@
                         <ToggleButton
                             Name="ToggleButton"
                             Template="{StaticResource ComboBoxToggleButton}"
+                            Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                             Grid.Column="2"
                             Focusable="false"
                             IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
@@ -408,7 +454,7 @@
                             Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                             ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                            Margin="10,3,23,3"
+                            Margin="11,5,32,5"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Left" />
                         <TextBox x:Name="PART_EditableTextBox"
@@ -419,7 +465,7 @@
                             Template="{StaticResource ComboBoxTextBox}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Margin="3,3,23,3"
+                            Margin="11,5,32,5"
                             Focusable="True"
                             Background="Transparent"
                             Visibility="Hidden"
@@ -430,7 +476,7 @@
                             IsOpen="{TemplateBinding IsDropDownOpen}"
                             AllowsTransparency="True"
                             Focusable="False"
-                            PopupAnimation="Slide">
+                            PopupAnimation="None">
                             <Grid
                               Name="DropDown"
                               SnapsToDevicePixels="True"
@@ -438,12 +484,37 @@
                               MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border
                                     x:Name="DropDownBorder"
-                                    Background="{DynamicResource InputBackgroundColor}"
+                                    Background="{DynamicResource DialogBackgroundColor}"
                                     BorderThickness="1"
-                                    BorderBrush="{DynamicResource DefaultBorderColor}"/>
-                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
-                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
-                                </ScrollViewer>
+                                    BorderBrush="{DynamicResource ControlBorderColor}" CornerRadius="8" Margin="0,6,0,0"/>
+                                <Grid Margin="5,11,5,5">
+                                    <ScrollViewer x:Name="NativeChoices" SnapsToDevicePixels="True" CanContentScroll="True">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                    <Grid x:Name="SearchChoices" Visibility="Collapsed" KeyboardNavigation.TabNavigation="Cycle">
+                                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                                        <Border BorderBrush="{DynamicResource DefaultBorderColor}" BorderThickness="0,0,0,1" Padding="8,4,8,8" Margin="0,0,0,4">
+                                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                                <fluent:SymbolIcon Symbol="Search" Width="16" Height="16" Foreground="{DynamicResource SecondaryTextColor}" Focusable="False" IsHitTestVisible="False"/>
+                                                <TextBox x:Name="PART_SearchBox" Grid.Column="1" Style="{x:Null}" BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource DefaultTextColor}" CaretBrush="{DynamicResource DefaultTextColor}"
+                                                Padding="4" MinHeight="28" AutomationProperties.Name="Search choices"
+                                                FocusVisualStyle="{StaticResource KeyboardFocusVisual}"/>
+                                                <TextBlock Grid.Column="1" Text="Search choices…" IsHitTestVisible="False" Margin="4,0" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextColor}">
+                                                    <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Text, ElementName=PART_SearchBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                                                </TextBlock>
+                                            </Grid>
+                                        </Border>
+                                        <ListBox x:Name="PART_SearchResults" Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0"
+                                            IsTabStop="False" AutomationProperties.Name="Matching choices"
+                                            ItemTemplate="{TemplateBinding ItemTemplate}" ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                            DisplayMemberPath="{TemplateBinding DisplayMemberPath}" ItemContainerStyle="{StaticResource DropdownSearchResult}"
+                                            ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                            VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"/>
+                                        <TextBlock x:Name="SearchEmpty" Grid.Row="1" Text="No matching choices" Margin="10,8"
+                                            Foreground="{DynamicResource SecondaryTextColor}" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite"/>
+                                    </Grid>
+                                </Grid>
                             </Grid>
                         </Popup>
                     </Grid>
@@ -454,9 +525,9 @@
                         <Trigger Property="IsGrouping" Value="true">
                             <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
                         </Trigger>
-                        <Trigger SourceName="PART_Popup" Property="Popup.AllowsTransparency" Value="true">
-                            <Setter TargetName="DropDownBorder" Property="CornerRadius" Value="5"/>
-                            <Setter TargetName="DropDownBorder" Property="Margin" Value="0,2,0,0"/>
+                        <Trigger Property="controls:DropdownSearch.IsEnabled" Value="True">
+                            <Setter TargetName="NativeChoices" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="SearchChoices" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEditable"
                             Value="true">
@@ -472,6 +543,61 @@
             <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
         </Style.Triggers>
     </Style>
+
+    <Style x:Key="SearchableComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Setter Property="controls:DropdownSearch.IsEnabled" Value="True"/>
+        <Setter Property="IsTextSearchEnabled" Value="False"/>
+        <Setter Property="MaxDropDownHeight" Value="300"/>
+    </Style>
+
+    <Style x:Key="InlineDisclosure" TargetType="Expander">
+        <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Expander">
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                <DockPanel LastChildFill="True">
+                    <ToggleButton x:Name="DisclosureToggle" DockPanel.Dock="Top" HorizontalAlignment="Left" MinHeight="28"
+                        Background="Transparent" BorderThickness="0" Padding="0,4"
+                        FocusVisualStyle="{StaticResource KeyboardFocusVisual}"
+                        IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                        Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"
+                        ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                        AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}">
+                        <ToggleButton.Style><Style TargetType="ToggleButton"><Setter Property="Foreground" Value="{DynamicResource SecondaryTextColor}"/></Style></ToggleButton.Style>
+                        <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
+                            <Border Background="Transparent" Padding="{TemplateBinding Padding}"><Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <Path x:Name="DisclosureChevron" Data="M 0 0 L 4 4 L 0 8" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" VerticalAlignment="Center" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Content" RecognizesAccessKey="True" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}">
+                                    <ContentPresenter.Resources>
+                                        <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"/></Style>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
+                            </Grid></Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/></Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentTextColor}"/>
+                                    <Setter TargetName="DisclosureChevron" Property="RenderTransform"><Setter.Value><RotateTransform Angle="90"/></Setter.Value></Setter>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Foreground" Value="{DynamicResource AccentTextColor}"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate></ToggleButton.Template>
+                    </ToggleButton>
+                    <ContentPresenter x:Name="DisclosureContent" ContentSource="Content" Visibility="Collapsed" Margin="0,8,0,0"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </DockPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsExpanded" Value="True"><Setter TargetName="DisclosureContent" Property="Visibility" Value="Visible"/></Trigger>
+                <Trigger Property="ExpandDirection" Value="Up"><Setter TargetName="DisclosureToggle" Property="DockPanel.Dock" Value="Bottom"/></Trigger>
+                <Trigger Property="ExpandDirection" Value="Left"><Setter TargetName="DisclosureToggle" Property="DockPanel.Dock" Value="Right"/></Trigger>
+                <Trigger Property="ExpandDirection" Value="Right"><Setter TargetName="DisclosureToggle" Property="DockPanel.Dock" Value="Left"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="Expander" BasedOn="{StaticResource InlineDisclosure}"/>
 
     <Style TargetType="Calendar" BasedOn="{StaticResource TrackerCalendar}"/>
 
@@ -708,4 +834,83 @@
         <Setter Property="FontFamily" Value="{DynamicResource AppFont}"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeSupporting}"/>
     </Style>
+    <Style x:Key="FilterSearchBox" TargetType="TextBox" BasedOn="{StaticResource SearchBar}">
+        <Setter Property="Width" Value="Auto"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">
+            <Border x:Name="SearchBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <fluent:FluentIcon Icon="Search" IconSize="Size16" Foreground="{DynamicResource SecondaryTextColor}" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                    <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                    <TextBlock x:Name="Hint" Grid.Column="1" Text="{TemplateBinding Tag}" Foreground="{DynamicResource SecondaryTextColor}" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed"/>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Text" Value=""><Setter TargetName="Hint" Property="Visibility" Value="Visible"/></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="SearchBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+
+    <Style x:Key="FilterToolbarButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+    </Style>
+    <Style x:Key="FilterCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="Margin" Value="0,0,8,8"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
+            <Border x:Name="Chip" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource ControlCornerRadius}"
+                    BorderBrush="Transparent" BorderThickness="1" Padding="8,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border x:Name="Box" Width="15" Height="15" CornerRadius="3" BorderBrush="{DynamicResource SecondaryTextColor}" BorderThickness="1" Margin="0,0,6,0">
+                        <Path x:Name="Check" Visibility="Collapsed" Data="M 2 6 L 5 9 L 11 2" Stroke="{DynamicResource TextOnAccentColor}" StrokeThickness="1.5"/>
+                    </Border>
+                    <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Chip" Property="Background" Value="{DynamicResource AccentBackgroundColor}"/>
+                    <Setter TargetName="Box" Property="Background" Value="{DynamicResource AccentColor}"/>
+                    <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                    <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource ControlHoverBorderColor}"/></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AccentColor}"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="FilterDropdown" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+    </Style>
+    <Style x:Key="ActiveFilterDropdown" TargetType="ComboBox" BasedOn="{StaticResource FilterDropdown}">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        <Setter Property="Background" Value="{DynamicResource AccentBackgroundColor}"/>
+        <Style.Triggers><Trigger Property="SelectedIndex" Value="0">
+            <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderColor}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        </Trigger></Style.Triggers>
+    </Style>
+    <Style x:Key="SearchableFilterDropdown" TargetType="ComboBox" BasedOn="{StaticResource SearchableComboBox}">
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        <Setter Property="Background" Value="{DynamicResource AccentBackgroundColor}"/>
+        <Style.Triggers><Trigger Property="SelectedIndex" Value="0">
+            <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderColor}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundColor}"/>
+        </Trigger></Style.Triggers>
+    </Style>
+
 </ResourceDictionary>
