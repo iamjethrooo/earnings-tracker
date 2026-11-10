@@ -45,9 +45,12 @@ public class CleanInstallationTests
                 Assert.Empty(db.ExchangeRates);
                 Assert.Equal("true", CatalogService.GetSetting(db, "updates.automatic"));
                 Assert.Equal("false", CatalogService.GetSetting(db, "subscription.PC Game Pass"));
-                Assert.NotEmpty(CatalogService.GetSetting(db, "catalog.version"));
+                var version = CatalogService.GetSetting(db, "catalog.version");
+                Assert.NotEmpty(version);
                 Assert.NotEmpty(CatalogService.GetSetting(db, "catalog.published"));
-                Assert.Equal(new[] { "catalog.published", "catalog.version", "subscription.PC Game Pass", "updates.automatic" },
+                Assert.Equal(64, CatalogService.GetSetting(db, $"catalog.hash.{version}").Length);
+                Assert.Equal(new[] { "catalog.active-payload", $"catalog.hash.{version}", "catalog.published",
+                    "catalog.schema", "catalog.version", "subscription.PC Game Pass", "updates.automatic" },
                     db.CatalogSettings.Select(setting => setting.Key).OrderBy(key => key).ToArray());
                 var totals = PayoutAccounting.Calculate(db.Sessions.ToList(), db.Payouts.ToList());
                 Assert.Equal(0m, totals.TotalEarned);

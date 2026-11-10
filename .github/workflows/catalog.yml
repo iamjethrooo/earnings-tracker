@@ -1,6 +1,14 @@
 name: Reviewed catalog snapshots
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        options: [legacy, schema2]
+        default: legacy
+      minimum_client_version:
+        description: Released compatible MAJOR.MINOR.PATCH for schema2
+        type: string
 permissions:
   contents: write
 concurrency:
@@ -16,22 +24,55 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Use the committed initial catalog and prices
-        run: cp Data/catalog.json snapshot.json
       - name: Build validated release assets and coverage report
-        run: python Tools/catalog.py package --catalog snapshot.json --output release
-      - name: Upload immutable version first
         env:
-          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ inputs.channel }}
+          MINIMUM_CLIENT_VERSION: ${{ inputs.minimum_client_version }}
         run: |
-          version=$(python -c "import json; print(json.load(open('snapshot.json'))['Version'])")
-          gh release create "$version" release/* --title "$version" --notes "Reviewed catalog snapshot. See coverage.json for unresolved entries and attribution." --prerelease
-      - name: Update catalog channel
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if ! gh release view catalog-latest > /dev/null 2>&1; then
-            gh release create catalog-latest --title "Catalog updates" --notes "Reviewed catalog and price snapshots; see coverage.json." --prerelease
+          if [[ "$CHANNEL" == schema2 ]]; then
+            cp Data/catalog-v2.json snapshot.json
+            python Tools/catalog.py package --catalog snapshot.json --output release --steam-identities --minimum-client-version "$MINIMUM_CLIENT_VERSION"
+          else
+            cp Data/catalog.json snapshot.json
+            python Tools/catalog.py package --catalog snapshot.json --output release
           fi
-          gh release upload catalog-latest release/catalog.json release/artwork.zip release/coverage.json --clobber
-          gh release upload catalog-latest release/manifest.json --clobber
+      - name: Validate channel and stage immutable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          channel=catalog-latest
+          schema=1
+          if [[ "$CHANNEL" == schema2 ]]; then channel=catalog-v2-latest; schema=2; fi
+          test "$(python -c "import json; print(json.load(open('snapshot.json', encoding='utf-8-sig'))['SchemaVersion'])")" = "$schema"
+          tags=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[].tag_name')
+          if [[ "$schema" == 1 ]] && grep -Fxq catalog-v2-latest <<< "$tags"; then
+            echo "The legacy channel is pinned once the schema-2 channel exists."
+            exit 1
+          fi
+          check_current() {
+            local current_channel=$1 current_version
+            shift
+            gh release download "$current_channel" --pattern manifest.json --dir current
+            current_version=$(python -c 'from Tools.catalog import immutable_version,load; tag=load("current/manifest.json")["CatalogUrl"].split("/")[-2]; assert immutable_version(tag); print(tag)')
+            gh release download "$current_version" --pattern catalog.json --dir current
+            python Tools/catalog.py check_order --catalog snapshot.json --previous current/catalog.json --previous-manifest current/manifest.json "$@"
+          }
+          if grep -Fxq "$channel" <<< "$tags"; then
+            check_current "$channel"
+          elif [[ "$schema" == 2 ]]; then
+            check_current catalog-latest --legacy-transition
+          fi
+          version=$(python -c "import json; print(json.load(open('release/manifest.json'))['Version'])")
+          existing_tag=$(git ls-remote origin "refs/tags/$version")
+          if [[ -n "$existing_tag" ]] || grep -Fxq "$version" <<< "$tags"; then
+            echo "Catalog version already exists."
+            exit 1
+          fi
+          gh release create "$version" release/* --title "$version" --notes "Reviewed catalog snapshot. See coverage.json for unresolved entries and attribution." --prerelease
+          if ! grep -Fxq "$channel" <<< "$tags"; then
+            gh release create "$channel" release/* --title "Catalog updates" --notes "Reviewed catalog and price snapshots; see coverage.json." --prerelease
+          else
+            gh release upload "$channel" release/catalog.json release/artwork.zip release/coverage.json --clobber
+            gh release upload "$channel" release/manifest.json --clobber
+          fi

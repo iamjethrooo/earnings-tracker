@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import copy
 import tempfile
 import unittest
@@ -17,6 +18,57 @@ class CatalogToolTests(unittest.TestCase):
         self.snapshot["Games"][0]["Genres"] = ["Action"]
         with self.assertRaises(ValueError):
             catalog.validate(self.snapshot)
+
+    def test_steam_identity_validation_matches_shared_fixtures(self):
+        fixtures = catalog.load(catalog.ROOT / "Tests/EarningsTracker.Tests/Fixtures/steam-identities.json")
+        self.snapshot.update(SchemaVersion=2, PublishedAt=fixtures["PublishedAt"])
+        for case in fixtures["Cases"]:
+            with self.subTest(case=case["Name"]):
+                self.snapshot["Games"][0].update(Reviewed=case.get("Reviewed", True), SteamIdentity={
+                    "State": "Reviewed", "ReviewedAt": fixtures["ReviewedAt"],
+                    "Provenance": "Synthetic review", "Apps": case["Apps"],
+                })
+                if case["Valid"]:
+                    catalog.validate(self.snapshot)
+                else:
+                    with self.assertRaisesRegex(ValueError, "Steam identity"):
+                        catalog.validate(self.snapshot)
+
+    def test_schema_two_enrichment_and_package_use_explicit_review_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            game = self.snapshot["Games"][0]
+            game.update(Reviewed=True, IgdbId=123)
+            catalog.save(path / "catalog.json", self.snapshot)
+            review = {"ReleaseApproved": True, "IgdbRedistributionApproved": True,
+                      "Mappings": {"a": {"Reviewed": True, "IgdbId": 123, "SteamIds": [1001]}}}
+            catalog.save(path / "review.json", review)
+            args = argparse.Namespace(catalog=path / "catalog.json", review=path / "review.json", cache=path / "cache",
+                artwork=path / "artwork", output=path / "enriched.json", refresh_igdb=False, steam_identities=True)
+            with patch.object(catalog, "request", side_effect=AssertionError("No provider calls")):
+                catalog.enrich(args)
+                self.assertEqual(catalog.load(args.output)["Games"][0]["SteamIdentity"]["State"], "Unresolved")
+                review["Mappings"]["a"]["SteamIdentity"] = {"State": "Reviewed", "ReviewedAt": "2026-01-01T00:00:00Z",
+                    "Provenance": "Exact synthetic PC experience", "Apps": [{"AppId": 1001, "Kind": "FullGame"}]}
+                catalog.save(args.review, review)
+                catalog.enrich(args)
+                args.catalog, args.output = args.output, path / "package"
+                with patch.object(catalog, "ROOT", path):
+                    catalog.save(path / "Data/games.json", [{"Name": "Example"}])
+                    args.steam_identities = False
+                    with self.assertRaisesRegex(ValueError, "offline verification"):
+                        catalog.package(args)
+                    args.steam_identities = True
+                    with self.assertRaisesRegex(ValueError, "minimum-client-version"):
+                        catalog.package(args)
+                    args.minimum_client_version = "1.5.0"
+                    catalog.package(args)
+            manifest = catalog.load(path / "package/manifest.json")
+            self.assertEqual(manifest["SchemaVersion"], 2)
+            self.assertEqual(manifest["MinimumClientVersion"], "1.5.0")
+            self.assertEqual(manifest["Version"], catalog.load(args.catalog)["Version"])
+            self.assertEqual((path / "package/catalog.json").read_bytes(), args.catalog.read_bytes())
+            self.assertEqual(catalog.load(path / "package/coverage.json")["SteamIdentityCoverage"]["Reviewed"], 1)
 
     def test_official_manual_metadata_has_no_fabricated_igdb_identity_and_reuses_artwork(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -62,12 +114,34 @@ class CatalogToolTests(unittest.TestCase):
     def test_release_is_blocked_without_explicit_review(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)
-            catalog.save(path / "catalog.json", self.snapshot)
+            catalog.save(path / "catalog.json", dict(self.snapshot, Version="catalog-test"))
             catalog.save(path / "review.json", {"ReleaseApproved": False})
             args = argparse.Namespace(catalog=path / "catalog.json", review=path / "review.json", artwork=path, output=path / "output")
             with self.assertRaisesRegex(ValueError, "ReleaseApproved"):
                 catalog.package(args)
             self.assertFalse((path / "output").exists())
+
+    def test_publication_requires_a_distinct_advancing_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            args = argparse.Namespace(catalog=path / "next.json", previous=path / "previous.json",
+                                      previous_manifest=path / "manifest.json")
+            catalog.save(args.previous, dict(self.snapshot, Version="catalog-b"))
+            manifest = {"SchemaVersion": 1, "Version": "catalog-b",
+                        "CatalogUrl": catalog.RELEASE_ROOT + "catalog-b/catalog.json",
+                        "Sha256": hashlib.sha256(args.previous.read_bytes()).hexdigest()}
+            catalog.save(args.previous_manifest, manifest)
+            for version, failure in [("catalog-a", "must advance"), ("catalog-b", "already exists"), ("catalog-c", None)]:
+                with self.subTest(version=version):
+                    catalog.save(args.catalog, dict(self.snapshot, Version=version))
+                    if failure:
+                        with self.assertRaisesRegex(ValueError, failure):
+                            catalog.check_order(args)
+                    else:
+                        catalog.check_order(args)
+            catalog.save(args.previous_manifest, dict(manifest, Sha256="0" * 64))
+            with self.assertRaisesRegex(ValueError, "does not bind"):
+                catalog.check_order(args)
 
     def test_bootstrap_report_accounts_for_entire_catalog(self):
         snapshot = catalog.load(catalog.ROOT / "Data/catalog.json")

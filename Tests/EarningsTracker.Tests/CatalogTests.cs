@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using EarningsTracker.Models;
 using EarningsTracker.Utilities;
 
@@ -47,12 +48,207 @@ public class CatalogTests
         Games = [new CatalogEntry { CatalogId = "stable-id", Name = "Example", Reviewed = true,
             Genres = ["Action"], Offers = [Offer()], Provenance = "Reviewed fixture" }]
     };
+
+    [Fact]
+    public void CatalogRollbackSurvivesRestartAndKeepsPostUpdateFinancialEdits()
+    {
+        var directory = Directory.CreateTempSubdirectory("earnings-catalog-");
+        try
+        {
+            var token = TestContext.Current.CancellationToken;
+            var connection = $"Data Source={Path.Combine(directory.FullName, "profile.db")};Pooling=False;Default Timeout=1";
+            var options = new DbContextOptionsBuilder<EarningsTracker.Data.AppDbContext>().UseSqlite(connection).Options;
+            var first = Snapshot("catalog-a");
+            var next = Snapshot("catalog-b");
+            next.PublishedAt = first.PublishedAt.AddSeconds(1);
+            next.SchemaVersion = 2;
+            next.Games[0].SteamIdentity = new("Unresolved", null, "Pending review", []);
+            next.Games[0].Genres = ["Simulation"];
+            CatalogService.RollbackVersions confirmed;
+            string sessionFingerprint;
+            string auditFingerprint;
+            using (var db = new EarningsTracker.Data.AppDbContext(options))
+            {
+                db.Database.Migrate();
+                Assert.Throws<InvalidDataException>(() => CatalogService.GetRollbackVersions(db));
+                db.Games.Add(new Game { Name = "Example" });
+                db.SaveChanges();
+                CatalogService.Activate(db, first, token);
+                CatalogService.Activate(db, next, token);
+                var session = new Session { GameName = "Example", GameId = db.Games.Single().Id, Earnings = 1m };
+                db.Sessions.Add(session);
+                db.SaveChanges();
+                SessionService.Update(session.Id, new Session
+                {
+                    RecordedDate = DateTime.Today, Duration = TimeSpan.FromMinutes(20), Earnings = 1.234m
+                }, options);
+                sessionFingerprint = SessionService.Snapshot(db.Sessions.AsNoTracking().Single());
+                auditFingerprint = JsonSerializer.Serialize(db.SessionChanges.Single());
+                confirmed = CatalogService.GetRollbackVersions(db);
+                Assert.Equal(new CatalogService.RollbackVersions("catalog-b", "catalog-a"), confirmed);
+            }
+            using (var db = new EarningsTracker.Data.AppDbContext(options))
+            {
+                var previous = CatalogService.GetSetting(db, "catalog.previous-payload");
+                CatalogService.SetSetting(db, "catalog.previous-payload", previous.Replace("catalog-a", "catalog-z"));
+                db.SaveChanges();
+                Assert.Throws<InvalidDataException>(() => CatalogService.Rollback(db, confirmed, token));
+                Assert.Equal("catalog-b", CatalogService.GetSetting(db, "catalog.version"));
+                using var retained = JsonDocument.Parse(previous);
+                var payload = retained.RootElement.GetProperty("Payload").GetString()!
+                    .Replace("\"SchemaVersion\": 1", "\"SchemaVersion\": 99");
+                CatalogService.SetSetting(db, "catalog.previous-payload", JsonSerializer.Serialize(new
+                {
+                    SchemaVersion = 99, Version = "catalog-a", Payload = payload,
+                    Sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))
+                }));
+                db.SaveChanges();
+                Assert.Throws<InvalidDataException>(() => CatalogService.Rollback(db, confirmed, token));
+                CatalogService.SetSetting(db, "catalog.previous-payload", previous);
+                db.SaveChanges();
+                Assert.Throws<InvalidDataException>(() => CatalogService.Rollback(db, confirmed with { Target = "stale-target" }, token));
+                db.Database.ExecuteSqlRaw("""
+                    CREATE TRIGGER fail_catalog_restore BEFORE INSERT ON GameGenres
+                    WHEN NEW.Name = 'Action' BEGIN SELECT RAISE(ABORT, 'synthetic write failure'); END;
+                    """);
+                Assert.Throws<DbUpdateException>(() => CatalogService.Rollback(db, confirmed, token));
+            }
+            using (var db = new EarningsTracker.Data.AppDbContext(options))
+            {
+                Assert.Equal("catalog-b", CatalogService.GetSetting(db, "catalog.version"));
+                Assert.Equal("Simulation", db.GameGenres.Single().Name);
+                Assert.Empty(CatalogService.GetSetting(db, "catalog.rejected.catalog-b"));
+                db.Database.ExecuteSqlRaw("DROP TRIGGER fail_catalog_restore");
+                using var competingWriter = db.Database.BeginTransaction();
+                using var blocked = new EarningsTracker.Data.AppDbContext(options);
+                Assert.Throws<Microsoft.Data.Sqlite.SqliteException>(() => CatalogService.Rollback(blocked, confirmed, token));
+            }
+            using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                var interruptedOptions = new DbContextOptionsBuilder<EarningsTracker.Data.AppDbContext>().UseSqlite(connection)
+                    .AddInterceptors(new InterruptCatalogWrite(cancellation)).Options;
+                using var interrupted = new EarningsTracker.Data.AppDbContext(interruptedOptions);
+                Assert.Throws<OperationCanceledException>(() => CatalogService.Rollback(interrupted, confirmed, cancellation.Token));
+            }
+            using (var db = new EarningsTracker.Data.AppDbContext(options))
+            {
+                Assert.Equal("catalog-b", CatalogService.GetSetting(db, "catalog.version"));
+                Assert.Equal("Simulation", db.GameGenres.Single().Name);
+                Assert.Empty(CatalogService.GetSetting(db, "catalog.rejected.catalog-b"));
+                CatalogService.Rollback(db, confirmed, token);
+            }
+            using (var db = new EarningsTracker.Data.AppDbContext(options))
+            {
+                Assert.Equal(1.234m, db.Sessions.Single().Earnings);
+                Assert.Equal(sessionFingerprint, SessionService.Snapshot(db.Sessions.AsNoTracking().Single()));
+                Assert.Equal(auditFingerprint, JsonSerializer.Serialize(db.SessionChanges.Single()));
+                Assert.Equal("Action", db.GameGenres.Single().Name);
+                Assert.Equal("stable-id", db.GameMetadata.Single().CatalogId);
+                Assert.Equal("catalog-a", CatalogService.GetSetting(db, "catalog.version"));
+                Assert.Null(CatalogService.ReadSteamIdentities(db));
+                Assert.Throws<InvalidDataException>(() => CatalogService.GetRollbackVersions(db));
+                Assert.Equal(CatalogService.ActivationStatus.Rejected, CatalogService.Activate(db, next, token).Status);
+                var replacement = Snapshot("catalog-c");
+                replacement.PublishedAt = next.PublishedAt.AddSeconds(1);
+                Assert.Equal(CatalogService.ActivationStatus.Applied, CatalogService.Activate(db, replacement, token).Status);
+            }
+        }
+        finally { directory.Delete(recursive: true); }
+    }
+
+    private sealed class InterruptCatalogWrite(CancellationTokenSource cancellation) : SaveChangesInterceptor
+    {
+        public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
+        {
+            cancellation.Cancel();
+            return result;
+        }
+    }
     internal static StoreOffer Offer() => new()
     {
         Source = "Steam", Url = "https://store.steampowered.com/app/123/", Currency = "PHP",
         RegularPrice = 1000, SalePrice = 500, Kind = AcquisitionKind.Purchase,
         VerifiedAt = DateTime.UtcNow.AddHours(-1), Provenance = "IsThereAnyDeal"
     };
+
+    [Fact]
+    public void SteamIdentityValidationMatchesSharedFixtures()
+    {
+        using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "steam-identities.json")));
+        var root = fixtures.RootElement;
+        foreach (var test in root.GetProperty("Cases").EnumerateArray())
+        {
+            var payload = JsonSerializer.Serialize(new
+            {
+                SchemaVersion = 2, Version = "fixture", PublishedAt = root.GetProperty("PublishedAt"),
+                Games = new[] { new { CatalogId = "a", Name = "Example",
+                    Reviewed = !test.TryGetProperty("Reviewed", out var reviewed) || reviewed.GetBoolean(),
+                    SteamIdentity = new { State = "Reviewed", ReviewedAt = root.GetProperty("ReviewedAt"),
+                        Provenance = "Synthetic review", Apps = test.GetProperty("Apps") } } }
+            });
+            var failure = Record.Exception(() => CatalogService.Parse(payload));
+            Assert.True(test.GetProperty("Valid").GetBoolean() ? failure == null : failure is InvalidDataException or JsonException,
+                $"{test.GetProperty("Name").GetString()}: {failure}");
+        }
+    }
+
+    [Fact]
+    public void SchemaTwoPersistsReviewedLinksAndWithdrawalsWithoutRewritingManualOwnership()
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        var game = new Game { Name = "Example" };
+        db.Games.Add(game);
+        db.SaveChanges();
+        db.GameOwnership.Add(new GameOwnership { GameId = game.Id, IsOwned = true, PurchaseAmount = 75m });
+        db.SaveChanges();
+        CatalogService.Import(db, Snapshot());
+
+        var snapshot = Snapshot("schema-two");
+        snapshot.SchemaVersion = 2;
+        var reviewTime = "2026-01-01T00:00:00Z";
+        snapshot.Games[0].SteamIdentity = new("Reviewed", reviewTime, "Explicit review", [new(456, "FullGame")]);
+        snapshot.Games.Add(new() { CatalogId = "unlinked", Name = "Catalog only", SteamIdentity = new("Unresolved", null, "No local match", []) });
+        CatalogSnapshot Parse(CatalogSnapshot input) => CatalogService.Parse(JsonSerializer.Serialize(input, CatalogService.JsonOptions));
+        var parsed = Parse(snapshot);
+        Assert.Single(CatalogService.Import(db, parsed));
+        Assert.Empty(CatalogService.Import(db, parsed));
+        using var reopened = database.CreateContext();
+        var metadata = reopened.GameMetadata.Single();
+        var active = Assert.IsType<CatalogService.SteamIdentityDocument>(CatalogService.ReadSteamIdentities(reopened));
+        Assert.Equal(parsed.PayloadHash, active.Sha256);
+        Assert.Equal("Explicit review", active.Identities[metadata.CatalogId].Provenance);
+        Assert.Contains("unlinked", active.Identities.Keys);
+        var library = new SteamLibrarySnapshot("76561197960265729", DateTime.UtcNow, [123, 456]);
+        Assert.True(SteamGameMatching.IsOwned(metadata, [], library, active));
+        Assert.False(SteamGameMatching.IsOwned(metadata, [Offer()], library with { AppIds = [123] }, active));
+
+        snapshot.Games[0].SteamIdentity = new("Withdrawn", reviewTime, "Corrected", []);
+        Assert.Throws<InvalidDataException>(() => CatalogService.Import(db, Parse(snapshot)));
+        snapshot.Version = "withdrawal";
+        CatalogService.Import(db, Parse(snapshot));
+        CatalogService.Import(db, Snapshot("late-schema-one"));
+        using var after = database.CreateContext();
+        var withdrawn = Assert.IsType<CatalogService.SteamIdentityDocument>(CatalogService.ReadSteamIdentities(after));
+        Assert.Equal("withdrawal", withdrawn.Version);
+        Assert.False(SteamGameMatching.IsOwned(after.GameMetadata.Single(), [Offer()], library, withdrawn));
+        Assert.Equal(game.Id, after.GameMetadata.Single().GameId);
+        Assert.Single(after.Games);
+        var manual = after.GameOwnership.Single();
+        Assert.True(manual.IsOwned);
+        Assert.Equal(75m, manual.PurchaseAmount);
+
+        var conflict = Parse(snapshot);
+        conflict.Version = "conflict";
+        conflict.PublishedAt = conflict.PublishedAt.AddSeconds(1);
+        conflict.Games[0].Summary = "Must roll back";
+        conflict.Games[1].Aliases = ["Example"];
+        conflict.Games[0].Name = "Renamed catalog entry";
+        Assert.Throws<InvalidDataException>(() => CatalogService.Import(db, Parse(conflict)));
+        using var afterConflict = database.CreateContext();
+        Assert.Equal("withdrawal", CatalogService.ReadSteamIdentities(afterConflict)?.Version);
+        Assert.Equal("", afterConflict.GameMetadata.Single().Summary);
+    }
 
     [Fact]
     public void MultiplayerMetadataRequiresEvidenceRoundTripsAndLegacyCatalogsStayCompatible()
@@ -115,8 +311,9 @@ public class CatalogTests
             db.SaveChanges(); db.Database.Migrate();
             db.GameOwnership.Add(new GameOwnership { GameId = id, IsOwned = true, PurchaseAmount = 200, Currency = "PHP" });
             CatalogService.SetSetting(db, "subscription.PC Game Pass", "true"); db.SaveChanges();
-            CatalogService.Import(db, Snapshot());
-            CatalogService.Import(db, Snapshot());
+            var initial = Snapshot();
+            CatalogService.Import(db, initial);
+            CatalogService.Import(db, initial);
         }
         using (var db = database.CreateContext())
         {
@@ -229,6 +426,7 @@ public class CatalogTests
         Assert.Equal("Action", reopened.GameGenres.Single().Name);
         Assert.Single(reopened.StoreOffers);
         Assert.Equal("v1", CatalogService.GetSetting(reopened, "catalog.version"));
+        Assert.Empty(CatalogService.GetSetting(reopened, "catalog.previous-payload"));
     }
 
     [Fact]
@@ -279,10 +477,10 @@ public class CatalogTests
         var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests));
         using var client = new HttpClient(handler);
         var updates = new CatalogUpdates(database.Options, client);
-        var message = await updates.RefreshAsync(false);
+        var message = await updates.RefreshAsync(false, TestContext.Current.CancellationToken);
         Assert.Contains("keeping saved data", message); Assert.Contains("keeping saved rates", message);
         Assert.Equal(2, handler.Calls);
-        Assert.Equal("", await updates.RefreshAsync(false)); Assert.Equal(2, handler.Calls);
+        Assert.Equal("", await updates.RefreshAsync(false, TestContext.Current.CancellationToken)); Assert.Equal(2, handler.Calls);
         Assert.Single(db.StoreOffers);
     }
 
@@ -291,15 +489,16 @@ public class CatalogTests
     {
         using var database = new TestDatabase();
         using (var db = database.CreateContext()) { db.Games.Add(new Game { Name = "Example" }); db.SaveChanges(); }
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(Snapshot(), CatalogService.JsonOptions);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(Snapshot("catalog-test"), CatalogService.JsonOptions);
         var manifest = JsonSerializer.Serialize(new CatalogManifest { SchemaVersion = 1,
-            CatalogUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-latest/catalog.json",
+            CatalogUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-test/catalog.json",
             Sha256 = Convert.ToHexString(SHA256.HashData(bytes)) });
-        using var client = new HttpClient(new FakeHandler(request => Ok(request.RequestUri!.AbsolutePath.EndsWith("manifest.json")
+        using var client = new HttpClient(new FakeHandler(request => request.RequestUri!.AbsoluteUri == CatalogUpdates.SchemaTwoManifestUrl
+            ? new(HttpStatusCode.NotFound) : Ok(request.RequestUri.AbsolutePath.EndsWith("manifest.json")
             ? manifest : request.RequestUri.Host == "api.frankfurter.dev"
                 ? $"[{{\"date\":\"{DateTime.UtcNow:yyyy-MM-dd}\",\"base\":\"USD\",\"quote\":\"PHP\",\"rate\":50}}]"
                 : Encoding.UTF8.GetString(bytes))));
-        await new CatalogUpdates(database.Options, client).RefreshAsync(false);
+        await new CatalogUpdates(database.Options, client).RefreshAsync(false, TestContext.Current.CancellationToken);
         using var reopened = database.CreateContext();
         Assert.Single(reopened.GameMetadata); Assert.Equal(50m, reopened.ExchangeRates.Single().PerUsd);
     }
@@ -329,13 +528,151 @@ public class CatalogTests
         using var database = new TestDatabase(); using var db = database.CreateContext();
         db.Games.Add(new Game { Name = "Example" }); db.SaveChanges(); CatalogService.Import(db, Snapshot());
         var manifest = JsonSerializer.Serialize(new CatalogManifest { SchemaVersion = 1,
-            CatalogUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/test/catalog.json", Sha256 = new string('a', 64) });
-        using var client = new HttpClient(new FakeHandler(request => request.RequestUri!.AbsolutePath.EndsWith("manifest.json")
+            CatalogUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-test/catalog.json", Sha256 = new string('a', 64) });
+        using var client = new HttpClient(new FakeHandler(request => request.RequestUri!.AbsoluteUri == CatalogUpdates.SchemaTwoManifestUrl
+            ? new(HttpStatusCode.NotFound) : request.RequestUri.AbsolutePath.EndsWith("manifest.json")
             ? Ok(manifest) : request.RequestUri.Host == "api.frankfurter.dev" ? new(HttpStatusCode.ServiceUnavailable)
                 : Ok(JsonSerializer.Serialize(Snapshot("v2"), CatalogService.JsonOptions))));
-        Assert.Contains("keeping saved data", await new CatalogUpdates(database.Options, client).RefreshAsync(false));
+        Assert.Contains("keeping saved data", await new CatalogUpdates(database.Options, client).RefreshAsync(false, TestContext.Current.CancellationToken));
         using var reopened = database.CreateContext();
         Assert.Equal("v1", CatalogService.GetSetting(reopened, "catalog.version")); Assert.Single(reopened.StoreOffers);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task SchemaTwoCannotReplaceTheCatalogThroughTheSchemaOneFeed(int manifestSchema)
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        db.Games.Add(new Game { Name = "Example" });
+        db.SaveChanges();
+        CatalogService.Import(db, Snapshot());
+        var incoming = Snapshot("catalog-test");
+        incoming.SchemaVersion = 2;
+        incoming.Games[0].SteamIdentity = new("Unresolved", null, "No mapping", []);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(incoming, CatalogService.JsonOptions);
+        var manifest = JsonSerializer.Serialize(new CatalogManifest { SchemaVersion = manifestSchema,
+            CatalogUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-test/catalog.json",
+            Sha256 = Convert.ToHexString(SHA256.HashData(bytes)) });
+        var handler = new FakeHandler(request => request.RequestUri!.AbsoluteUri == CatalogUpdates.SchemaTwoManifestUrl
+            ? new(HttpStatusCode.NotFound) : request.RequestUri.AbsolutePath.EndsWith("manifest.json")
+            ? Ok(manifest) : request.RequestUri.Host == "api.frankfurter.dev" ? new(HttpStatusCode.ServiceUnavailable)
+                : Ok(Encoding.UTF8.GetString(bytes)));
+        using var client = new HttpClient(handler);
+        Assert.Contains("keeping saved data", await new CatalogUpdates(database.Options, client).RefreshAsync(false, TestContext.Current.CancellationToken));
+        Assert.Equal(manifestSchema == 2 ? 3 : 4, handler.Calls);
+        using var reopened = database.CreateContext();
+        Assert.Equal("v1", CatalogService.GetSetting(reopened, "catalog.version"));
+        Assert.Null(CatalogService.ReadSteamIdentities(reopened));
+    }
+
+    [Fact]
+    public async Task SchemaTwoChecksClientAndAppliesOnlyTheBoundPayload()
+    {
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            db.Games.Add(new Game { Name = "Example" });
+            db.SaveChanges();
+            CatalogService.Import(db, Snapshot("catalog-initial"));
+        }
+        var snapshot = Snapshot("catalog-next");
+        snapshot.PublishedAt = DateTime.UtcNow;
+        snapshot.SchemaVersion = 2;
+        snapshot.Games[0].SteamIdentity = new("Unresolved", null, "Pending review", []);
+        snapshot.Games.Add(new() { CatalogId = "unmatched", Name = "New catalog title",
+            SteamIdentity = new("Unresolved", null, "Pending review", []) });
+        var asset = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-next/catalog.json";
+        var manifest = new CatalogManifest
+        {
+            SchemaVersion = 2, Version = "catalog-next", CatalogUrl = asset, MinimumClientVersion = "2.0.0"
+        };
+        var settings = new AppSettings(database.Options);
+        var payloadRequests = 0;
+        async Task<string> Refresh(Version clientVersion)
+        {
+            settings.Set("updates.lastAttempt", "");
+            var payload = JsonSerializer.Serialize(snapshot, CatalogService.JsonOptions);
+            manifest.Sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
+            using var client = new HttpClient(new FakeHandler(request =>
+            {
+                var uri = request.RequestUri!.AbsoluteUri;
+                if (uri == CatalogUpdates.SchemaTwoManifestUrl) return Ok(JsonSerializer.Serialize(manifest));
+                if (uri != asset) return new(HttpStatusCode.ServiceUnavailable);
+                payloadRequests++;
+                return Ok(payload);
+            }));
+            return await new CatalogUpdates(database.Options, client, clientVersion)
+                .RefreshAsync(false, TestContext.Current.CancellationToken);
+        }
+
+        Assert.Contains("requires app version 2.0.0", await Refresh(new(1, 9, 0)));
+        Assert.Equal(0, payloadRequests);
+        Assert.Empty(settings.Get("updates.catalogSuccess"));
+        snapshot.Version = "catalog-wrong";
+        Assert.Contains("rejected", await Refresh(new(2, 0, 0)));
+        Assert.Equal("catalog-initial", settings.Get("catalog.version"));
+        snapshot.Version = "catalog-next";
+        Assert.Contains("applied · 1 unmatched", await Refresh(new(2, 0, 0)));
+        Assert.Contains("is up to date", await Refresh(new(2, 0, 0)));
+        snapshot.Games[0].Summary = "Changed bytes under the same version";
+        Assert.Contains("rejected", await Refresh(new(2, 0, 0)));
+        using var reopened = database.CreateContext();
+        Assert.Equal("catalog-next", settings.Get("catalog.version"));
+        Assert.Contains("catalog-initial", settings.Get("catalog.previous-payload"));
+        Assert.Contains("unmatched", CatalogService.ReadSteamIdentities(reopened)!.Identities.Keys);
+        Assert.Empty(reopened.GameMetadata.Single().Summary);
+    }
+
+    [Fact]
+    public async Task CatalogRejectsRedirectOutsideTrustedAssetHosts()
+    {
+        using var database = new TestDatabase();
+        var handler = new FakeHandler(request => request.RequestUri!.AbsoluteUri == CatalogUpdates.SchemaTwoManifestUrl
+            ? new(HttpStatusCode.Found) { Headers = { Location = new Uri("https://untrusted.example/manifest.json") } }
+            : new(HttpStatusCode.ServiceUnavailable));
+        using var client = new HttpClient(handler);
+        var result = await new CatalogUpdates(database.Options, client)
+            .RefreshAsync(false, TestContext.Current.CancellationToken);
+        Assert.Contains("Catalog update rejected", result);
+        Assert.Equal(2, handler.Calls);
+    }
+
+    [Fact]
+    public void OmittedEntryClearsEnrichmentAndKeepsItsStableLink()
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        var game = new Game { Name = "Example" };
+        db.Games.Add(game);
+        db.SaveChanges();
+        CatalogService.Import(db, Snapshot("catalog-initial"));
+        var removal = Snapshot("catalog-removal");
+        removal.PublishedAt = DateTime.UtcNow.AddSeconds(-10);
+        removal.Games.Clear();
+        CatalogService.Import(db, removal);
+        Assert.Empty(db.StoreOffers);
+        Assert.Empty(db.GameGenres);
+        Assert.Equal(game.Id, db.GameMetadata.Single().GameId);
+        Assert.False(db.GameMetadata.Single().Reviewed);
+
+        var reintroduced = Snapshot("catalog-restored");
+        reintroduced.PublishedAt = removal.PublishedAt.AddSeconds(1);
+        reintroduced.Games[0].Name = "New catalog name";
+        Assert.Empty(CatalogService.Import(db, reintroduced));
+        Assert.Equal(game.Id, db.GameMetadata.Single().GameId);
+        Assert.Single(db.StoreOffers);
+        Assert.Equal("Example", db.Games.Single().Name);
+    }
+
+    [Theory]
+    [InlineData("""{"Version":"catalog-test","PublishedAt":"2026-01-01T00:00:00Z","Games":[]}""")]
+    [InlineData("""{"SchemaVersion":1,"Version":"catalog-test","PublishedAt":"2026-01-01","Games":[]}""")]
+    [InlineData("""{"SchemaVersion":1,"Version":"catalog-test","PublishedAt":"2999-01-01T00:00:00Z","Games":[]}""")]
+    public void InvalidSnapshotHeadersAreRejected(string payload)
+    {
+        Assert.True(Record.Exception(() => CatalogService.Parse(payload)) is JsonException or InvalidDataException);
     }
 
     [Fact]

@@ -43,6 +43,45 @@ public class UxPolishTests(WpfTestHost host)
     });
 
     [Fact]
+    public Task FilterSearchHintSharesTheTextInsertionPosition() => host.RunAsync(() =>
+    {
+        var search = new TextBox
+        {
+            Style = (Style)Application.Current.FindResource("FilterSearchBox"),
+            Tag = "Search games…"
+        };
+        search.Measure(new Size(300, 34));
+        search.Arrange(new Rect(0, 0, 300, 34));
+        var hint = (TextBlock)search.Template.FindName("Hint", search);
+        Assert.Equal(Visibility.Visible, hint.Visibility);
+        var hintOrigin = hint.TranslatePoint(new Point(), search);
+
+        search.Text = "Search games…";
+        search.UpdateLayout();
+        Assert.Equal(Visibility.Collapsed, hint.Visibility);
+        var insertion = search.GetRectFromCharacterIndex(0);
+        Assert.Equal(hintOrigin.X, insertion.X, precision: 1);
+        Assert.Equal(hintOrigin.Y, insertion.Y, precision: 1);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task ToolTipsUseTheSharedDarkSurfaceAndText() => host.RunAsync(() =>
+    {
+        var tooltip = new ToolTip { Content = "Clear search and filters" };
+        tooltip.Measure(new Size(300, 100));
+        tooltip.Arrange(new Rect(0, 0, 300, 100));
+
+        var surface = Assert.IsType<Border>(VisualTreeHelper.GetChild(tooltip, 0));
+        Assert.Same(Application.Current.FindResource("DialogBackgroundColor"), surface.Background);
+        var content = Assert.IsType<ContentPresenter>(surface.Child);
+        var text = Assert.IsType<TextBlock>(VisualTreeHelper.GetChild(content, 0));
+        Assert.Equal(tooltip.Content, text.Text);
+        Assert.Same(Application.Current.FindResource("DefaultTextColor"), text.Foreground);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task WindowChromeTracksProgrammaticStateChanges() => host.RunAsync(async () =>
     {
         var window = new MainWindow(_ => new UserControl()) { ShowInTaskbar = false, Left = -10000, Top = -10000 };

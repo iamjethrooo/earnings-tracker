@@ -14,5 +14,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
     <ProjectReference Include="../../EarningsTracker.csproj" />
     <Using Include="Xunit" />
+    <None Update="Fixtures/steam-identities.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

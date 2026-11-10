@@ -241,7 +241,7 @@ The primary toolbar row contains an expanding search field with an icon, a separ
 sort selector and a secondary Clear filters action. The quick-filter row contains Playable now,
 Owned, Bookmarked, Multiplayer, genre/store and More filters; it wraps at narrower widths. Toolbar controls
 are 34 DIPs high, with 8-DIP filter gaps and purple selected states. More filters holds
-Free-to-play, Steam owned, PC Game Pass and Show archived. Its count includes every checked
+Free-to-play, Steam library, PC Game Pass and Show archived. Its count includes every checked
 secondary option, including Show archived. Toggling an option keeps the popover open; Escape
 closes it and returns focus to More filters. Tab stays within the open popover.
 Access flags remain independently combinable, and the existing matching count stays above the
@@ -267,9 +267,10 @@ primary cards. Offer headings identify store/edition/region, with prominent sour
 checked dates, saved quotes and source evidence remain accessible. Archived opportunities are labeled
 historical. Saved same-name rate identities and cap-reset audit values are separate read-only
 disclosures. Session history scrolls to the existing status filters and bounded session rows.
-Existing audited cap-reset and ownership dialogs remain authoritative. Steam ownership uses the
-last successful library sync configured in Settings; manual ownership and purchase costs remain
-separate. Game details does not show an installation placeholder.
+Existing cap-reset and ownership dialogs remain authoritative. A separate Steam badge identifies
+matches from the last successful library sync configured in Settings. Details shows the sync time
+or the reason evidence is unavailable. Manual ownership remains editable alongside the badge and
+drives the Owned filter. See [Steam library access and ownership evidence](Steam-Library.md).
 Acquisition offers remain separate, individually selectable cards. Archived details keep normal
 text contrast and identify the saved rate as historical. When a game has no sessions, guidance
 directs the user to the Sessions page for importing them.
@@ -292,6 +293,23 @@ Initial loading/failure, empty library and filtered-empty remain distinct.
 Isolated fixtures cover narrow/default/wide rendering, keyboard entry/focus return, a 144-DPI
 bitmap export, 1,200-game recycling and 10,000-session detail scrolling. These do not certify
 physical keyboard/mouse/wheel input, screen-reader announcements or real monitor-DPI transitions.
+
+### Personal game rankings (PRO-18)
+
+[PRO-18](https://linear.app/botlog/issue/PRO-18/evaluate-grindability-and-replayability-rankings) adds two optional personal sorts in Games. **Ease of grinding** helps users choose a game for a routine earning session. **Replay appeal** helps them choose a game they feel like returning to.
+
+| Personal rating | Question in Game Details | Choices from highest to lowest |
+| --- | --- | --- |
+| Ease of grinding | How easy is it for you to keep playing this game during a typical earning session? Consider setup time, interruptions, and sustained effort. | Easy, Moderate, Hard |
+| Replay appeal | How much do you want to return to this game even when earnings are set aside? Consider variety and enjoyment. | High, Medium, Low |
+
+Open **My ratings** in Game Details and choose **Save ratings**. Set or clear each field independently. A saved personal rating always sets that game's rank for that dimension. The existing rate and cycle figures remain available to weigh earning opportunities. Session history, earnings, and Steam observations have no effect on ratings.
+
+An unrated game can receive a suggestion from other games the user rated. At least half of the combined unique genres must be shared. Both games need reviewed catalog metadata with genre tags. For each dimension, the app averages the applicable personal ratings on a three-step scale, weighting each by its share of overlapping genres. It rounds to the nearest step, with exact midpoints rounded up. Only personal ratings contribute, so suggestions cannot spread through chains of games. A new personal rating or a catalog correction recalculates suggestions.
+
+For example, if a game tagged Action is rated **Easy** to grind, a game tagged Action and Puzzle can get **Suggested grinding ease · Easy**. A Puzzle-only game has no genre in common with the rated game, so it gets no suggestion from it. A personal **Hard** rating for the Action/Puzzle game overrides its suggestion.
+
+In Games, **My ease of grinding** and **My replay appeal** sort filtered results by the selected rating or suggestion. Games with neither appear last. Within each band, ties use name then local game ID, both ascending. The row identifies personal and suggested ratings, and the tooltip shows how many rated games contributed to the suggestion. The starting sort stays the same. Personal ratings are saved by local game ID in the profile, so same-name entries can be rated separately. Suggestions are calculated on load and after edits.
 
 ## Analytics Dashboard (PRO-16)
 

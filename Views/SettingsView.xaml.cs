@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -31,7 +32,48 @@ public partial class SettingsView : UserControl
         SteamAutomatic.IsChecked = model.SteamAutomatic;
         loadingPreferences = false;
         UpdateKeyStatus();
+        UpdateSteamInstallStatus();
         Unloaded += (_, _) => { ApiKey.Clear(); SteamKey.Clear(); steamWork?.Cancel(); };
+    }
+    private void UpdateSteamInstallStatus()
+    {
+        try
+        {
+            var folders = new AppSettings(options).Get(SteamInstallations.SettingsKey);
+            SteamInstallStatus.Text = folders.Length == 0 ? "Installation indicators are off." : "Installation indicators are on.";
+        }
+        catch
+        {
+            SteamInstallStatus.Text = "Installation preference could not be read.";
+        }
+    }
+
+    private void ChooseSteamFolders_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Choose local Steam steamapps folders", Multiselect = true };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+        var folders = dialog.FolderNames.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (folders.Length > SteamInstallations.MaxFolders || folders.Any(folder => !SteamInstallations.IsLibraryFolder(folder)))
+        {
+            SteamInstallStatus.Text = $"Choose up to {SteamInstallations.MaxFolders} local folders named steamapps.";
+            return;
+        }
+        SaveSteamFolders(JsonSerializer.Serialize(folders));
+    }
+
+    private void DisableSteamFolders_Click(object sender, RoutedEventArgs e) => SaveSteamFolders("");
+
+    private void SaveSteamFolders(string folders)
+    {
+        try
+        {
+            new AppSettings(options).Set(SteamInstallations.SettingsKey, folders);
+            UpdateSteamInstallStatus();
+        }
+        catch
+        {
+            SteamInstallStatus.Text = "Installation preference could not be saved. Try again.";
+        }
     }
     private async void SteamLink_Click(object sender, RoutedEventArgs e)
     {
@@ -41,7 +83,7 @@ public partial class SettingsView : UserControl
         await RunSteamAsync(async token =>
         {
             await steamLibrary.LinkAsync(profile, key, token);
-            return "Steam linked and synced. Matching catalog games are now marked owned.";
+            return "Steam linked and synced. Matching games appear under Steam library.";
         });
     }
     private async void SteamSync_Click(object sender, RoutedEventArgs e)
@@ -69,11 +111,12 @@ public partial class SettingsView : UserControl
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         { SteamFeedback.Text = "Steam operation cancelled. Reopen Settings to see the saved link."; }
         catch (ArgumentException ex) { SteamFeedback.Text = ex.Message; }
+        catch (SteamRateLimitException ex) { SteamFeedback.Text = ex.Message; }
         catch (Exception ex)
         {
             // Never log HTTP exception messages: they can contain the Steam key.
             System.Diagnostics.Trace.TraceWarning($"Steam operation failed ({ex.GetType().Name}).");
-            SteamFeedback.Text = "Steam could not complete the request. Check your profile, API key and Game details privacy, then retry. Saved ownership is kept.";
+            SteamFeedback.Text = "Steam could not complete the request. Check your profile, API key and Game details privacy, then retry. Saved library evidence is kept.";
         }
         finally { steamWork = null; SteamControls.IsEnabled = true; SteamKey.Clear(); }
     }
@@ -149,7 +192,8 @@ public partial class SettingsView : UserControl
     }
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        Refresh.IsEnabled = false; ShowFeedback("Checking catalog, exchange rates, and live prices…");
+        Refresh.IsEnabled = RollbackCatalog.IsEnabled = false;
+        ShowFeedback("Checking catalog, exchange rates, and live prices…");
         try
         {
             var result = await new CatalogUpdates(options).RefreshAsync(true);
@@ -159,7 +203,45 @@ public partial class SettingsView : UserControl
                 ? FeedbackTone.Warning : FeedbackTone.Neutral);
         }
         catch { ShowFeedback("Update failed. Saved data remains available. Retry later.", FeedbackTone.Error); }
-        finally { Refresh.IsEnabled = true; }
+        finally { Refresh.IsEnabled = RollbackCatalog.IsEnabled = true; }
+    }
+    private async void RollbackCatalog_Click(object sender, RoutedEventArgs e)
+    {
+        Refresh.IsEnabled = RollbackCatalog.IsEnabled = false;
+        bool committed = false;
+        try
+        {
+            var versions = await Task.Run(() =>
+            {
+                using var db = options == null ? new AppDbContext() : new AppDbContext(options);
+                return CatalogService.GetRollbackVersions(db);
+            });
+            var confirmation = MessageBox.Show(Window.GetWindow(this),
+                $"Restore catalog {versions.Target} in place of {versions.Active}? This restores catalog metadata and mappings. Your financial records, manual ownership and settings are preserved.",
+                "Confirm catalog restore", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (confirmation != MessageBoxResult.Yes) return;
+
+            await Task.Run(() =>
+            {
+                using var db = options == null ? new AppDbContext() : new AppDbContext(options);
+                CatalogService.Rollback(db, versions);
+            });
+            committed = true;
+            model.Reload();
+            ShowFeedback($"Catalog {versions.Target} restored.", FeedbackTone.Success);
+        }
+        catch (InvalidDataException ex) when (!committed)
+        {
+            ShowFeedback(ex.Message, FeedbackTone.Warning);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError(ex.ToString());
+            ShowFeedback(committed
+                ? "Catalog restored, but Settings could not refresh. Reopen Settings."
+                : "Catalog restore could not be completed. Check the previous version and retry.", FeedbackTone.Warning);
+        }
+        finally { Refresh.IsEnabled = RollbackCatalog.IsEnabled = true; }
     }
     private void Export_Click(object sender, RoutedEventArgs e)
     {

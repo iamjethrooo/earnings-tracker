@@ -38,7 +38,11 @@
       <Button x:Name="Refresh" DockPanel.Dock="Right" Content="Refresh now" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="8,0,0,0"/>
       <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
      </DockPanel>
-     <Expander Header="Update details"><TextBlock Text="{Binding UpdateStatus}" Margin="0,8,0,0"/></Expander>
+     <Expander Header="Update details"><StackPanel Margin="0,8,0,0">
+      <TextBlock Text="{Binding UpdateStatus}"/>
+      <Button x:Name="RollbackCatalog" Content="Restore previous catalog" Click="RollbackCatalog_Click"
+              Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+     </StackPanel></Expander>
     </StackPanel></Border>
     <Border Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
      <DockPanel>
@@ -68,25 +72,33 @@
    </Grid>
    <Border x:Name="SteamPanel" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Steam account" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="Sync Steam to mark matching games as owned." Foreground="{StaticResource SecondaryTextColor}"/>
-    <TextBlock Text="{Binding SteamStatus}" AutomationProperties.LiveSetting="Polite"/>
-    <TextBlock x:Name="SteamFeedback" AutomationProperties.LiveSetting="Polite"/>
+    <TextBlock Text="Link Steam to show library matches alongside manual ownership." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock Text="{Binding SteamStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+    <TextBlock x:Name="SteamFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
     <StackPanel x:Name="SteamControls">
      <Label Target="{Binding ElementName=SteamProfile}" Content="Steam profile URL or ID" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
      <TextBox x:Name="SteamProfile" Style="{StaticResource ModalTextBox}" MaxLength="250" Margin="0,0,0,8" AutomationProperties.Name="Steam profile URL or SteamID64"/>
      <Label Target="{Binding ElementName=SteamKey}" Content="Steam Web API key" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
      <PasswordBox x:Name="SteamKey" MaxLength="32" Padding="8" Background="{StaticResource DefaultBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" AutomationProperties.Name="Personal Steam Web API key"/>
-     <TextBlock Text="Stored in Windows Credential Manager." Foreground="{StaticResource SecondaryTextColor}" Margin="0,6,0,8"/>
+     <TextBlock Text="Sync sends your Steam ID and key to Steam. The key is saved in Windows Credential Manager after a successful link. Setting Game details to Public changes who can see them outside this app." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}" Margin="0,6,0,8"/>
      <WrapPanel>
-      <Button x:Name="SteamLink" Content="Link account" Click="SteamLink_Click" Style="{StaticResource PrimaryButton}" Padding="10,7" Margin="0,0,8,8"/>
+      <Button x:Name="SteamLink" Content="Link or change account" Click="SteamLink_Click" Style="{StaticResource PrimaryButton}" Padding="10,7" Margin="0,0,8,8"/>
       <Button x:Name="SteamSync" Content="Sync now" Click="SteamSync_Click" IsEnabled="{Binding SteamLinked}" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8"/>
-      <Button x:Name="SteamUnlink" Content="Unlink" ToolTip="Removes Steam ownership only. Manual ownership and purchase costs are kept." Click="SteamUnlink_Click" IsEnabled="{Binding SteamLinked}" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8"/>
+      <Button x:Name="SteamUnlink" Content="Unlink" ToolTip="Removes the saved Steam library and key. Manual ownership and purchase costs are kept." Click="SteamUnlink_Click" IsEnabled="{Binding SteamLinked}" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8"/>
       <Button Content="Get a Steam API key" Click="SteamKeyHelp_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8"/>
      </WrapPanel>
      <CheckBox x:Name="SteamAutomatic" Content="Sync when Games opens (at most daily)" Click="SteamAutomatic_Click" Margin="0,0,0,4"/>
+     <Expander Header="Local Steam installation indicators" Margin="0,4,0,4"><StackPanel Margin="0,8,0,0">
+      <TextBlock Text="Choose local steamapps folders to show installation evidence in game details. The app reads Steam manifests in those folders. This works without linking a Steam account." TextWrapping="Wrap"/>
+      <TextBlock x:Name="SteamInstallStatus" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,4"/>
+      <WrapPanel>
+       <Button Content="Choose Steam folders" Click="ChooseSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+       <Button Content="Disable install indicators" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
+      </WrapPanel>
+     </StackPanel></Expander>
      <Expander Header="Sync details"><StackPanel Margin="0,8,0,0">
-      <TextBlock Text="Use your own API key. If your library is unavailable, set Steam → Edit Profile → Privacy Settings → Game details to Public." Foreground="{StaticResource SecondaryTextColor}"/>
-      <TextBlock Text="Owned and Playable now use the last successful sync. Refresh catalog also syncs Steam. Unavailable libraries keep saved ownership. Unlinking removes Steam ownership only; manual ownership and purchase costs stay saved. Unmatched games remain manual." Foreground="{StaticResource SecondaryTextColor}"/>
+      <TextBlock Text="Use your own API key. If you choose to share your library, review Game details under Steam → Edit Profile → Privacy Settings." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
+      <TextBlock Text="Steam library uses the last successful sync. Owned uses manual ownership. Playable now also considers current free offers and selected subscriptions. Unlinking keeps manual ownership and purchase costs." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
      </StackPanel></Expander>
     </StackPanel>
    </StackPanel></Border>

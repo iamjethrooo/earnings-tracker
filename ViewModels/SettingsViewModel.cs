@@ -47,9 +47,9 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     {
         using var db = settings.Context();
         var steam = SteamLibrary.Read(db);
-        SteamLinked = steam != null;
+        SteamLinked = SteamLibrary.HasSavedLink(db);
         SteamProfile = steam?.SteamId ?? "";
-        SteamStatus = SteamLibrary.Status(db);
+        SteamStatus = SteamLibrary.Status(db, steam);
         var activeIds = db.Games.Where(g => !g.IsArchived).Select(g => g.Id).ToHashSet();
         var entries = db.SubscriptionAvailability.AsNoTracking().ToList().Where(s => activeIds.Contains(s.GameId))
             .GroupBy(s => s.GameId).Select(group => CatalogPresentation.GamePassEntry(group)).OfType<EarningsTracker.Models.SubscriptionAvailability>().ToList();
@@ -60,7 +60,9 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
         var unverified = entries.Count - current - stale - removed;
         SubscriptionStatus = $"{current} current · {stale} outdated · {removed} not included · {unverified} unverified. "
             + "Outdated availability may have changed. Stale verification does not confirm removal or grant Playable now.";
-        UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog checked: {Date(settings.Get("updates.catalogSuccess"))}\nLive prices checked: {Date(settings.Get("updates.pricesSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nCatalog snapshot: {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
+        var catalogVersion = settings.Get("catalog.version");
+        var catalogLabel = catalogVersion.Length > 0 ? catalogVersion : "Unavailable";
+        UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog last confirmed: {Date(settings.Get("updates.catalogSuccess"))}\nLive prices checked: {Date(settings.Get("updates.pricesSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nActive catalog: {catalogLabel} · {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
         var rate = db.ExchangeRates.AsNoTracking().SingleOrDefault(r => r.Currency == "PHP");
         RateStatus = rate == null ? "No saved PHP exchange rate. Refresh to check rates."
             : $"1 USD = {rate.PerUsd:N4} PHP · rate dated {rate.Date:yyyy-MM-dd}";

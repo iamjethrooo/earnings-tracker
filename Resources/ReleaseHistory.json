@@ -1,5 +1,48 @@
 [
   {
+    "unreleased": true,
+    "summary": "Find installed Steam games, sort by your own ratings, and recover from a catalog update in Settings.",
+    "upgradeNotes": [
+      "Keep an independent backup of your application data before upgrading.",
+      "Catalog recovery becomes available once an update replaces a saved, validated catalog snapshot."
+    ],
+    "sections": [
+      {
+        "category": "What's New",
+        "heading": "🎮 Local Steam Installation Indicators",
+        "changes": [
+          "Choose your local Steam library folders in Settings to see installation evidence in Game Details.",
+          "Installation indicators work without a linked Steam account. Game Details shows installation and ownership separately."
+        ]
+      },
+      {
+        "category": "What's New",
+        "heading": "Personal Game Ratings",
+        "changes": [
+          "Rate a game's ease of grinding or replay appeal in Game Details, then sort the Games library by either rating.",
+          "Games can suggest ratings based on your ratings for games with similar reviewed genres. Suggestions are labeled and your own rating takes priority."
+        ]
+      },
+      {
+        "category": "What's New",
+        "heading": "Catalog Recovery",
+        "changes": [
+          "Restore the previous catalog from Settings when a validated snapshot is available. The restore keeps financial records, manual ownership, and saved Steam library data.",
+          "The app skips the rolled-back catalog version on later update checks."
+        ]
+      },
+      {
+        "category": "Improvements",
+        "heading": "Steam Sync and Catalog Updates",
+        "changes": [
+          "See how many games matched your saved Steam library and why some could not be matched.",
+          "If Steam limits requests, the app waits before retrying and keeps your last successful sync available.",
+          "Catalog updates check app compatibility before applying and report when an update was skipped or could only be matched in part."
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "publishedAt": "2026-11-08T15:07:04Z",
     "unreleased": false,
@@ -49,41 +92,48 @@
   {
     "version": "1.3.0",
     "publishedAt": "2026-11-07T16:47:59Z",
-    "summary": "Choose which payment covers a session and see which games you own on Steam.",
-    "upgradeNotes": ["Keep a separate backup before upgrading. When you first open this version, the app updates your saved data so sessions can be linked to payments. Older sessions continue to count toward payments by date unless you change their payment assignment."],
+    "summary": "Choose which sessions each payout covers and find games you already own on Steam.",
+    "upgradeNotes": ["Keep an independent backup of your data before upgrading. First launch adds fields for session payout assignments. Existing sessions keep their date-based treatment unless you explicitly change their assignment.", "Users of v1.1.0 and v1.2.0 can check for updates in Settings. If upgrading directly from v1.0.0, follow the v1.1.0 side-by-side migration instructions and preserve the old installation and data until your records are confirmed in the new app."],
     "sections": [
-      { "heading": "Added", "changes": ["Link verified sessions to Current payout or to a payment marked Paid or Processing. See which sessions a payment covers and compare their earnings with the payment amount.", "Change which payment an older session belongs to in the session editor. The app keeps a record of each change. Older sessions that you verify now go into Current payout unless they already have a payment assigned.", "Connect your Steam profile using a personal Steam Web API key to show and filter games you own. Refresh your Steam library yourself, or let the app check when you open Games, at most once a day."] },
-      { "heading": "Improved", "changes": ["Easier-to-read money summaries, payment details, import results, Settings messages, and bookmark buttons.", "Cleaner Games and Game Details pages, with shorter Game Pass descriptions. You can still see when availability was checked, when access expires, and when information may be out of date."] },
-      { "heading": "Using Steam", "changes": ["Set Game details to Public in Steam so the app can reliably check your library. If a check fails, your last saved library stays available. Games you mark as owned yourself and purchase costs you enter are kept separately.", "Your Steam API key is stored securely by Windows and is not included in backups. Backups do include your linked Steam account ID and last saved library."] }
+      { "category": "What's New", "heading": "💰 Session Payout Assignments", "changes": ["Assign verified sessions to Current payout or a payment marked Paid or Processing.", "Preview included sessions and their combined earnings, then compare them with the recorded payment amount.", "Correct historical assignments in the session editor, with each change recorded in the audit history. Historical sessions you newly verify join Current payout unless they already have an assignment."] },
+      { "category": "What's New", "heading": "🎮 Steam Library Integration", "changes": ["Connect your Steam profile using a personal Steam Web API key to display and filter matching games you own.", "Refresh manually, or let the app check when Games opens, at most once per day. If syncing fails, your previously saved library remains available.", "Set Steam Game details to Public for reliable syncing. Steam ownership stays separate from manual ownership and purchase costs.", "Your API key is stored in Windows Credential Manager and excluded from backups. Your linked Steam account ID and cached library information are included in backups."] },
+      { "category": "Improvements", "heading": "Financial Information and Feedback", "changes": ["Clearer earnings summaries, payout coverage previews, payment differences, and session import results.", "Simpler Settings and update messages, with bookmark labels that describe the available action."] },
+      { "category": "Improvements", "heading": "Games and Game Pass Details", "changes": ["Cleaner Games and Game Details layouts use shorter Game Pass descriptions. Last-checked dates, expiration dates, and stale-availability warnings remain visible."] }
     ]
   },
   {
     "version": "1.2.0",
     "publishedAt": "2026-10-20T13:05:56Z",
-    "summary": "A fresh look for Dashboard, Sessions, and Games, with easier browsing.",
+    "summary": "Explore your earnings, find sessions, and browse games through a redesigned interface.",
     "sections": [
-      { "heading": "Improved", "changes": ["Dashboard shows how your earnings change over time, session statuses, time played, top earning games, and money summaries.", "Find sessions with search, sorting, and filters for game, status, or date. View or edit session details and open the related game from a compact list that handles large histories.", "Browse more games at once, with clearer earning rates and availability. Filter and sort games, check ownership, use bookmarks, show archived games, and keep your browsing preferences.", "More consistent navigation and session review, save, and cancel controls. The app still checks entries and keeps a history of changes."] },
-      { "heading": "About this update", "changes": ["This update changes how the app looks and feels. Your saved financial records and earnings calculations stay the same. Steam features were not yet available in this version."] }
+      { "category": "Improvements", "heading": "📊 Redesigned Analytics Dashboard", "changes": ["Review verified earnings trends, session statuses, time played, and top earning games.", "Keep earnings, balance, and payout information within reach."] },
+      { "category": "Improvements", "heading": "Sessions Explorer", "changes": ["Browse a compact session table with search, sorting, and filters for game, status, and date.", "Open session details to inspect or edit a record, or navigate to its related game. The list handles large histories without displaying every row at once."] },
+      { "category": "Improvements", "heading": "Games Library and Navigation", "changes": ["Browse and search games in a more compact layout, with clearer earning rates, availability, sorting, and filters.", "Use ownership information, bookmarks, archived games, and saved browsing preferences.", "Review session edits through more consistent save and cancel controls, with existing validation and audit protections."] },
+      { "category": "Improvements", "heading": "About This Update", "changes": ["This is a visual and usability update. Earning calculations and existing financial records stay the same. Online catalog updates and Steam integration are not part of this release."] }
     ]
   },
   {
     "version": "1.1.0",
     "publishedAt": "2026-10-19T18:19:50Z",
-    "summary": "Keep your data separate from the app, make backups, and import sessions more reliably.",
+    "summary": "Keep your data separate from the app, manage backups in Settings, and import sessions more reliably.",
     "upgradeNotes": ["If you use version 1.0.0, install this version separately. The update button in version 1.0.0 cannot install it because Windows treats it as a different app.", "Before upgrading from 1.0.0, close the old app and keep a separate backup. Install the new version alongside it. On first launch, the new app copies and checks the records and backups it can transfer, keeping the originals. Check your history and backups in the new app before relying on it. Keep the old app closed, and do not uninstall or repair it until you have confirmed your data is safe."],
     "sections": [
-      { "heading": "Added", "changes": ["Your records are stored separately from the app's files, so repairing or reinstalling the app does not require replacing your saved data.", "Create and restore backups in Settings. Before restoring, the app checks the backup, asks you to confirm, and saves a recovery copy of your current data. A restart finishes the restore.", "Games remembers your sort order, whether to show only bookmarked games, and whether to show archived games."] },
-      { "heading": "Fixed", "changes": ["More reliable imports and session editing when several actions happen at once. Better checks help prevent duplicates and stop you from saving an import preview or edit based on outdated records.", "Better handling when saved data is busy, two changes conflict, or the app cannot open or update its data files."] },
-      { "heading": "Updates", "changes": ["App updates download the full application. Importing sessions through Add Session on Game Details was not yet available in this version."] }
+      { "category": "What's New", "heading": "🗂️ Separate Application and Data Folders", "changes": ["Application files use %LOCALAPPDATA%\\EarningsTracker.App. Personal data and backups use the separate %LOCALAPPDATA%\\EarningsTracker.UserData folder.", "Repairing or reinstalling the app does not require replacing its database. First launch can copy and verify eligible old records and backups while retaining the originals."] },
+      { "category": "What's New", "heading": "Database Backup and Restore", "changes": ["Create a database backup or begin a confirmed restore in Settings.", "The app validates the backup, asks for confirmation, and preserves a recovery copy of your current data before replacement. Restart to complete the restore."] },
+      { "category": "Improvements", "heading": "Games Library Preferences", "changes": ["Games remembers your sort order, bookmarks-only filter, and archived-game visibility between launches.", "Initial defaults are Newest sorting, bookmarks-only off, and archived games visible."] },
+      { "category": "Bug Fixes", "heading": "Session Imports and Editing", "changes": ["Improved coordination of overlapping imports and protection against outdated previews creating duplicates or overwriting newer results.", "Added checks for session edits whose underlying records change before saving, with better handling of database conflicts and locking."] },
+      { "category": "Improvements", "heading": "Startup and Updates", "changes": ["Improved handling of initialization, locked files, and migration errors helps the app stop when startup cannot continue safely.", "Application updates use full packages on the new win-x64-app-stable channel. Game Details → Add Session imports remain unavailable in this release."] }
     ]
   },
   {
     "version": "1.0.0",
     "publishedAt": "2026-10-14T17:38:30Z",
-    "summary": "The first stable Windows release for tracking Nerve sessions and earnings.",
+    "summary": "Track your Nerve gaming sessions, verified earnings, and payouts in one Windows app.",
     "sections": [
-      { "heading": "Added", "changes": ["Dashboard with verified earnings, recent sessions, and daily totals.", "See each game's earning rate, earning limit, and your progress toward that limit.", "Import sessions from Nerve's Recordings page, see their verification status, and review game matches when more than one game could fit.", "Payment history for payments, bonuses, corrections, and adjustments that add to or subtract from your earnings.", "Statistics to review your earnings over time and compare performance.", "Check for and download app updates in Settings, then restart when you are ready. The game catalog can be updated separately."] },
-      { "heading": "About this version", "changes": ["Your records are saved on your computer. This version runs on 64-bit Windows and includes what it needs to run. Sessions can be imported from Nerve's Recordings page; importing from Game Details was not yet available."] }
+      { "category": "What's New", "heading": "📊 Earnings at a Glance", "changes": ["View verified earnings, recent sessions, and daily totals on Dashboard.", "Check each game's earning rate, earning cap, and your progress toward it.", "Explore your earnings history and compare your activity over time in Statistics."] },
+      { "category": "What's New", "heading": "Sessions and Payments", "changes": ["Import sessions from Nerve's Recordings page, check verification statuses, and review ambiguous game matches.", "Track payments, bonuses, corrections, and adjustments that add to or subtract from your earnings. Game Details session imports are not available in this release."] },
+      { "category": "What's New", "heading": "Application Updates", "changes": ["Check for and download updates in Settings, then restart when you are ready. Game catalog updates are handled separately.", "This version uses the original win-x64-stable application update channel."] },
+      { "category": "Improvements", "heading": "About This Version", "changes": ["The first stable release runs on 64-bit Windows, includes what it needs to run, and stores your tracking records locally on your computer."] }
     ]
   }
 ]

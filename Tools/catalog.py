@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -12,6 +13,12 @@ import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+RELEASE_ROOT = "https://github.com/iamjethrooo/earnings-tracker/releases/download/"
+
+
+def immutable_version(value):
+    return (isinstance(value, str) and re.fullmatch(r"catalog-[A-Za-z0-9][A-Za-z0-9.-]{0,119}", value)
+            and value not in ("catalog-latest", "catalog-v2-latest"))
 
 
 def is_archived(entry):
@@ -88,6 +95,7 @@ def enrich(args):
     artwork = Path(args.artwork)
     artwork.mkdir(parents=True, exist_ok=True)
     mappings = review.get("Mappings", {})
+    include_steam = getattr(args, "steam_identities", False) or catalog["SchemaVersion"] == 2
     processed = 0
     for game in catalog["Games"]:
         mapping = mappings.get(game["CatalogId"])
@@ -172,10 +180,19 @@ def enrich(args):
         if "Subscriptions" in mapping:
             game["Subscriptions"] = mapping["Subscriptions"]
         processed += 1
-        if processed % 25 == 0:
+        if processed % 25 == 0 and not include_steam:
             save(args.output, catalog)
             print(f"Enriched {processed} titles", flush=True)
     stamp(catalog)
+    if include_steam:
+        catalog["SchemaVersion"] = 2
+        for game in catalog["Games"]:
+            mapping = mappings.get(game["CatalogId"], {})
+            game["SteamIdentity"] = mapping.get("SteamIdentity", {
+                "State": "Unresolved", "ReviewedAt": None, "Apps": [],
+                "Provenance": "No explicit Steam identity review for this catalog ID.",
+            })
+        validate(catalog)
     save(args.output, catalog)
     print("Built enrichment for explicitly reviewed mappings")
 
@@ -223,16 +240,58 @@ def parsedate(value):
     return dt.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(dt.timezone.utc)
 
 
+def validate_steam_identity(identity, reviewed, published):
+    error = "Invalid Steam identity"
+    if not isinstance(identity, dict):
+        raise ValueError(error)
+    state, timestamp = identity.get("State"), identity.get("ReviewedAt")
+    provenance, apps = identity.get("Provenance"), identity.get("Apps")
+    if (not isinstance(provenance, str) or not provenance.strip()
+            or len(provenance.encode("utf-16-le")) // 2 > 4096 or not isinstance(apps, list)):
+        raise ValueError(error)
+    if state == "Unresolved" and timestamp is None and not apps:
+        return
+    if (not isinstance(timestamp, str)
+            or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,7})?(?:Z|\+00:00)", timestamp)
+            or not dt.datetime.min.replace(tzinfo=dt.timezone.utc) < parsedate(timestamp) <= published):
+        raise ValueError(error)
+    if state in ("NotApplicable", "Withdrawn") and not apps:
+        return
+    if state != "Reviewed" or reviewed is not True or not 1 <= len(apps) <= 32:
+        raise ValueError(error)
+    previous, kind = 0, None
+    for app in apps:
+        if not isinstance(app, dict):
+            raise ValueError(error)
+        app_id, app_kind = app.get("AppId"), app.get("Kind")
+        if (type(app_id) is not int or not previous < app_id <= 4294967295
+                or app_kind not in ("FullGame", "Demo", "Prologue", "Dlc", "Tool")
+                or (kind is not None and app_kind != kind)):
+            raise ValueError(error)
+        previous, kind = app_id, app_kind
+
+
 def validate(catalog):
-    if catalog.get("SchemaVersion") != 1 or not catalog.get("Version") or not catalog.get("PublishedAt"):
+    schema = catalog.get("SchemaVersion")
+    if type(schema) is not int or schema not in (1, 2) or not catalog.get("Version") or not catalog.get("PublishedAt"):
         raise ValueError("Invalid catalog header")
-    parsedate(catalog["PublishedAt"])
+    timestamp = catalog["PublishedAt"]
+    if not isinstance(timestamp, str) or not re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,7})?(?:Z|\+00:00)", timestamp):
+        raise ValueError("Catalog publication time must be a UTC timestamp")
+    published = parsedate(timestamp)
+    if not dt.datetime.min.replace(tzinfo=dt.timezone.utc) < published <= dt.datetime.now(dt.timezone.utc):
+        raise ValueError("Invalid catalog publication time")
+    if not isinstance(catalog.get("Games"), list) or len(catalog["Games"]) > 10000:
+        raise ValueError("Invalid catalog entries")
     ids, names = set(), set()
     for game in catalog["Games"]:
         identity = game["CatalogId"]
         if not identity or identity in ids:
             raise ValueError("Duplicate catalog identity")
         ids.add(identity)
+        if schema == 2:
+            validate_steam_identity(game.get("SteamIdentity"), game.get("Reviewed"), published)
         occurrence = game.get("NameOccurrence")
         if occurrence is not None and (not 1 <= occurrence <= game.get("ExpectedNameCount", 0) or game.get("Aliases")):
             raise ValueError("Invalid duplicate occurrence mapping")
@@ -285,6 +344,11 @@ def report(args):
               "Archived": sum(is_archived(g) for g in games),
               "Unresolved": [g["Name"] for g in games if not g.get("Reviewed") and not is_archived(g)],
               "ArchivedWithoutMetadata": [g["Name"] for g in games if not g.get("Reviewed") and is_archived(g)]}
+    if catalog["SchemaVersion"] == 2:
+        result["SteamIdentityCoverage"] = {state: sum(g["SteamIdentity"]["State"] == state for g in games)
+            for state in ("Reviewed", "Unresolved", "NotApplicable", "Withdrawn")}
+        result["UnresolvedSteamIdentities"] = [{"CatalogId": g["CatalogId"], "Reason": g["SteamIdentity"]["Provenance"]}
+            for g in games if g["SteamIdentity"]["State"] == "Unresolved"]
     save(args.output, result)
     print(f'{result["Reviewed"]}/{result["Total"]} reviewed; {len(result["Unresolved"])} unresolved')
 
@@ -292,12 +356,24 @@ def report(args):
 def package(args):
     catalog = load(args.catalog)
     validate(catalog)
+    if catalog["SchemaVersion"] == 2 and not getattr(args, "steam_identities", False):
+        raise ValueError("Schema 2 packaging requires --steam-identities for offline verification")
+    version = catalog["Version"]
+    if not immutable_version(version):
+        raise ValueError("Invalid immutable catalog version")
+    minimum = getattr(args, "minimum_client_version", None)
+    if catalog["SchemaVersion"] == 2:
+        if (not minimum or not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", minimum)
+                or any(int(part) > 2147483647 for part in minimum.split("."))):
+            raise ValueError("Schema 2 requires --minimum-client-version MAJOR.MINOR.PATCH")
+    elif minimum is not None:
+        raise ValueError("The legacy channel cannot require a minimum client version")
     review = load(args.review)
     if not review.get("ReleaseApproved"):
         raise ValueError("Set ReleaseApproved only after reviewing coverage and provider permissions")
     from collections import Counter
     seed_names = Counter(g["Name"] for g in load(ROOT / "Data/games.json"))
-    if seed_names != Counter(g["Name"] for g in catalog["Games"]):
+    if catalog["SchemaVersion"] == 1 and seed_names != Counter(g["Name"] for g in catalog["Games"]):
         raise ValueError("Catalog must account for every seeded game")
     if any(g.get("IgdbId") for g in catalog["Games"]) and not review.get("IgdbRedistributionApproved"):
         raise ValueError("IGDB redistribution permission is not approved")
@@ -305,7 +381,8 @@ def package(args):
         raise ValueError("Price redistribution permission is not approved")
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    save(output / "catalog.json", catalog)
+    # Keep the source bytes so a bundled and remotely delivered version have the same identity.
+    (output / "catalog.json").write_bytes(Path(args.catalog).read_bytes())
     with zipfile.ZipFile(output / "artwork.zip", "w", zipfile.ZIP_DEFLATED) as archive:
         for game in catalog["Games"]:
             checksum = game.get("CoverSha256")
@@ -319,25 +396,75 @@ def package(args):
                 raise ValueError(f'Artwork checksum mismatch: {game["Name"]}')
             if path.name not in archive.namelist():
                 archive.write(path, path.name)
-    base = "https://github.com/iamjethrooo/earnings-tracker/releases/download/" + catalog["Version"] + "/"
-    save(output / "manifest.json", {"SchemaVersion": 1, "CatalogUrl": base + "catalog.json",
+    base = RELEASE_ROOT + version + "/"
+    manifest = {"SchemaVersion": catalog["SchemaVersion"], "Version": version, "CatalogUrl": base + "catalog.json",
                                    "Sha256": hashlib.sha256((output / "catalog.json").read_bytes()).hexdigest(),
                                    "ArtworkUrl": base + "artwork.zip",
-                                   "ArtworkSha256": hashlib.sha256((output / "artwork.zip").read_bytes()).hexdigest()})
+                                   "ArtworkSha256": hashlib.sha256((output / "artwork.zip").read_bytes()).hexdigest()}
+    if minimum is not None:
+        manifest["MinimumClientVersion"] = minimum
+    save(output / "manifest.json", manifest)
     args.output = str(output / "coverage.json")
     report(args)
 
 
+def check_order(args):
+    incoming = load(args.catalog)
+    previous = load(args.previous)
+    validate(incoming)
+    validate(previous)
+    if not immutable_version(incoming["Version"]) or not immutable_version(previous["Version"]):
+        raise ValueError("Invalid immutable catalog version")
+    def publication_key(snapshot):
+        timestamp = snapshot["PublishedAt"]
+        # datetime keeps microseconds. Match the client's final 100 ns digit.
+        fractional_ticks = re.search(r"\.([0-9]{7})(?:Z|\+00:00)$", timestamp)
+        return parsedate(timestamp), int(fractional_ticks[1][-1]) if fractional_ticks else 0
+
+    incoming_time = publication_key(incoming)
+    previous_time = publication_key(previous)
+    manifest_path = getattr(args, "previous_manifest", None)
+    if manifest_path:
+        manifest = load(manifest_path)
+        version = previous["Version"]
+        checksum = hashlib.sha256(Path(args.previous).read_bytes()).hexdigest()
+        if (not immutable_version(version) or manifest.get("Version", version) != version
+                or manifest.get("CatalogUrl") != RELEASE_ROOT + version + "/catalog.json"
+                or manifest.get("SchemaVersion") != previous["SchemaVersion"]
+                or manifest.get("Sha256", "").lower() != checksum):
+            raise ValueError("Current manifest does not bind its immutable snapshot")
+    if getattr(args, "legacy_transition", False):
+        if previous["SchemaVersion"] != 1 or incoming["SchemaVersion"] != 2:
+            raise ValueError("The legacy transition must advance from schema 1 to schema 2")
+        if incoming_time <= previous_time:
+            raise ValueError("The first schema-2 snapshot must be newer than the pinned legacy snapshot")
+    elif incoming["SchemaVersion"] != previous["SchemaVersion"]:
+        raise ValueError("Catalog channel schema cannot change")
+    if incoming["Version"] == previous["Version"]:
+        raise ValueError("Catalog version already exists")
+    if (incoming_time, incoming["Version"]) <= (previous_time, previous["Version"]):
+        raise ValueError("Catalog channel must advance")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["candidates", "enrich", "prices", "report", "package"])
+    parser.add_argument("command", choices=["candidates", "enrich", "prices", "report", "package", "check_order"])
     parser.add_argument("--catalog", default=str(ROOT / "Data/catalog.json"))
     parser.add_argument("--review", default=str(ROOT / "Data/catalog-review.json"))
     parser.add_argument("--artwork", default=str(ROOT / "Data/Artwork"))
     parser.add_argument("--cache", default=str(ROOT / "Data/IgdbCache"))
     parser.add_argument("--refresh-igdb", action="store_true", help="Explicitly refetch reviewed metadata instead of using the saved IGDB cache")
-    parser.add_argument("--output", required=True)
+    parser.add_argument("--steam-identities", action="store_true", help="Opt into schema 2 for enrichment or offline packaging")
+    parser.add_argument("--minimum-client-version", help="Minimum app release version for a schema-2 package")
+    parser.add_argument("--previous", help="Current immutable channel snapshot for check_order")
+    parser.add_argument("--previous-manifest", help="Validate the current pointer against --previous")
+    parser.add_argument("--legacy-transition", action="store_true", help="Check the first schema-2 version against schema 1")
+    parser.add_argument("--output")
     args = parser.parse_args()
+    if args.command == "check_order" and not args.previous:
+        parser.error("check_order requires --previous")
+    if args.command != "check_order" and not args.output:
+        parser.error("--output is required")
     try:
         globals()[args.command](args)
     except (ValueError, KeyError, OSError, RuntimeError) as error:

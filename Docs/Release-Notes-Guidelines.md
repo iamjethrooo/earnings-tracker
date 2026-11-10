@@ -3,10 +3,16 @@
 Use the owner's revised v1.4.0 notes as the approved editorial reference: a benefit-led
 summary, descriptive feature headings, concise related bullets, then upgrade guidance and
 organized distribution disclosures. Reuse its style, not its release-specific claims.
-These rules apply to new application release notes; do not rewrite published history or
-immutable package notes. Catalog publication has its own workflow and approval gates.
+These rules apply to new application release notes. Historical GitHub bodies and in-app
+summaries may receive editorial rewrites only at the owner's explicit request; preserve
+their release-specific facts, dates, migration warnings and verification limitations.
+Keep immutable package notes and artifacts unchanged. Catalog publication has its own
+workflow and approval gates.
 
 ## Write for the person using the app
+
+Use the version tag alone as the GitHub release title, for example `v1.4.0`.
+Use the product name in the Markdown heading inside the release body.
 
 Start with `# Earnings Tracker v{{version}}`, immediately followed by a short **bold summary**
 of the main benefits. For substantial releases, add a brief introduction explaining what
@@ -116,5 +122,7 @@ Get-ReleaseNotes -RepositoryPath (Get-Location).Path -Version 1.4.0 -Configurati
 ```
 
 Use the intended version/configuration for future drafts. Record editorial review and any
-verification limits in local preparation evidence under `.local-docs/`. Existing packages and
-public notes remain immutable; generating a preview is not a release announcement.
+verification limits in local preparation evidence under `.local-docs/`. Existing packages
+remain immutable. Before an authorized historical body rewrite, retain a local copy of the
+original and verify that only the intended body changes. Generating a preview is not a release
+announcement.

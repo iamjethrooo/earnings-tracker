@@ -56,10 +56,10 @@ Compare the candidate with the bundled map before copying reviewed changes into 
 ## Proposed shared identity contract (PRO-44)
 
 Design prepared on 2026-11-08 for [PRO-44](https://linear.app/botlog/issue/PRO-44).
-**Proposed for owner review; not implemented or approved for publication.** The
-Steam ownership section above describes the current app. This section specifies
-the target for PRO-45 and the compatibility boundary for PRO-51/PRO-52. It does
-not authorize provider collection, mapping approval, catalog replacement, or a
+**Design approved by the owner on 2026-11-09.** PRO-45 implements schema-2
+validation, bundled import and exact matching. The bundled snapshot uses schema 1.
+PRO-51 implements the separate schema-2 channel and activation rules below.
+This contract does not authorize provider collection, mapping approval, catalog replacement, or a
 new application release. PRO-17 still owns account access/privacy, freshness,
 and effective Owned/Playable now semantics.
 
@@ -73,7 +73,8 @@ required. This is not yet per-AppID review: `GameMetadata.Reviewed` reviews the
 catalog identity, and neither the embedded map nor extracted offer IDs carry
 their own review/provenance. Cached candidates are not read at runtime.
 
-Offline inventory of `catalog-20261012T034024414899Z`, with no provider calls:
+Offline inventory of `catalog-20261012T034024414899Z-multiplayer-20261108T103507Z`,
+with no provider calls. Rechecked on 2026-11-09 against the current local files.
 
 | Current matcher eligibility (not user ownership) | All identities | Active seed identities |
 | --- | ---: | ---: |
@@ -109,11 +110,12 @@ Seven AppIDs are shared by multiple currently matchable catalog identities:
 and 645630 (the two Car Mechanic Simulator 2018 names). Sharing is not itself
 a conflict; each catalog identity needs its own review.
 
-Inventory inputs and SHA-256 receipts:
+Inventory inputs and SHA-256 receipts for the local working-copy bytes.
+Line-ending conversion can change the hash without changing the parsed catalog.
 
 | Local input | SHA-256 |
 | --- | --- |
-| `Data/catalog.json` | `56c03800acbd2bf801dd1a3cb060de2faf5c6755d600a951163c8ac3ef1a1f31` |
+| `Data/catalog.json` | `2f9ae18888305d867d74f45d91a9e12e378725d082befd5d84e1f91b17e44d42` |
 | `Data/catalog-review.json` | `75e846b810e7aa9aebff8e77a2c4d45eba763c820699f647b897577095f6faa4` |
 | `Data/steam-app-mappings.json` | `e66f94e701635def8f78068ad32452054231020c2fc22fd641c5cd273533c630` |
 | `Data/itad-steam-cache.json` (local only) | `83c43767f1619132150d94d90304a7f591f483bf1099f3af2c377e19ba23e66f` |
@@ -246,20 +248,64 @@ unmatched and withdrawn entries. A later automatic v1 delivery must not
 silently restore the legacy rules. A deliberate compatible rollback restores
 a full validated prior v2 mapping/membership set (PRO-52).
 
-Old clients must reject v2 and keep their last v1 data; no partial metadata
-import or financial startup failure. Preserve a pinned v1 feed/artifact for
-them and introduce a separate v2 channel under PRO-51, whose manifest must
-declare a supported catalog schema and minimum application version before
-activation. Application release versions are not chosen by this design.
-Independent snapshot versions remain immutable, and a mapping-only change
-requires a new snapshot Version/hash. Existing same-version and older-date
-import guards must be addressed explicitly in PRO-51/PRO-52, not bypassed here.
+### Feed compatibility and activation
 
-Old executables cannot honor new withdrawals from their embedded map. Keeping
-their v1 feed does not fix that limitation; corrected mapping behavior requires
-an application upgrade. Running an old executable on a profile already
-activated as v2 is unsupported until an explicit downgrade guard is delivered
-and verified. This design does not claim one exists today.
+The v1.1.0 client reads only `catalog-latest/manifest.json` and accepts only
+schema 1. Schema 2 uses `catalog-v2-latest/manifest.json`. Before the first
+schema-2 publication, review and pin the legacy pointer to a schema-1 snapshot
+older than the first schema-2 snapshot. The workflow freezes legacy publishing
+once the schema-2 channel exists. A new client tries schema 2 first and falls
+back to the legacy feed on HTTP 404 until schema 2 has activated. A missing
+feed or failed check leaves the saved catalog available offline. Old executables
+cannot interpret schema-2 withdrawals. Use a compatible build with any
+profile that has activated schema 2.
+
+Schema-2 manifests declare `SchemaVersion`, `Version`, and
+`MinimumClientVersion` (a released MAJOR.MINOR.PATCH), plus the immutable
+version's `CatalogUrl` and SHA-256. Release builds compare against their
+embedded release version before fetching the snapshot. Development builds
+without release metadata show the update as requiring a compatible app.
+Historical schema-1 manifests can omit `Version`. The immutable asset's
+release tag still has to match the payload's version. Each byte change,
+including a mapping-only correction, requires a new version.
+
+The client checks the exact downloaded bytes, schema, version, UTC publication
+time, and catalog mappings before activation. Snapshots advance by UTC
+publication time, with ordinal version order breaking ties within a schema.
+The first schema-2 snapshot must be strictly newer than the saved schema-1
+snapshot. SHA-256 detects bytes that differ from the trusted manifest.
+Trust comes from HTTPS, the configured GitHub repository path, and the
+allowlisted GitHub release asset redirect hosts. The checksum does not
+authenticate an independent publisher.
+
+Settings shows the active catalog, the last confirmed check, and the most
+recent result. An applied snapshot reports its unmatched count. Already
+active, older, incompatible, rejected, and unavailable snapshots are
+reported separately. Automatic checks remain once daily when Games opens.
+Manual checks can retry after a failure. Rate limits do not trigger an
+immediate retry. The catalog check has a 25-second deadline, bounded downloads,
+and a limited redirect chain.
+
+Activation treats the snapshot as complete. An unmatched entry creates no
+earning game. An omitted entry loses its active enrichment, offers,
+subscriptions, and provider mappings while retaining its stable local link.
+A reintroduced entry reuses that link. See
+[database storage](../Docs/Database.md) for live-price and snapshot-retention rules.
+
+### Recover from a catalog update
+
+Open **Settings → Catalog updates → Update details** and select **Restore
+previous catalog**. Review the active and target versions before confirming.
+The app verifies the retained payload and restores catalog metadata and
+mappings. Financial records, manual ownership, and the Steam library cache
+stay in place. Reopening Games shows matches derived from the restored mapping.
+
+A successful restore consumes the recovery slot and rejects the replaced
+version on future manual, automatic, and bundled startup checks. Refresh
+resumes when a different, compatible snapshot newer than the restored one is
+available. A missing or damaged prior payload leaves the active catalog
+available. Catalog recovery uses a separate action from application backup
+restore.
 
 ### Transition fixtures for implementation acceptance
 
@@ -290,13 +336,40 @@ caps/reset history, manual ownership, costs, bookmarks and library cache.
 | Validated v2 rollback changes [1002] back to [1001] | Recompute evidence from cached library; no database-wide restore |
 | Account switch or offline reload after mapping change | Use only selected account cache; refresh derived results without a request |
 
-PRO-45 should implement this representation/validation and exact matching;
-PRO-51 should implement activation/compatibility and complete-snapshot removal;
-PRO-52 should retain and restore catalog-owned mapping state only. Coordinate
-the replacement of already-present Steam behavior with PRO-17/PRO-49 rather
-than treating those issues' Backlog labels as proof that no implementation
-exists. No mapping is newly approved by this inventory. Owner review of this
-contract precedes these behavior changes.
+PRO-45 covers representation, validation and exact matching.
+PRO-51 covers compatibility, activation and complete-snapshot removal.
+PRO-52 covers catalog-only rollback. PRO-49
+applies the approved PRO-17 account, privacy, and filtering behavior to the
+existing Steam reader. The inventory supplies evidence for later AppID review.
+Approval of this contract is separate from approval of individual AppIDs.
+
+### Build and inspect schema 2 locally
+
+Add an explicit `SteamIdentity` object to each reviewed maintainer mapping under
+`Mappings[CatalogId]` in the review input. Entries without a decision become
+`Unresolved`. Record conflicting evidence as an `Unresolved` reason and keep
+its candidates outside runtime `Apps`. Legacy `SteamIds`, store URLs, and
+cached candidates are evidence a maintainer can review.
+
+Run `python Tools/catalog.py enrich --steam-identities --output schema2.json`
+using the usual reviewed inputs and metadata caches. For an offline coverage
+report, run `python Tools/catalog.py report --catalog schema2.json --output coverage.json`.
+`SteamIdentityCoverage` counts each decision state, and `UnresolvedSteamIdentities`
+lists catalog IDs and review reasons. Local package verification uses
+`package --steam-identities --minimum-client-version MAJOR.MINOR.PATCH --catalog schema2.json --output release`.
+Use the actual compatible release version when preparing an approved package.
+The package copies the exact catalog bytes. To rehearse publication ordering
+offline, run `python Tools/catalog.py check_order --catalog schema2.json --previous current-schema2.json`
+against a local copy of the current immutable snapshot.
+
+The gated workflow reads `Data/catalog-v2.json` for the `schema2` input and
+`Data/catalog.json` for the legacy input. It checks version collisions and
+channel order before creating the immutable release, then advances the
+channel manifest. The approved schema-2 input must be committed separately.
+Review/provider permissions and `CATALOG_PUBLISH_ENABLED` remain required.
+If staging succeeds but updating the pointer fails, inspect the immutable
+release and current pointer before any authorized retry. Re-running the job
+with the same version fails the collision check.
 
 ## Review and enrichment
 
@@ -344,7 +417,7 @@ Reverification only refreshes unchanged, previously approved IDs with fresh PH e
 
 ## Publishing
 
-The checked-in workflow remains inactive until repository variable `CATALOG_PUBLISH_ENABLED` is `true`. It runs only on manual dispatch, packages the committed initial metadata/prices, and publishes immutable version releases plus a `catalog-latest` channel. It needs no IGDB or price API secrets and has no scheduled price refresh. Approve reviewed mappings and permission/release flags before enabling it. You can publish optional catalog corrections later using the saved data without setting up IGDB again.
+The workflow runs only on manual dispatch with `CATALOG_PUBLISH_ENABLED` set to `true`. It packages the committed snapshot and stages its immutable release before updating the selected channel. It needs no IGDB or price API secrets and has no scheduled price refresh. Approve reviewed mappings and permission/release flags before enabling it.
 
 Desktop clients check the manifest at most once daily after opening Games, and can refresh manually. Updates validate the schema, mappings, and checksums before importing in one SQLite transaction. Missing releases/providers leave saved data available. Optional personal keys enable manual price refresh. FX refresh uses Frankfurter's keyless USD-based daily rates, preserving the last valid rates offline. The initial public channel will be unavailable until the first approved snapshot is published.
 

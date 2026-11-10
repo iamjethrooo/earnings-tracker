@@ -825,7 +825,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="ChartToolTip" TargetType="ToolTip">
+    <Style TargetType="ToolTip">
         <Setter Property="Background" Value="{DynamicResource DialogBackgroundColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderColor}"/>
@@ -833,20 +833,36 @@
         <Setter Property="Padding" Value="{DynamicResource CompactPanelPadding}"/>
         <Setter Property="FontFamily" Value="{DynamicResource AppFont}"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeSupporting}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"
+                            CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <ContentPresenter ContentSource="Content"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+    <Style x:Key="ChartToolTip" TargetType="ToolTip" BasedOn="{StaticResource {x:Type ToolTip}}"/>
     <Style x:Key="FilterSearchBox" TargetType="TextBox" BasedOn="{StaticResource SearchBar}">
         <Setter Property="Width" Value="Auto"/>
         <Setter Property="Height" Value="34"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="0"/>
         <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">
             <Border x:Name="SearchBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <fluent:FluentIcon Icon="Search" IconSize="Size16" Foreground="{DynamicResource SecondaryTextColor}" VerticalAlignment="Center" IsHitTestVisible="False"/>
-                    <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
-                    <TextBlock x:Name="Hint" Grid.Column="1" Text="{TemplateBinding Tag}" Foreground="{DynamicResource SecondaryTextColor}" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed"/>
+                    <Grid Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        <!-- WPF's TextBox text view reserves 2 DIPs at the line edges. -->
+                        <TextBlock x:Name="Hint" Text="{TemplateBinding Tag}" Foreground="{DynamicResource SecondaryTextColor}" Margin="2,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed"/>
+                    </Grid>
                 </Grid>
             </Border>
             <ControlTemplate.Triggers>

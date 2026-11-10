@@ -37,7 +37,7 @@ The first successful transition displays the new data location. Former files rem
 
 Settings can create a standalone `.db` backup in a user-selected location (defaulting to `Backups` under the active data folder). SQLite's backup API captures committed WAL transactions without copying a live base file alone. The app checks SQLite integrity, foreign keys, migration history, and required application tables before publishing the file. An existing destination is never overwritten. Keep backup files private: they contain personal financial records in unencrypted SQLite form.
 
-The database backup includes all tables: sessions, payouts, adjustments, audit history and source evidence, games/catalog data, bookmarks/ownership, rates, and saved settings/preferences. This includes the linked Steam account ID, cached owned app IDs and sync timestamps in `CatalogSettings`. Steam ownership is combined with manual ownership when games load; it does not overwrite `GameOwnership`, purchase costs or history. Cached `Artwork` is excluded because it can be fetched again. IsThereAnyDeal and Steam API keys are stored separately in Windows Credential Manager and are excluded; they remain unchanged by restore. Relink Steam if a restored account has no matching saved key. Existing backup files are not nested into a new backup.
+The database backup includes all tables: sessions, payouts, adjustments, audit history and source evidence, games/catalog data, bookmarks/ownership, rates, and saved settings/preferences. This includes the linked Steam account ID, cached AppIDs and sync timestamps in `CatalogSettings`. Games derives Steam observations from the saved library and displays them separately from `GameOwnership` and purchase costs. Cached `Artwork` is excluded because it can be fetched again. IsThereAnyDeal and Steam API keys are stored separately in Windows Credential Manager and are excluded; they remain unchanged by restore. Relink Steam if a restored account has no matching saved key. Existing backup files are not nested into a new backup.
 
 Restore accepts a selected `.db` with the current migration history, validates it, and asks for explicit confirmation before scheduling replacement. The app then closes. On the next launch, under the normal instance mutex and before constructing views, it revalidates the staged file, creates a verified snapshot of the current database in `Backups/BeforeUserRestore`, and uses SQLite's backup API to replace the database. It checks the result before opening financial views and reports the recovery path on success. A failure or interrupted operation stops startup and retains the pending file and recovery snapshots for review; it never removes the current database to make a restore work. Close other database tools and resolve locks or file permissions before retrying. No automatic cleanup deletes recovery snapshots. Restoring an older application schema or a future migration history is rejected; use a matching application version and a reviewed recovery path instead.
 
@@ -71,8 +71,8 @@ For the migration and recovery audit trail, consult the local-only `.local-docs/
 
 ## Proposed catalog identity persistence (PRO-44)
 
-This is a design for owner review, not current storage behavior or an applied
-migration. The representation, examples and transition fixtures are specified
+The owner approved this design on 2026-11-09. It describes the target storage
+for PRO-45. The representation, examples and transition fixtures are specified
 in the [shared catalog identity contract](../Tools/CATALOG.md#proposed-shared-identity-contract-pro-44).
 
 `Game.Id` remains the local earning/history identity. `GameMetadata.GameId`
@@ -83,7 +83,7 @@ archiving, removal and reintroduction. Initial linking retains the current
 unambiguous name/alias and reviewed occurrence rules. Catalog import creates
 or deletes no earning games and reassigns no session history.
 
-The minimum proposed persistence is one versioned JSON document in existing
+PRO-45 persists one versioned JSON document in existing
 `CatalogSettings`, key `catalog.steam-identities`. It contains the active
 schema, snapshot Version, exact payload SHA-256, and a CatalogId-keyed dictionary
 of the complete snapshot membership and SteamIdentity objects, including
@@ -102,17 +102,24 @@ relational indexing, reconsider that specific persistence requirement with an
 actual migration and persistence regressions rather than silently changing
 the design.
 
-Activation must write the full mapping document, imported metadata and
-`catalog.version`/`catalog.published` in the same existing catalog transaction.
+Activation writes the full mapping document, imported metadata,
+`catalog.version`, `catalog.published`, and the exact UTF-8 payload and its
+SHA-256 in one SQLite transaction. The version/hash ledger rejects different
+bytes for previously recorded versions even after they leave the active and
+previous payload slots. The transaction also rotates the previous payload.
+`catalog.schema` records the active schema. While schema 2 is active, ordinary
+refresh and startup reject schema 1. A confirmed rollback can restore a retained
+schema-1 snapshot and clears the schema-2 mapping document in the same transaction.
 An absent schema-2 mapping document on a profile marked as schema 2 is an
 unavailable/corrupt state; it must not silently enable the legacy inference.
 Do not mutate an already activated snapshot under the same version/hash.
-PRO-51 must retain snapshot membership even for unmatched CatalogIds: current
-`CatalogService.Import` skips unmatched entries and leaves metadata for omitted
-entries, so current GameMetadata alone cannot implement removal semantics.
-Retain omitted local metadata links for history, but use active document
-membership to disable their Steam mappings. Removal is not permission to
-delete personal or financial rows.
+The payload retains membership even for unmatched CatalogIds. Omitted entries
+keep their CatalogId → GameId links and lose catalog enrichment, offers,
+subscriptions, and provider mappings. Reintroducing an ID reuses its original
+link. For included entries, a live price check newer than publication survives
+if the ITAD mapping is identical. A removed or changed mapping invalidates
+its saved prices. Exchange rates are refreshed independently. The transaction
+leaves personal and financial rows and the Steam account cache untouched.
 
 Observed Steam matches remain derived from active catalog mappings and the
 account-scoped `steam.library` snapshot already stored in CatalogSettings.
@@ -123,14 +130,14 @@ links or audit history to save a derived match. Failed activation leaves both
 the previous complete catalog and account snapshot available. A mapping change
 alone requires no Steam request or credential access.
 
-PRO-52's previous-known-good artifact must retain the complete catalog-owned
-mapping/membership document and its version/hash with compatible metadata.
-Rollback restores those together through the catalog transaction; it must not
-restore the whole database or revert manual ownership or the newer account
-snapshot. Existing timestamp/version guards need a reviewed catalog-only
-activation path; no bypass is implemented here. Old app execution against a
-v2-activated profile remains unsupported pending a verified compatibility
-guard under PRO-51. Existing Settings database restore rules remain unchanged.
+Catalog rollback uses the previous exact payload, its identity and hash, and
+the saved list of matched catalog IDs. Restoration uses the stable links and
+the ordinary live-price rules for unchanged provider mappings. It consumes the
+recovery slot and records the replaced version and hash as rejected in the
+same transaction. A profile from a build that never saved the original bytes
+needs a validated previous payload before recovery becomes available. Running
+an older executable on a schema-2 profile remains unsupported. See the
+[catalog compatibility rules](../Tools/CATALOG.md#feed-compatibility-and-activation).
 
 ## Concurrent edits and import previews
 

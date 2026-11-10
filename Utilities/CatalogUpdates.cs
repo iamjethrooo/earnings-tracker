@@ -3,7 +3,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using EarningsTracker.Data;
 using EarningsTracker.Models;
@@ -13,26 +15,38 @@ namespace EarningsTracker.Utilities;
 internal sealed class CatalogManifest
 {
     public int SchemaVersion { get; set; }
+    public string? Version { get; set; }
+    public string? MinimumClientVersion { get; set; }
     public string CatalogUrl { get; set; } = "";
     public string Sha256 { get; set; } = "";
 }
 
 internal sealed class CatalogUpdates
 {
-    internal const string ManifestUrl = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-latest/manifest.json";
+    private const string ReleaseRoot = "https://github.com/iamjethrooo/earnings-tracker/releases/download/";
+    internal const string ManifestUrl = ReleaseRoot + "catalog-latest/manifest.json";
+    internal const string SchemaTwoManifestUrl = ReleaseRoot + "catalog-v2-latest/manifest.json";
+    private static readonly Regex VersionTag = new(@"\Acatalog-[A-Za-z0-9][A-Za-z0-9.-]{0,119}\z");
+    private static readonly Regex ClientVersionFormat = new(@"\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\z");
     private readonly HttpClient _client;
+    private readonly HttpClient _catalogClient;
+    private readonly Version? _clientVersion;
     private readonly DbContextOptions<AppDbContext>? _options;
     private static readonly SemaphoreSlim RefreshLock = new(1);
-    internal CatalogUpdates(DbContextOptions<AppDbContext>? options = null, HttpClient? client = null)
+    internal CatalogUpdates(DbContextOptions<AppDbContext>? options = null, HttpClient? client = null, Version? clientVersion = null)
     {
         _options = options;
         _client = client ?? SharedClient;
+        _catalogClient = client ?? CatalogClient;
+        _clientVersion = clientVersion ?? (Version.TryParse(ReleaseHistory.InstalledVersion, out var version) ? version : null);
     }
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(25) };
+    private static readonly HttpClient CatalogClient = new(new HttpClientHandler { AllowAutoRedirect = false });
     private AppDbContext Context() => _options == null ? new() : new(_options);
 
-    internal async Task<string> RefreshAsync(bool manual)
+    internal async Task<string> RefreshAsync(bool manual, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         using var updateWork = UpdateRestartGuard.Shared.Enter();
         if (!await RefreshLock.WaitAsync(0)) return "A catalog update is already running.";
         try
@@ -48,26 +62,15 @@ internal sealed class CatalogUpdates
             var messages = new List<string>();
             try
             {
-                var manifest = JsonSerializer.Deserialize<CatalogManifest>(await GetBytesAsync(ManifestUrl, 65536), CatalogService.JsonOptions)
-                    ?? throw new InvalidDataException("Empty update manifest.");
-                if (manifest.SchemaVersion != 1 || !CatalogService.IsHttps(manifest.CatalogUrl)
-                    || !manifest.CatalogUrl.StartsWith("https://github.com/iamjethrooo/earnings-tracker/releases/download/", StringComparison.Ordinal)
-                    || manifest.Sha256.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit))
-                    throw new InvalidDataException("Invalid catalog manifest.");
-                var bytes = await GetBytesAsync(manifest.CatalogUrl, 16 * 1024 * 1024);
-                if (!Convert.ToHexString(SHA256.HashData(bytes)).Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("Catalog checksum mismatch.");
-                var unmatched = await Task.Run(() =>
-                {
-                    var snapshot = CatalogService.Parse(System.Text.Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));
-                    using var db = Context();
-                    return CatalogService.Import(db, snapshot);
-                });
-                messages.Add($"Catalog checked · {unmatched.Count} unmatched entries.");
-                new AppSettings(_options).Set("updates.catalogSuccess", DateTime.UtcNow.ToString("O"));
+                messages.Add(await RefreshCatalogAsync(cancellationToken));
             }
-            catch (Exception ex) when (Recoverable(ex))
-            { messages.Add("Catalog update unavailable; keeping saved data."); }
+            catch (Exception ex) when (Recoverable(ex) && !cancellationToken.IsCancellationRequested)
+            {
+                messages.Add(ex is InvalidDataException or JsonException or DecoderFallbackException
+                    ? "Catalog update rejected; keeping saved data."
+                    : "Catalog update unavailable; keeping saved data.");
+            }
+            cancellationToken.ThrowIfCancellationRequested();
             try { await RefreshRatesAsync(); messages.Add("Exchange rates checked.");
                 new AppSettings(_options).Set("updates.ratesSuccess", DateTime.UtcNow.ToString("O")); }
             catch (Exception ex) when (Recoverable(ex))
@@ -89,8 +92,93 @@ internal sealed class CatalogUpdates
         finally { RefreshLock.Release(); }
     }
 
-    private static bool Recoverable(Exception ex) => ex is HttpRequestException or TaskCanceledException
-        or IOException or InvalidDataException or JsonException or InvalidOperationException or FormatException or KeyNotFoundException
+    private async Task<string> RefreshCatalogAsync(CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(25));
+        var token = timeout.Token;
+        byte[] manifestBytes;
+        var expectedSchema = 2;
+        try { manifestBytes = await GetCatalogBytesAsync(SchemaTwoManifestUrl, 65536, token); }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            using var db = Context();
+            if (CatalogService.GetSetting(db, "catalog.schema") == "2")
+                return "Schema 2 catalog feed unavailable; keeping saved data.";
+            expectedSchema = 1;
+            manifestBytes = await GetCatalogBytesAsync(ManifestUrl, 65536, token);
+        }
+        var manifest = JsonSerializer.Deserialize<CatalogManifest>(manifestBytes, CatalogService.JsonOptions)
+            ?? throw new InvalidDataException("Empty update manifest.");
+        if (manifest.SchemaVersion < 1 || (manifest.SchemaVersion != expectedSchema && manifest.SchemaVersion <= 2))
+            throw new InvalidDataException("Catalog schema does not match its channel.");
+        if (manifest.SchemaVersion > 2)
+            return "Catalog update incompatible with this app; keeping saved data.";
+        if (manifest.CatalogUrl == null || !manifest.CatalogUrl.StartsWith(ReleaseRoot, StringComparison.Ordinal)
+            || manifest.Sha256?.Length != 64 || !manifest.Sha256.All(Uri.IsHexDigit))
+            throw new InvalidDataException("Invalid catalog manifest.");
+        var asset = manifest.CatalogUrl[ReleaseRoot.Length..].Split('/');
+        if (asset is not [var versionTag, "catalog.json"] || !VersionTag.IsMatch(versionTag)
+            || versionTag is "catalog-latest" or "catalog-v2-latest"
+            || ((manifest.Version != null || expectedSchema == 2) && manifest.Version != versionTag))
+            throw new InvalidDataException("Catalog manifest must reference its immutable version asset.");
+        if (manifest.MinimumClientVersion != null || expectedSchema == 2)
+        {
+            if (manifest.MinimumClientVersion is not { } minimum || !ClientVersionFormat.IsMatch(minimum)
+                || !Version.TryParse(minimum, out var minimumVersion))
+                throw new InvalidDataException("Invalid minimum catalog client version.");
+            if (_clientVersion == null || _clientVersion < minimumVersion)
+                return $"Catalog {versionTag} is available and requires app version {minimum} or later.";
+        }
+        var bytes = await GetCatalogBytesAsync(manifest.CatalogUrl, 16 * 1024 * 1024, token);
+        var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        if (!hash.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Catalog checksum mismatch.");
+        var result = await Task.Run(() =>
+        {
+            var snapshot = CatalogService.Parse(new UTF8Encoding(false, true).GetString(bytes), hash);
+            if (snapshot.SchemaVersion != expectedSchema || snapshot.Version != versionTag)
+                throw new InvalidDataException("Catalog payload does not match the manifest.");
+            using var db = Context();
+            return CatalogService.Activate(db, snapshot, token, checkedRemotely: true);
+        }, token);
+        return result.Status switch
+        {
+            CatalogService.ActivationStatus.Applied => $"Catalog {versionTag} applied · {result.Unmatched.Count} unmatched entries.",
+            CatalogService.ActivationStatus.UpToDate => $"Catalog {versionTag} is up to date.",
+            CatalogService.ActivationStatus.Older => $"Catalog {versionTag} is older than or the same age as saved data.",
+            CatalogService.ActivationStatus.Rejected => $"Catalog {versionTag} was rolled back. Keeping the saved catalog until a compatible newer version is available.",
+            _ => "Catalog update incompatible with saved data."
+        };
+    }
+
+    private async Task<byte[]> GetCatalogBytesAsync(string url, int limit, CancellationToken token)
+    {
+        var uri = new Uri(url);
+        for (var redirects = 0; redirects <= 3; redirects++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.UserAgent.ParseAdd("EarningsTracker/1.0");
+            using var response = await _catalogClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+            if (response.IsSuccessStatusCode) return await ReadBoundedAsync(response, limit, token);
+            if (response.StatusCode is HttpStatusCode.MovedPermanently or HttpStatusCode.Found or HttpStatusCode.SeeOther
+                or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect)
+            {
+                var location = response.Headers.Location;
+                if (location is not { IsAbsoluteUri: true } || !CatalogService.IsHttps(location.AbsoluteUri)
+                    || !location.IsDefaultPort || location.Host is not ("release-assets.githubusercontent.com" or "objects.githubusercontent.com")
+                    || location.Fragment.Length != 0)
+                    throw new InvalidDataException("Untrusted catalog redirect.");
+                uri = location;
+                continue;
+            }
+            throw new HttpRequestException("Catalog request failed.", null, response.StatusCode);
+        }
+        throw new InvalidDataException("Too many catalog redirects.");
+    }
+
+    private static bool Recoverable(Exception ex) => ex is HttpRequestException or OperationCanceledException
+        or IOException or InvalidDataException or JsonException or InvalidOperationException or FormatException or KeyNotFoundException or DecoderFallbackException
         or Microsoft.Data.Sqlite.SqliteException or DbUpdateException;
 
     private async Task<byte[]> GetBytesAsync(string url, int limit)
@@ -112,16 +200,16 @@ internal sealed class CatalogUpdates
         }
         return response;
     }
-    private static async Task<byte[]> ReadBoundedAsync(HttpResponseMessage response, int limit)
+    private static async Task<byte[]> ReadBoundedAsync(HttpResponseMessage response, int limit, CancellationToken token = default)
     {
         if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("Provider response too large.");
-        using var input = await response.Content.ReadAsStreamAsync();
+        using var input = await response.Content.ReadAsStreamAsync(token);
         using var output = new MemoryStream();
         var buffer = new byte[16384]; int read;
-        while ((read = await input.ReadAsync(buffer)) > 0)
+        while ((read = await input.ReadAsync(buffer.AsMemory(), token)) > 0)
         {
             if (output.Length + read > limit) throw new InvalidDataException("Provider response too large.");
-            await output.WriteAsync(buffer.AsMemory(0, read));
+            await output.WriteAsync(buffer.AsMemory(0, read), token);
         }
         return output.ToArray();
     }

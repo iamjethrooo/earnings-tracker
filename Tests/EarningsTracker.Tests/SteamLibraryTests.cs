@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using EarningsTracker.Models;
 using EarningsTracker.Utilities;
@@ -9,6 +10,11 @@ namespace EarningsTracker.Tests;
 
 public class SteamLibraryTests
 {
+    private sealed class Clock : TimeProvider
+    {
+        internal DateTimeOffset Now { get; set; } = DateTimeOffset.UtcNow;
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
     internal const string SteamId = "76561198012345678";
     internal const string Key = "0123456789abcdef0123456789abcdef";
 
@@ -112,7 +118,7 @@ public class SteamLibraryTests
         await service.LinkAsync(SteamId, Key, TestContext.Current.CancellationToken);
         var before = new AppSettings(database.Options).Get(SteamLibrary.SnapshotKey);
         handler.Respond = _ => Json(payload);
-        Assert.Contains("saved ownership", await service.RefreshAsync(true, TestContext.Current.CancellationToken));
+        Assert.Contains("saved library evidence", await service.RefreshAsync(true, TestContext.Current.CancellationToken));
         Assert.Equal(before, new AppSettings(database.Options).Get(SteamLibrary.SnapshotKey));
         await Assert.ThrowsAnyAsync<Exception>(() => service.LinkAsync("76561198012345679", new string('a', 32), TestContext.Current.CancellationToken));
         Assert.Equal(before, new AppSettings(database.Options).Get(SteamLibrary.SnapshotKey));
@@ -131,9 +137,73 @@ public class SteamLibraryTests
         await service.LinkAsync(SteamId, Key, TestContext.Current.CancellationToken);
         handler.Respond = _ => new(status);
         var result = await service.RefreshAsync(true, TestContext.Current.CancellationToken);
-        Assert.Contains("saved ownership", result); Assert.DoesNotContain(Key, result);
+        Assert.Contains("saved library evidence", result); Assert.DoesNotContain(Key, result);
         using var db = database.CreateContext(); Assert.Contains(220u, SteamLibrary.Read(db)!.AppIds);
         Assert.DoesNotContain(Key, string.Join("", db.CatalogSettings.Select(s => s.Value)));
+    }
+
+    [Theory]
+    [InlineData("delta", 120)]
+    [InlineData("date", 180)]
+    [InlineData("invalid", 60)]
+    public async Task RateLimitPersistsAndBlocksEverySteamRequestUntilRetry(string header, int seconds)
+    {
+        using var database = new TestDatabase();
+        var handler = new Handler();
+        using var client = new HttpClient(handler);
+        var credentials = new FakeCredentials();
+        var clock = new Clock();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var service = new SteamLibrary(database.Options, client, credentials, clock);
+        await service.LinkAsync(SteamId, Key, cancellationToken);
+        var settings = new AppSettings(database.Options);
+        var saved = settings.Get(SteamLibrary.SnapshotKey);
+        handler.Respond = _ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            if (header == "delta") response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(seconds));
+            if (header == "date") response.Headers.RetryAfter = new RetryConditionHeaderValue(clock.Now.AddSeconds(seconds));
+            if (header == "invalid") response.Headers.TryAddWithoutValidation("Retry-After", "invalid");
+            return response;
+        };
+        Assert.Contains("rate limited", await service.RefreshAsync(true, cancellationToken));
+        var retry = DateTimeOffset.Parse(settings.Get(SteamLibrary.RetryKey), System.Globalization.CultureInfo.InvariantCulture);
+        Assert.InRange(retry, clock.Now.AddSeconds(seconds - 1), clock.Now.AddSeconds(seconds));
+        Assert.Equal(saved, settings.Get(SteamLibrary.SnapshotKey));
+
+        var restarted = new SteamLibrary(database.Options, client, credentials, clock);
+        Assert.Contains("rate limited", await restarted.RefreshAsync(false, cancellationToken));
+        Assert.Contains("rate limited", await restarted.RefreshAsync(true, cancellationToken));
+        await Assert.ThrowsAsync<SteamRateLimitException>(() =>
+            restarted.LinkAsync("76561198012345679", Key, cancellationToken));
+        Assert.Equal(2, handler.Calls);
+        Assert.Equal(saved, settings.Get(SteamLibrary.SnapshotKey));
+        using (var db = database.CreateContext())
+            Assert.True(SteamLibrary.IsStale(db, SteamLibrary.Read(db)!));
+        clock.Now = retry.AddSeconds(1);
+        handler.Respond = _ => Json("""{"response":{"game_count":0}}""");
+        Assert.Equal("Steam library synced.", await restarted.RefreshAsync(true, cancellationToken));
+        Assert.Equal(3, handler.Calls);
+        Assert.Empty(settings.Get(SteamLibrary.RetryKey));
+    }
+
+    [Fact]
+    public async Task UnreadableSavedLibraryLeavesSettingsUsableAndCanBeUnlinked()
+    {
+        using var database = new TestDatabase();
+        var settings = new AppSettings(database.Options);
+        settings.Set(SteamLibrary.SnapshotKey, "invalid-json");
+        var model = new SettingsViewModel(database.Options);
+        Assert.True(model.SteamLinked);
+        Assert.Contains("evidence unavailable", model.SteamStatus);
+        var handler = new Handler();
+        using var client = new HttpClient(handler);
+        var service = new SteamLibrary(database.Options, client, new FakeCredentials());
+        var cancellationToken = TestContext.Current.CancellationToken;
+        Assert.Contains("Relink or unlink", await service.RefreshAsync(true, cancellationToken));
+        await service.UnlinkAsync(cancellationToken);
+        Assert.Empty(settings.Get(SteamLibrary.SnapshotKey));
+        Assert.Equal(0, handler.Calls);
     }
 
     [Fact]
@@ -191,7 +261,7 @@ public class SteamLibraryTests
             Assert.Equal(new HashSet<uint> { 221 }, saved.AppIds);
         }
         credentials.Key = null;
-        Assert.Contains("saved ownership", await service.RefreshAsync(true, TestContext.Current.CancellationToken));
+        Assert.Contains("saved library evidence", await service.RefreshAsync(true, TestContext.Current.CancellationToken));
         Assert.Equal(2, handler.Calls);
         using var reopened = database.CreateContext();
         Assert.Equal(new HashSet<uint> { 221 }, SteamLibrary.Read(reopened)!.AppIds);

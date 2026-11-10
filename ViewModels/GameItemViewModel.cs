@@ -35,15 +35,91 @@ namespace EarningsTracker.ViewModels
             if (Metadata?.CoverSha256 != metadata.CoverSha256 || Metadata?.CoverUrl != metadata.CoverUrl) return;
             _cover = cover; OnPropertyChanged(nameof(Cover));
         }
-        public bool IsSteamOwned { get; private set; }
-        public bool IsOwned => IsSteamOwned || Ownership?.IsOwned == true;
-        public string OwnershipButtonText => IsSteamOwned ? "Owned · Steam" : IsOwned ? "Owned · remove" : "Mark owned";
-        public string OwnershipAccessibleName => IsSteamOwned ? $"Owned on Steam: {Game.Name}" : $"Toggle ownership for {Game.Name}";
-        public string OwnershipTooltip => IsSteamOwned ? "Owned in your last synced Steam library. Manage Steam linking in Settings; edit purchase costs in game details."
-            : IsOwned ? "Remove from owned games. Saved purchase cost is kept."
+        internal SteamMatch SteamMatch { get; private set; }
+        private DateTime? _steamSyncedAt;
+        private bool _steamStale;
+        public bool IsSteamOwned => SteamMatch == SteamMatch.Matched;
+        public string SteamBadge => _steamStale ? "Steam library · saved" : "Steam library";
+        public bool ShowsSteamInstallation => _steamInstalled.HasValue;
+        public string SteamInstallation => _steamInstalled == true
+            ? "Steam installation detected on this PC."
+            : "Steam installation on this PC is unknown.";
+        private bool? _steamInstalled;
+        public string SteamEvidence => SteamMatch switch
+        {
+            SteamMatch.Matched => $"Seen in Steam library · synced {_steamSyncedAt?.ToLocalTime():g}"
+                + (_steamStale ? " · may be out of date" : ""),
+            SteamMatch.NotObserved => "Steam library did not report the reviewed AppID. Access is unknown.",
+            SteamMatch.Unmapped => "No reviewed Steam AppID match for this game.",
+            SteamMatch.Ambiguous => "Steam AppID evidence conflicts. Access is unknown.",
+            _ => "Steam library evidence unavailable."
+        };
+        public bool IsOwned => Ownership?.IsOwned == true;
+        public string OwnershipButtonText => IsOwned ? "Owned · remove" : "Mark owned";
+        public string OwnershipAccessibleName => $"Toggle manual ownership for {Game.Name}";
+        public string OwnershipTooltip => IsOwned ? "Remove from owned games. Saved purchase cost is kept."
             : "Add to owned games. Edit purchase cost in game details.";
         public string OwnershipError { get; private set; } = "";
         public ICommand ToggleOwnedCommand { get; }
+        private PersonalGameRatings _ratings;
+        private PersonalGameRatings _suggestions;
+        private int _grindingSources, _replaySources;
+        internal PersonalGameRatings Ratings => _ratings;
+        public int GrindingRating => _ratings.Grinding;
+        public int ReplayRating => _ratings.Replay;
+        public int GrindingRank => GrindingRating != 0 ? GrindingRating : _suggestions.Grinding;
+        public int ReplayRank => ReplayRating != 0 ? ReplayRating : _suggestions.Replay;
+        public string GrindingRatingText => (GrindingRating == 0 && GrindingRank != 0 ? "Suggested grinding ease · " : "My grinding ease · ") + (GrindingRank switch
+        {
+            3 => "Easy", 2 => "Moderate", 1 => "Hard", _ => "Unrated"
+        });
+        public string ReplayRatingText => (ReplayRating == 0 && ReplayRank != 0 ? "Suggested replay appeal · " : "My replay appeal · ") + (ReplayRank switch
+        {
+            3 => "High", 2 => "Medium", 1 => "Low", _ => "Unrated"
+        });
+        public string GrindingRatingHelp => RatingHelp(GrindingRating, _grindingSources);
+        public string ReplayRatingHelp => RatingHelp(ReplayRating, _replaySources);
+
+        private static string RatingHelp(int rating, int sources) => rating != 0 ? "Your rating for this game."
+            : sources == 0 ? "No personal rating or suggestion."
+            : $"Based on {sources} {(sources == 1 ? "game" : "games")} you rated with similar reviewed genres.";
+
+        internal void SetRatingSuggestions(PersonalGameRatings ratings, int grindingSources, int replaySources)
+        {
+            if (_suggestions == ratings && _grindingSources == grindingSources && _replaySources == replaySources) return;
+            _suggestions = ratings;
+            _grindingSources = grindingSources;
+            _replaySources = replaySources;
+            NotifyRatingRanks();
+        }
+
+        internal void SetRatings(PersonalGameRatings ratings)
+        {
+            if (_ratings == ratings) return;
+            _ratings = ratings;
+            OnPropertyChanged(nameof(GrindingRating));
+            OnPropertyChanged(nameof(ReplayRating));
+            NotifyRatingRanks();
+            OnPropertyChanged(nameof(Ratings));
+        }
+
+        private void NotifyRatingRanks()
+        {
+            OnPropertyChanged(nameof(GrindingRank));
+            OnPropertyChanged(nameof(ReplayRank));
+            OnPropertyChanged(nameof(GrindingRatingText));
+            OnPropertyChanged(nameof(ReplayRatingText));
+            OnPropertyChanged(nameof(GrindingRatingHelp));
+            OnPropertyChanged(nameof(ReplayRatingHelp));
+        }
+
+        internal void SaveRatings(int grinding, int replay)
+        {
+            var ratings = new PersonalGameRatings(grinding, replay);
+            new AppSettings(_databaseOptions).SaveGameRatings(Game.Id, ratings);
+            SetRatings(ratings);
+        }
+
         public string GenreText => Genres.Count == 0 ? "Genre unknown" : string.Join(" · ", Genres);
         public string SourceText => Offers.Count == 0 && Subscriptions.Count == 0 ? "Sources unknown"
             : string.Join(" · ", Offers.Select(x => x.Source).Concat(Subscriptions.Where(x => x.Included).Select(x => x.Service)).Distinct());
@@ -93,7 +169,7 @@ namespace EarningsTracker.ViewModels
             && !CatalogPresentation.VerificationCurrent(entry, DateTime.UtcNow);
         public bool GamePassCurrentlyAvailable => CatalogPresentation.GamePassEntry(Subscriptions) is { } entry
             && CatalogPresentation.Current(entry, DateTime.UtcNow);
-        public string PurchaseEvidence => $"{(IsSteamOwned ? "Owned on Steam (saved library)" : IsOwned ? "Personally owned" : "Not marked owned")} · "
+        public string PurchaseEvidence => $"{(IsOwned ? "Manually marked owned" : "Manual ownership unset")} · "
             + (Ownership?.PurchaseAmount is decimal amount ? $"saved cost {CatalogPresentation.Money(amount, Ownership.Currency)} · {Ownership.Source}" : "purchase cost not recorded");
         public string RateBasis => Game.IsArchived ? "Historical rate" : "";
         public string CycleCapText => $"{Game.MinutesCap / 60m:0.##} hours";
@@ -134,26 +210,33 @@ namespace EarningsTracker.ViewModels
 
         internal void SetCatalog(GameMetadata? metadata, List<string> genres, List<StoreOffer> offers,
             List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates,
-            bool steamOwned = false)
+            SteamMatch steamMatch = SteamMatch.Unknown, DateTime? steamSyncedAt = null, bool steamStale = false,
+            bool? steamInstalled = null)
         {
             var artworkChanged = Metadata?.CoverSha256 != metadata?.CoverSha256 || Metadata?.CoverUrl != metadata?.CoverUrl;
             Metadata = metadata; Genres = genres;
             Offers = offers.Where(x => CatalogSources.PopularName(x.Source) != null).ToList();
             foreach (var offer in Offers) offer.Source = CatalogSources.PopularName(offer.Source)!;
-            Subscriptions = subscriptions; Ownership = ownership; Rates = rates; IsSteamOwned = steamOwned;
+            Subscriptions = subscriptions; Ownership = ownership; Rates = rates;
+            SteamMatch = steamMatch; _steamSyncedAt = steamSyncedAt; _steamStale = steamStale;
+            _steamInstalled = steamInstalled;
             if (artworkChanged) { _cover = null; _coverRequested = false; OnPropertyChanged(nameof(Cover)); }
             foreach (var property in new[] { nameof(Metadata), nameof(Genres), nameof(Offers), nameof(Subscriptions), nameof(Rates),
                 nameof(GenreText), nameof(SourceText), nameof(Summary), nameof(MetadataStatus), nameof(FreeToPlay),
                 nameof(PriceSortValue), nameof(LowestPrice), nameof(PriceText), nameof(PriceTooltip), nameof(AccessStatusText),
                 nameof(OfferDetails), nameof(SubscriptionDetails), nameof(GamePassStatus), nameof(GamePassNeedsVerification), nameof(GamePassCurrentlyAvailable), nameof(PriceEvidence), nameof(LibraryPriceEvidence) }) OnPropertyChanged(property);
             NotifyOwnership();
+            OnPropertyChanged(nameof(IsSteamOwned));
+            OnPropertyChanged(nameof(SteamBadge));
+            OnPropertyChanged(nameof(SteamEvidence));
+            OnPropertyChanged(nameof(ShowsSteamInstallation));
+            OnPropertyChanged(nameof(SteamInstallation));
         }
 
         private void NotifyOwnership()
         {
-            foreach (var property in new[] { nameof(Ownership), nameof(IsOwned), nameof(IsSteamOwned), nameof(OwnershipButtonText),
+            foreach (var property in new[] { nameof(Ownership), nameof(IsOwned), nameof(OwnershipButtonText),
                 nameof(OwnershipTooltip), nameof(OwnershipAccessibleName), nameof(BreakEvenText), nameof(PurchaseEvidence) }) OnPropertyChanged(property);
-            ((RelayCommand)ToggleOwnedCommand).RaiseCanExecuteChanged();
         }
 
         internal void SaveOwnership(bool owned, string source, decimal? amount, string currency)
@@ -193,7 +276,6 @@ namespace EarningsTracker.ViewModels
             ToggleBookmarkCommand = new RelayCommand(ToggleBookmark);
             ToggleOwnedCommand = new RelayCommand(_ =>
             {
-                if (IsSteamOwned) return;
                 try
                 {
                     SaveOwnership(!IsOwned, Ownership?.Source ?? "", Ownership?.PurchaseAmount, Ownership?.Currency ?? "PHP");
@@ -201,7 +283,7 @@ namespace EarningsTracker.ViewModels
                 }
                 catch (Exception) { OwnershipError = "Ownership could not be saved. Please retry."; }
                 OnPropertyChanged(nameof(OwnershipError));
-            }, _ => !IsSteamOwned);
+            });
         }
 
         public bool IsBookmarked

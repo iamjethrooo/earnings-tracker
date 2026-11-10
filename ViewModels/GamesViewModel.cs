@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -66,6 +67,8 @@ namespace EarningsTracker.ViewModels
         public string CatalogStatus { get; private set; } = "";
         public string SteamStatus { get; private set; } = "";
         public bool ShowPriceSortHelp { get; private set; }
+        public bool ShowGrindingRatings { get; private set; }
+        public bool ShowReplayRatings { get; private set; }
         public string PriceSortHelp => "Saved PH prices · may be outdated";
         public string GamePassFilterHelp => "PC Game Pass includes previously verified games. Stale/expired verification does not confirm current availability; Playable now still requires current verification and a selected membership.";
 
@@ -74,19 +77,38 @@ namespace EarningsTracker.ViewModels
         private sealed record CatalogSnapshot(Dictionary<int, GameMetadata> Metadata, ILookup<int, GameGenre> Genres,
             ILookup<int, StoreOffer> Offers, ILookup<int, SubscriptionAvailability> Subscriptions,
             Dictionary<int, GameOwnership> Owned, Dictionary<string, ExchangeRate> Rates, HashSet<string> MySubscriptions,
-            SteamLibrarySnapshot? Steam, string SteamStatus);
+            SteamLibrarySnapshot? Steam, string SteamStatus, bool SteamStale, CatalogService.SteamIdentityDocument? SteamIdentities,
+            HashSet<uint>? InstalledAppIds);
 
         private CatalogSnapshot ReadCatalog()
         {
+            var settings = new AppSettings(_databaseOptions);
+            var mySubscriptions = settings.Subscriptions();
+            var installedAppIds = SteamInstallations.Read(settings.Get(SteamInstallations.SettingsKey));
             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
+            using var transaction = db.Database.BeginTransaction();
             var metadata = db.GameMetadata.AsNoTracking().ToDictionary(x => x.GameId);
             var genres = db.GameGenres.AsNoTracking().ToList().ToLookup(x => x.GameId);
             var offers = db.StoreOffers.AsNoTracking().ToList().ToLookup(x => x.GameId);
             var subscriptions = db.SubscriptionAvailability.AsNoTracking().ToList().ToLookup(x => x.GameId);
             var owned = db.GameOwnership.AsNoTracking().ToDictionary(x => x.GameId);
             var rates = db.ExchangeRates.AsNoTracking().ToDictionary(x => x.Currency);
-            return new(metadata, genres, offers, subscriptions, owned, rates, new AppSettings(_databaseOptions).Subscriptions(),
-                SteamLibrary.Read(db), SteamLibrary.Status(db));
+            var steam = SteamLibrary.Read(db);
+            var steamStatus = SteamLibrary.Status(db, steam);
+            CatalogService.SteamIdentityDocument? steamIdentities = null;
+            if (steam != null || installedAppIds != null)
+            {
+                try { steamIdentities = CatalogService.ReadSteamIdentities(db); }
+                catch (InvalidDataException)
+                {
+                    // A damaged mapping document must not re-enable legacy matching or hide the game list.
+                    steam = null;
+                    if (installedAppIds != null) installedAppIds = [];
+                    steamStatus += " · Catalog Steam mappings unavailable.";
+                }
+            }
+            return new(metadata, genres, offers, subscriptions, owned, rates, mySubscriptions,
+                steam, steamStatus, steam != null && SteamLibrary.IsStale(db, steam), steamIdentities, installedAppIds);
         }
 
         internal void ReloadCatalog() => ApplyCatalog(ReadCatalog());
@@ -94,10 +116,8 @@ namespace EarningsTracker.ViewModels
 
         private void ApplyCatalog(CatalogSnapshot snapshot)
         {
-            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions, steam, steamStatus) = snapshot;
+            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions, steam, steamStatus, steamStale, steamIdentities, installedAppIds) = snapshot;
             MySubscriptions = mySubscriptions;
-            SteamStatus = steamStatus;
-            OnPropertyChanged(nameof(SteamStatus));
             _reloadingCatalog = true;
             try
             {
@@ -105,9 +125,23 @@ namespace EarningsTracker.ViewModels
                 foreach (var item in Games)
                     item.SetCatalog(metadata.GetValueOrDefault(item.Game.Id), genres[item.Game.Id].Select(x => x.Name).ToList(),
                         offers[item.Game.Id].ToList(), subscriptions[item.Game.Id].ToList(), owned.GetValueOrDefault(item.Game.Id), rates,
-                        SteamGameMatching.IsOwned(metadata.GetValueOrDefault(item.Game.Id), offers[item.Game.Id], steam));
+                        SteamGameMatching.Match(metadata.GetValueOrDefault(item.Game.Id), offers[item.Game.Id], steam, steamIdentities),
+                        steam?.SyncedAtUtc, steamStale,
+                        installedAppIds == null ? null : SteamGameMatching.MatchAppIds(metadata.GetValueOrDefault(item.Game.Id),
+                            offers[item.Game.Id], installedAppIds, steamIdentities) == SteamMatch.Matched);
+                GameRatingSuggestions.Apply(Games);
             }
             finally { _reloadingCatalog = false; }
+            SteamStatus = steamStatus;
+            if (steam != null)
+            {
+                var matched = Games.Count(game => game.SteamMatch == SteamMatch.Matched);
+                var ambiguous = Games.Count(game => game.SteamMatch == SteamMatch.Ambiguous);
+                var unmapped = Games.Count(game => game.SteamMatch == SteamMatch.Unmapped);
+                var notObserved = Games.Count(game => game.SteamMatch == SteamMatch.NotObserved);
+                SteamStatus += $" · {matched} matched · {unmapped + notObserved} unmatched ({unmapped} without reviewed AppIDs, {notObserved} not reported) · {ambiguous} ambiguous";
+            }
+            OnPropertyChanged(nameof(SteamStatus));
             GenreOptions = new[] { "All genres" }.Concat(genres.SelectMany(x => x).Select(x => x.Name).Distinct().Order()).ToList();
             StoreOptions = new[] { "All stores" }.Concat(Games.SelectMany(x => x.Offers.Select(o => o.Source)
                 .Concat(x.Subscriptions.Where(s => s.Included).Select(s => s.Service))).Distinct().Order()).ToList();
@@ -141,11 +175,14 @@ namespace EarningsTracker.ViewModels
             if (loadImmediately)
             {
                 var snapshot = ReadGames();
-                PublishGames(snapshot.games, snapshot.bookmarkedIds, snapshot.cycleMinutes, ReadCatalog());
+                PublishGames(snapshot, ReadCatalog());
             }
         }
 
-        private (List<Game> games, HashSet<int> bookmarkedIds, Dictionary<int, decimal> cycleMinutes) ReadGames()
+        private sealed record GamesSnapshot(List<Game> Games, HashSet<int> BookmarkedIds,
+            Dictionary<int, decimal> CycleMinutes, Dictionary<int, PersonalGameRatings> Ratings);
+
+        private GamesSnapshot ReadGames()
         {
             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
             var games = db.Games.AsNoTracking().ToList();
@@ -165,13 +202,17 @@ namespace EarningsTracker.ViewModels
                 cycleMinutes[gameId] = cycleMinutes.GetValueOrDefault(gameId) + (decimal)session.Duration.TotalMinutes;
             }
 
-            return (games, db.Bookmarks.Select(b => b.GameId).ToHashSet(), cycleMinutes);
+            return new(games, db.Bookmarks.Select(b => b.GameId).ToHashSet(), cycleMinutes, AppSettings.ReadGameRatings(db));
         }
 
-        private void PublishGames(List<Game> games, HashSet<int> bookmarkedIds, Dictionary<int, decimal> cycleMinutes, CatalogSnapshot catalog)
+        private void PublishGames(GamesSnapshot snapshot, CatalogSnapshot catalog)
         {
-            var rows = games.Select(game => new GameItemViewModel(game, bookmarkedIds.Contains(game.Id), _databaseOptions)).ToList();
-            foreach (var row in rows) row.SetCycleMinutes(cycleMinutes.GetValueOrDefault(row.Game.Id));
+            var rows = snapshot.Games.Select(game => new GameItemViewModel(game, snapshot.BookmarkedIds.Contains(game.Id), _databaseOptions)).ToList();
+            foreach (var row in rows)
+            {
+                row.SetCycleMinutes(snapshot.CycleMinutes.GetValueOrDefault(row.Game.Id));
+                row.SetRatings(snapshot.Ratings.GetValueOrDefault(row.Game.Id));
+            }
             foreach (var item in Games) item.PropertyChanged -= GameItem_PropertyChanged;
             ((BatchObservableCollection<GameItemViewModel>)Games).ReplaceAll(rows);
             foreach (var item in Games) item.PropertyChanged += GameItem_PropertyChanged;
@@ -190,7 +231,7 @@ namespace EarningsTracker.ViewModels
             try
             {
                 var snapshot = await Task.Run(() => (games: ReadGames(), catalog: ReadCatalog()));
-                PublishGames(snapshot.games.games, snapshot.games.bookmarkedIds, snapshot.games.cycleMinutes, snapshot.catalog);
+                PublishGames(snapshot.games, snapshot.catalog);
             }
             catch (Exception ex)
             {
@@ -203,6 +244,12 @@ namespace EarningsTracker.ViewModels
 
         private void GameItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (!_reloadingCatalog && e.PropertyName == nameof(GameItemViewModel.Ratings))
+            {
+                GameRatingSuggestions.Apply(Games);
+                if (ShowGrindingRatings || ShowReplayRatings) GamesView.Refresh();
+                return;
+            }
             if (e.PropertyName == nameof(GameItemViewModel.IsOwned))
             {
                 if (!_reloadingCatalog && (_ownedOnly || _playableOnly || _steamOnly)) ApplyFilters();
@@ -252,14 +299,29 @@ namespace EarningsTracker.ViewModels
         public void ApplySortChoice(int choice)
         {
             ShowPriceSortHelp = choice == 3;
+            ShowGrindingRatings = choice == 4;
+            ShowReplayRatings = choice == 5;
             OnPropertyChanged(nameof(ShowPriceSortHelp));
+            OnPropertyChanged(nameof(ShowGrindingRatings));
+            OnPropertyChanged(nameof(ShowReplayRatings));
             switch (choice)
             {
                 case 0: SortGames("Game.RatePerHour", ListSortDirection.Descending); break;
                 case 1: SortGames("Game.Name", ListSortDirection.Ascending); break;
                 case 3: SortGames(nameof(GameItemViewModel.PriceSortValue), ListSortDirection.Ascending); break;
+                case 4: SortByRating(nameof(GameItemViewModel.GrindingRank)); break;
+                case 5: SortByRating(nameof(GameItemViewModel.ReplayRank)); break;
                 default: SortGames("Game.Id", ListSortDirection.Descending); break;
             }
+        }
+
+        private void SortByRating(string rating)
+        {
+            using var deferred = GamesView.DeferRefresh();
+            GamesView.SortDescriptions.Clear();
+            GamesView.SortDescriptions.Add(new SortDescription(rating, ListSortDirection.Descending));
+            GamesView.SortDescriptions.Add(new SortDescription("Game.Name", ListSortDirection.Ascending));
+            GamesView.SortDescriptions.Add(new SortDescription("Game.Id", ListSortDirection.Ascending));
         }
 
         public void SearchGames(string searchText)

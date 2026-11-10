@@ -1,0 +1,20 @@
+{
+  "ReviewedAt": "2026-01-01T00:00:00Z",
+  "PublishedAt": "2026-01-02T00:00:00Z",
+  "Cases": [
+    {"Name":"alternatives and uint maximum","Valid":true,"Apps":[{"AppId":1001,"Kind":"FullGame"},{"AppId":4294967295,"Kind":"FullGame"}]},
+    {"Name":"prologue","Valid":true,"Apps":[{"AppId":1002,"Kind":"Prologue"}]},
+    {"Name":"unreviewed metadata","Valid":false,"Reviewed":false,"Apps":[{"AppId":1001,"Kind":"FullGame"}]},
+    {"Name":"duplicates","Valid":false,"Apps":[{"AppId":1001,"Kind":"FullGame"},{"AppId":1001,"Kind":"FullGame"}]},
+    {"Name":"unsorted","Valid":false,"Apps":[{"AppId":1002,"Kind":"FullGame"},{"AppId":1001,"Kind":"FullGame"}]},
+    {"Name":"mixed experience","Valid":false,"Apps":[{"AppId":1001,"Kind":"FullGame"},{"AppId":1002,"Kind":"Demo"}]},
+    {"Name":"package token","Valid":false,"Apps":[{"AppId":"sub/1001","Kind":"FullGame"}]},
+    {"Name":"overflow","Valid":false,"Apps":[{"AppId":4294967296,"Kind":"FullGame"}]},
+    {"Name":"fraction","Valid":false,"Apps":[{"AppId":1001.5,"Kind":"FullGame"}]},
+    {"Name":"boolean","Valid":false,"Apps":[{"AppId":true,"Kind":"FullGame"}]},
+    {"Name":"zero","Valid":false,"Apps":[{"AppId":0,"Kind":"FullGame"}]},
+    {"Name":"unsupported kind","Valid":false,"Apps":[{"AppId":1001,"Kind":"Bundle"}]},
+    {"Name":"empty reviewed mapping","Valid":false,"Apps":[]},
+    {"Name":"missing apps","Valid":false,"Apps":null}
+  ]
+}

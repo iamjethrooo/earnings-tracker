@@ -22,10 +22,9 @@ internal sealed class GameOwnershipWindow : Window
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
         panel.Children.Add(new TextBlock { Text = item.Game.Name, FontSize = 18, TextWrapping = TextWrapping.Wrap });
-        var owned = new CheckBox { Content = "I also own this game manually", IsChecked = item.Ownership?.IsOwned == true, Margin = new Thickness(0, 12, 0, 12) };
-        if (!item.IsSteamOwned) owned.Content = "I own this game";
+        var owned = new CheckBox { Content = "Manually mark as owned", IsChecked = item.IsOwned, Margin = new Thickness(0, 12, 0, 12) };
         panel.Children.Add(owned);
-        if (item.IsSteamOwned) panel.Children.Add(new TextBlock { Text = "Owned on Steam. Manage the linked account in Settings.",
+        if (item.IsSteamOwned) panel.Children.Add(new TextBlock { Text = item.SteamEvidence,
             TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) });
         panel.Children.Add(new TextBlock { Text = "Store or source" });
         var source = new ComboBox { IsEditable = true, Text = item.Ownership?.Source ?? "", Margin = new Thickness(0, 5, 0, 12),

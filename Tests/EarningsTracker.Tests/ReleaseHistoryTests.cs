@@ -18,6 +18,8 @@ public class ReleaseHistoryTests
     {
         var entries = ReleaseHistory.Load("1.2.0");
         Assert.Equal(new[] { "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Where(entry => !entry.Unreleased).Select(entry => entry.Version));
+        var pending = Assert.Single(entries, entry => entry.Unreleased);
+        Assert.Equal("Not yet published", pending.DateLabel);
         var installed = Assert.Single(entries, entry => entry.IsInstalled);
         Assert.Equal("1.2.0", installed.Version);
         Assert.True(installed.IsExpanded);
@@ -72,7 +74,9 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             window.UpdateLayout();
             var list = (ListBox)window.FindName("Releases");
-            Assert.Equal(5, list.Items.Count);
+            var entries = list.Items.Cast<ReleaseHistoryEntry>().ToList();
+            Assert.Equal(5, entries.Count(entry => !entry.Unreleased));
+            Assert.Single(entries, entry => entry.Unreleased);
             var installed = (ReleaseHistoryEntry)list.SelectedItem;
             Assert.True(installed.IsInstalled);
             Assert.True(installed.IsExpanded);

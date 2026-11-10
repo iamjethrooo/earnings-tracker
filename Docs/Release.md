@@ -59,6 +59,10 @@ Upgrade Information and the template's distribution disclosures. The in-app hist
 existing upgrade-first display. Complete the guidelines' editorial review before requesting
 publication approval; generation checks formatting, not the truth of prose.
 
+When creating a GitHub release draft, set its title to the exact version tag, for example
+`--title v1.4.0` with `gh release create`. Verify that the draft title matches the tag before
+publishing. The notes body begins with `# Earnings Tracker v1.4.0` for that version.
+
 Offline note generation can be checked without packaging or touching user data:
 
 ```powershell
@@ -193,7 +197,8 @@ The eight existing files are in `artifacts/pro39/v1.1.0-rc-20261020-notices-01/u
 
 SHA256SUMS covers its seven companions; its own hash is recorded separately above. The reviewed private publication plan/body/manifest are retained in `.local-docs/pro39-public-110-preparation-20261020/`. The published GitHub body explains that attached/embedded notes, source documentation at the tag and `UnsignedLocalOnly` describe the earlier preparation policy; explicit final release approval supersedes their pending rights/audience/signing decision wording, without claiming independently verified permissions or native notice completeness. Preserve original assets, source SHA and hashes. The owner explicitly approved that exception and the body; publication did not change the candidate bytes.
 
-The owner approved and the operator completed this sequence (retained as the publication procedure):
+The owner approved and the operator completed this sequence. For future release titles, follow
+the version-only rule above.
 
 1. Recheck remote refs/releases and local artifact identity; stop on divergence, collisions or changed bytes. Normally fast-forward `origin/main` with the five reviewed commits `400c9c7`, `6844dc0`, `bc9da71`, `f9b34a3`, `e27851c`, targeting exactly `e27851cb1aa2786663a74d718a8a51d6a713169f`. No force push, implicit later HEAD or new commit. Public source/history exposure is part of approval.
 2. Create and push annotated `v1.1.0` at that exact SHA. Create draft `Earnings Tracker v1.1.0`, upload exactly the eight assets without overwrite, inspect the draft, then publish stable/latest (not prerelease). Stable publication immediately enables discovery by compatible new-identity clients.

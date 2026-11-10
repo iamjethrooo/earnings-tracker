@@ -17,12 +17,12 @@ public class SettingsTests
         var handler = new CatalogTests.FakeHandler(_ => new(HttpStatusCode.ServiceUnavailable));
         using var client = new HttpClient(handler);
         var updates = new CatalogUpdates(database.Options, client);
-        Assert.Equal("", await updates.RefreshAsync(false));
+        Assert.Equal("", await updates.RefreshAsync(false, TestContext.Current.CancellationToken));
         Assert.Equal(0, handler.Calls);
         Assert.Equal("", settings.Get("updates.lastAttempt"));
         // Automatic checks never read the user's live-price credentials.
         settings.Set("updates.automatic", "true");
-        Assert.Contains("keeping saved data", await updates.RefreshAsync(false));
+        Assert.Contains("keeping saved data", await updates.RefreshAsync(false, TestContext.Current.CancellationToken));
         Assert.Equal(2, handler.Calls);
         Assert.NotEmpty(settings.Get("updates.lastAttempt"));
         Assert.Empty(settings.Get("updates.catalogSuccess"));

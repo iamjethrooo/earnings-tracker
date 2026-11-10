@@ -240,6 +240,97 @@ public class GamesRefinementTests(WpfTestHost host)
     });
 
     [Fact]
+    public Task PersonalRatingsRankSimilarGamesAndPersistOnlyUserChoices() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var source = new Game { Name = "Zeta" };
+        var similar = new Game { Name = "Alpha" };
+        var other = new Game { Name = "Puzzle" };
+        var duplicate = new Game { Name = "Zeta" };
+        using (var db = database.CreateContext())
+        {
+            db.Games.AddRange(source, similar, other, duplicate);
+            db.SaveChanges();
+            db.GameMetadata.AddRange(new[] { source, similar, other }.Select(game =>
+                new GameMetadata { GameId = game.Id, CatalogId = $"fixture-{game.Id}", Reviewed = true }));
+            db.GameGenres.AddRange(new GameGenre { GameId = source.Id, Name = "Action" },
+                new GameGenre { GameId = similar.Id, Name = "Action" },
+                new GameGenre { GameId = similar.Id, Name = "Puzzle" },
+                new GameGenre { GameId = other.Id, Name = "Puzzle" });
+            db.SaveChanges();
+        }
+
+        var view = new GamesView(database.Options);
+        var model = (GamesViewModel)view.DataContext;
+        var sort = (ComboBox)view.FindName("SortComboBox");
+        var grind = (ComboBox)view.FindName("GrindingRatingPicker");
+        var replay = (ComboBox)view.FindName("ReplayRatingPicker");
+        var save = (Button)view.FindName("SaveRatingsButton");
+        GameItemViewModel Item(Game game) => model.Games.Single(item => item.Game.Id == game.Id);
+        int[] Order() => model.GamesView.Cast<GameItemViewModel>().Select(item => item.Game.Id).ToArray();
+
+        sort.SelectedIndex = 4;
+        view.OpenGameDetails(source);
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Assert.Equal(0, grind.SelectedIndex);
+        grind.SelectedIndex = 3;
+        save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal("Ratings saved.", ((TextBlock)view.FindName("RatingsFeedback")).Text);
+        Assert.Equal(3, Item(source).GrindingRating);
+        Assert.Equal(0, Item(similar).GrindingRating);
+        Assert.Contains("Suggested grinding ease · Easy", Item(similar).GrindingRatingText);
+        Assert.Equal(0, Item(similar).ReplayRank);
+        Assert.Equal(0, Item(other).GrindingRank);
+        Assert.Equal(0, Item(duplicate).GrindingRank);
+        Assert.Equal(new[] { similar.Id, source.Id, other.Id, duplicate.Id }, Order());
+
+        view.OpenGameDetails(similar);
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Assert.Equal(0, grind.SelectedIndex);
+        grind.SelectedIndex = 1;
+        replay.SelectedIndex = 3;
+        save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(new[] { source.Id, similar.Id, other.Id, duplicate.Id }, Order());
+        Assert.Equal(1, Item(other).GrindingRank);
+        Assert.Equal(3, Item(source).ReplayRank);
+        sort.SelectedIndex = 5;
+        Assert.True(model.ShowReplayRatings);
+        Assert.Equal(new[] { similar.Id, other.Id, source.Id, duplicate.Id }, Order());
+
+        var reopened = new GamesViewModel(database.Options);
+        Assert.Equal(2, reopened.DefaultSortIndex);
+        Assert.Equal(3, reopened.Games.Single(item => item.Game.Id == source.Id).GrindingRating);
+        Assert.Equal(0, reopened.Games.Single(item => item.Game.Id == other.Id).ReplayRating);
+        grind.SelectedIndex = 0;
+        save.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(3, Item(similar).GrindingRank);
+        Assert.Equal(0, Item(other).GrindingRank);
+        Assert.Equal(3, Item(similar).ReplayRating);
+        using var check = database.CreateContext();
+        Assert.Equal(new PersonalGameRatings(0, 3), AppSettings.ReadGameRatings(check)[similar.Id]);
+        Assert.Empty(check.Sessions);
+
+        var panel = (Expander)view.FindName("PersonalRatings");
+        panel.IsExpanded = true;
+        view.Width = 740;
+        view.Height = 850;
+        view.Measure(new Size(740, 850));
+        view.Arrange(new Rect(0, 0, 740, 850));
+        view.UpdateLayout();
+        panel.BringIntoView();
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Assert.True(grind.ActualWidth > 0 && replay.ActualWidth > 0);
+        var bitmap = new RenderTargetBitmap(740, 850, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(view);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        var directory = Path.Combine(AppContext.BaseDirectory, "GamesVisuals");
+        Directory.CreateDirectory(directory);
+        using var output = File.Create(Path.Combine(directory, "personal-ratings-740.png"));
+        encoder.Save(output);
+    });
+
+    [Fact]
     public Task ClearFiltersUpdatesBoundBookmarkAndKeepsSavedStartingPreferences() => host.RunAsync(async () =>
     {
         using var database = new TestDatabase();

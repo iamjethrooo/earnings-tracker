@@ -164,8 +164,11 @@ namespace EarningsTracker.Views
             var sessions = db.Sessions.Where(s => s.GameId == game.Id).OrderByDescending(g => g.Date).ToList();
             var identities = db.Games.AsNoTracking().Where(candidate => candidate.Name == game.Name).OrderBy(candidate => candidate.Id).ToList();
             var changes = db.GameChanges.AsNoTracking().Where(change => change.GameId == game.Id).OrderByDescending(change => change.ChangedAt).ThenByDescending(change => change.Id).ToList();
+            var previousCatalog = currentGame?.Catalog;
             currentGame = new GameDetailsViewModel(game, sessions, identities, changes);
             currentGame.Catalog = (DataContext as GamesViewModel)?.Games.FirstOrDefault(x => x.Game.Id == game.Id);
+            if (_selectedGame?.Id != game.Id || !ReferenceEquals(previousCatalog, currentGame.Catalog))
+                ResetRatingsEditor(currentGame.Catalog);
             _selectedGame = game;
             GameDetailsView.DataContext = currentGame;
             SessionRowsCollection.Collection = currentGame.SessionsView;
@@ -195,7 +198,12 @@ namespace EarningsTracker.Views
         internal void UpdateSelectedCatalog()
         {
             if (currentGame != null && DataContext is GamesViewModel model)
-                currentGame.Catalog = model.Games.FirstOrDefault(item => item.Game.Id == currentGame.Game.Id);
+            {
+                var item = model.Games.FirstOrDefault(item => item.Game.Id == currentGame.Game.Id);
+                if (ReferenceEquals(currentGame.Catalog, item)) return;
+                currentGame.Catalog = item;
+                ResetRatingsEditor(item);
+            }
         }
 
         internal ScrollViewer? DetailsScroll
@@ -273,6 +281,33 @@ namespace EarningsTracker.Views
         {
             if (currentGame?.Catalog is not GameItemViewModel item) return;
             new Modals.GameOwnershipWindow(item) { Owner = Window.GetWindow(this) }.ShowDialog();
+        }
+
+        private void SaveRatings_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentGame?.Catalog is not GameItemViewModel item)
+            {
+                RatingsFeedback.Text = "Load Games before saving ratings.";
+                return;
+            }
+            try
+            {
+                item.SaveRatings(GrindingRatingPicker.SelectedIndex, ReplayRatingPicker.SelectedIndex);
+                RatingsFeedback.Text = "Ratings saved.";
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Personal ratings could not be saved ({ex.GetType().Name}).");
+                RatingsFeedback.Text = "Ratings could not be saved. Try again.";
+            }
+        }
+
+        private void ResetRatingsEditor(GameItemViewModel? item)
+        {
+            PersonalRatings.IsEnabled = item != null;
+            GrindingRatingPicker.SelectedIndex = item?.GrindingRating ?? 0;
+            ReplayRatingPicker.SelectedIndex = item?.ReplayRating ?? 0;
+            RatingsFeedback.Text = "";
         }
 
         private void DetailSessionFilter_Checked(object sender, RoutedEventArgs e)

@@ -7,7 +7,6 @@
     x:Name="Root" SizeChanged="View_SizeChanged">
     <UserControl.Resources>
         <Style x:Key="OwnershipButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
             <Setter Property="Padding" Value="6,2"/>
             <Setter Property="FontSize" Value="{StaticResource FontSizeSupporting}"/>
             <Setter Property="MinWidth" Value="0"/>
@@ -16,9 +15,6 @@
                     <Setter Property="Background" Value="{StaticResource VerifiedBackgroundColor}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource VerifiedTextColor}"/>
                     <Setter Property="Foreground" Value="{StaticResource VerifiedTextColor}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding IsSteamOwned}" Value="True">
-                    <Setter Property="Opacity" Value="1"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -67,6 +63,7 @@
                             <TextBlock Text="Sort" Style="{StaticResource ItemSubtitle}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox x:Name="SortComboBox" Style="{StaticResource FilterDropdown}" Width="178" AutomationProperties.Name="Sort games" SelectionChanged="SortComboBox_SelectionChanged">
                                 <ComboBoxItem Content="Highest hourly rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest added"/><ComboBoxItem Content="Lowest saved price"/>
+                                <ComboBoxItem Content="My ease of grinding"/><ComboBoxItem Content="My replay appeal"/>
                             </ComboBox>
                         </StackPanel>
                         <Button x:Name="ClearFiltersButton" Grid.Column="2" Content="Clear filters" Style="{StaticResource FilterToolbarButton}" IsEnabled="{Binding CanClearFilters}" Click="ClearFilters_Click"
@@ -105,7 +102,7 @@
                             <StackPanel x:Name="MoreFiltersPanel" Width="280" KeyboardNavigation.TabNavigation="Cycle" KeyDown="MoreFilters_KeyDown">
                                 <TextBlock Text="More filters" Style="{StaticResource SectionHeading}" Margin="0,0,0,8"/>
                                 <CheckBox x:Name="FreeFilter" Content="Free-to-play" IsChecked="{Binding FreeOnly}" Style="{StaticResource FilterCheckBox}" Margin="0,0,0,8"/>
-                                <CheckBox x:Name="SteamFilter" Content="Steam owned" IsChecked="{Binding SteamOnly}" Style="{StaticResource FilterCheckBox}" Margin="0,0,0,8" ToolTip="Matching games in your last synced Steam library. Link or sync your account in Settings."/>
+                                <CheckBox x:Name="SteamFilter" Content="Steam library" IsChecked="{Binding SteamOnly}" Style="{StaticResource FilterCheckBox}" Margin="0,0,0,8" ToolTip="Exact matches in your last successful Steam sync, including saved evidence after a failed sync."/>
                                 <CheckBox x:Name="GamePassFilter" Content="PC Game Pass" IsChecked="{Binding GamePassOnly}" Style="{StaticResource FilterCheckBox}" Margin="0,0,0,8" ToolTip="{Binding GamePassFilterHelp}"/>
                                 <CheckBox x:Name="ArchivedFilter" Content="Show archived" IsChecked="{Binding ShowArchived, Mode=TwoWay}" Style="{StaticResource FilterCheckBox}" Margin="0"/>
                             </StackPanel>
@@ -119,7 +116,7 @@
                 </StackPanel>
             </Border>
             <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                <DockPanel><Button x:Name="RefreshCatalogButton" DockPanel.Dock="Right" Content="Refresh catalog" Style="{StaticResource SecondaryButton}" Click="RefreshCatalog_Click" Margin="12,0,0,0"/>
+                <DockPanel><Button x:Name="RefreshCatalogButton" DockPanel.Dock="Right" Content="Refresh catalog" Style="{StaticResource SecondaryButton}" Click="RefreshCatalog_Click" Margin="12,0,0,0" VerticalAlignment="Center"/>
                     <StackPanel><TextBlock Text="{Binding AvailableGamesText}" Style="{StaticResource ItemSubtitle}" AutomationProperties.LiveSetting="Polite"/>
                         <TextBlock Text="{Binding CatalogStatus}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,0"/>
                         <TextBlock Text="{Binding SteamStatus}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,0"/>
@@ -155,9 +152,17 @@
                             <WrapPanel Margin="0,4,0,0">
                                 <TextBlock Text="{Binding GenreText}" Style="{StaticResource ItemSubtitle}" TextTrimming="CharacterEllipsis" MaxWidth="180" ToolTip="{Binding GenreText}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <Button Command="{Binding ToggleOwnedCommand}" Content="{Binding OwnershipButtonText}" Style="{StaticResource OwnershipButton}" ToolTip="{Binding OwnershipTooltip}" AutomationProperties.Name="{Binding OwnershipAccessibleName}" Margin="0,0,8,0"/>
+                                <Border Style="{StaticResource TransactionBadge}" Background="{StaticResource AccentBackgroundColor}" ToolTip="{Binding SteamEvidence}" Margin="0,0,8,0"
+                                        Visibility="{Binding IsSteamOwned, Converter={StaticResource Show}}">
+                                    <TextBlock Text="{Binding SteamBadge}" Style="{StaticResource ItemSubtitle}"/>
+                                </Border>
                                 <TextBlock Text="{Binding SourceText}" Style="{StaticResource ItemSubtitle}" TextTrimming="CharacterEllipsis" MaxWidth="220" VerticalAlignment="Center"/>
                             </WrapPanel>
                             <TextBlock Text="{Binding OwnershipError}" Style="{StaticResource InlineValidationText}"/>
+                            <TextBlock Text="{Binding GrindingRatingText}" ToolTip="{Binding GrindingRatingHelp}" Style="{StaticResource ItemSubtitle}"
+                                       Visibility="{Binding DataContext.ShowGrindingRatings, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Show}}"/>
+                            <TextBlock Text="{Binding ReplayRatingText}" ToolTip="{Binding ReplayRatingHelp}" Style="{StaticResource ItemSubtitle}"
+                                       Visibility="{Binding DataContext.ShowReplayRatings, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource Show}}"/>
                         </StackPanel>
                         <Grid x:Name="Comparisons" Grid.Column="2" VerticalAlignment="Center">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="0.65*"/><ColumnDefinition Width="0.95*"/><ColumnDefinition Width="1.5*"/></Grid.ColumnDefinitions>
@@ -310,7 +315,7 @@
                                 <TextBlock Text="{Binding Game.RatePerHour, StringFormat={}{0:C2}/hr, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}" Margin="0,0,16,4"/>
                                 <TextBlock Text="{Binding Catalog.PriceText}" Style="{StaticResource ItemSubtitle}" VerticalAlignment="Center"/>
                             </WrapPanel>
-                            <Button DataContext="{Binding Catalog}" Command="{Binding ToggleOwnedCommand}" Content="{Binding OwnershipButtonText}" Style="{StaticResource OwnershipButton}" ToolTip="{Binding OwnershipTooltip}" HorizontalAlignment="Left" Margin="0,4,0,0"/>
+                            <Button DataContext="{Binding Catalog}" Command="{Binding ToggleOwnedCommand}" Content="{Binding OwnershipButtonText}" Style="{StaticResource OwnershipButton}" ToolTip="{Binding OwnershipTooltip}" AutomationProperties.Name="{Binding OwnershipAccessibleName}" HorizontalAlignment="Left" Margin="0,4,0,0"/>
                             <TextBlock Text="{Binding Catalog.OwnershipError}" Style="{StaticResource InlineValidationText}"/>
                             <TextBlock DataContext="{Binding Catalog}" Text="{Binding GamePassStatus}" Style="{StaticResource GamePassEvidence}"/>
                         </StackPanel>
@@ -362,6 +367,9 @@
                         <TextBlock Text="Ownership &amp; access" Style="{StaticResource SectionHeading}"/>
 
                         <TextBlock Text="{Binding Catalog.PurchaseEvidence}" Style="{StaticResource PageDescription}"/>
+                        <TextBlock Text="{Binding Catalog.SteamEvidence}" Style="{StaticResource PageDescription}"/>
+                        <TextBlock Text="{Binding Catalog.SteamInstallation}" Style="{StaticResource PageDescription}"
+                                   Visibility="{Binding Catalog.ShowsSteamInstallation, Converter={StaticResource Show}}"/>
                         <TextBlock Text="{Binding Catalog.BreakEvenText}" Style="{StaticResource PageDescription}"/>
                         <Button Content="Edit ownership" Style="{StaticResource SecondaryButton}" Click="Ownership_Click" HorizontalAlignment="Left" Margin="0,12,0,0"/>
                         <TextBlock Text="Subscription evidence" Style="{StaticResource SectionHeading}" Margin="0,16,0,0"/>
@@ -399,6 +407,29 @@
                             </DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel></Border>
+                    <Border Style="{StaticResource SurfacePanel}" Margin="0,0,0,12">
+                        <Expander x:Name="PersonalRatings" Header="My ratings">
+                            <StackPanel Margin="0,8,0,0">
+                                <TextBlock Text="Your ratings guide suggestions for games with similar reviewed genres." Style="{StaticResource PageDescription}"/>
+                                <Label Target="{Binding ElementName=GrindingRatingPicker}" Content="Ease of grinding" Padding="0,8,0,4" Foreground="{StaticResource DefaultTextColor}"/>
+                                <TextBlock Text="How easy is it to keep playing in a typical earning session?" Style="{StaticResource PageDescription}"/>
+                                <ComboBox x:Name="GrindingRatingPicker" Style="{StaticResource FilterDropdown}" Width="150" HorizontalAlignment="Left" Margin="0,4,0,4"
+                                          AutomationProperties.Name="My ease of grinding" SelectedIndex="0">
+                                    <ComboBoxItem Content="Unrated"/><ComboBoxItem Content="Hard"/><ComboBoxItem Content="Moderate"/><ComboBoxItem Content="Easy"/>
+                                </ComboBox>
+                                <TextBlock Text="{Binding Catalog.GrindingRatingText}" ToolTip="{Binding Catalog.GrindingRatingHelp}" Style="{StaticResource PageDescription}"/>
+                                <Label Target="{Binding ElementName=ReplayRatingPicker}" Content="Replay appeal" Padding="0,8,0,4" Foreground="{StaticResource DefaultTextColor}"/>
+                                <TextBlock Text="How much do you want to return to this game without the rewards?" Style="{StaticResource PageDescription}"/>
+                                <ComboBox x:Name="ReplayRatingPicker" Style="{StaticResource FilterDropdown}" Width="150" HorizontalAlignment="Left" Margin="0,4,0,4"
+                                          AutomationProperties.Name="My replay appeal" SelectedIndex="0">
+                                    <ComboBoxItem Content="Unrated"/><ComboBoxItem Content="Low"/><ComboBoxItem Content="Medium"/><ComboBoxItem Content="High"/>
+                                </ComboBox>
+                                <TextBlock Text="{Binding Catalog.ReplayRatingText}" ToolTip="{Binding Catalog.ReplayRatingHelp}" Style="{StaticResource PageDescription}"/>
+                                <Button x:Name="SaveRatingsButton" Content="Save ratings" Style="{StaticResource SecondaryButton}" Click="SaveRatings_Click" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                <TextBlock x:Name="RatingsFeedback" Style="{StaticResource PageDescription}" AutomationProperties.LiveSetting="Polite"/>
+                            </StackPanel>
+                        </Expander>
+                    </Border>
                 </StackPanel>
                 <StackPanel x:Name="DetailRight" Grid.Column="2">
                     <Border Style="{StaticResource SurfacePanel}" Margin="0,12,0,12"><StackPanel x:Name="CatalogDetailsPanel">

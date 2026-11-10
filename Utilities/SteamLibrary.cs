@@ -11,6 +11,11 @@ using Microsoft.EntityFrameworkCore;
 namespace EarningsTracker.Utilities;
 
 internal sealed record SteamLibrarySnapshot(string SteamId, DateTime SyncedAtUtc, HashSet<uint> AppIds);
+internal sealed class SteamRateLimitException(DateTimeOffset retryAt) : Exception(
+    $"Steam rate limited requests. Retry after {retryAt.ToLocalTime():g}.")
+{
+    internal DateTimeOffset RetryAt { get; } = retryAt;
+}
 
 internal interface ISteamCredentials
 {
@@ -31,19 +36,23 @@ internal sealed class SteamCredentials : ISteamCredentials
 internal sealed class SteamLibrary
 {
     internal const string SnapshotKey = "steam.library";
+    internal const string RetryKey = "steam.retryUntil";
+    private const int ResponseLimit = 8 * 1024 * 1024;
     private static readonly SemaphoreSlim SyncLock = new(1);
     private static readonly HttpClient SharedClient = new(new HttpClientHandler { AllowAutoRedirect = false })
         { Timeout = TimeSpan.FromSeconds(25) };
     private readonly DbContextOptions<AppDbContext>? options;
     private readonly HttpClient client;
     private readonly ISteamCredentials credentials;
+    private readonly TimeProvider clock;
 
     internal SteamLibrary(DbContextOptions<AppDbContext>? options = null, HttpClient? client = null,
-        ISteamCredentials? credentials = null)
+        ISteamCredentials? credentials = null, TimeProvider? clock = null)
     {
         this.options = options;
         this.client = client ?? SharedClient;
         this.credentials = credentials ?? new SteamCredentials();
+        this.clock = clock ?? TimeProvider.System;
     }
 
     private AppDbContext Context() => options == null ? new() : new(options);
@@ -51,22 +60,46 @@ internal sealed class SteamLibrary
     internal static SteamLibrarySnapshot? Read(AppDbContext db)
     {
         var json = CatalogService.GetSetting(db, SnapshotKey);
-        if (json.Length == 0) return null;
-        var snapshot = JsonSerializer.Deserialize<SteamLibrarySnapshot>(json);
-        if (snapshot == null || !ValidSteamId(snapshot.SteamId) || snapshot.AppIds == null
-            || snapshot.AppIds.Contains(0) || snapshot.SyncedAtUtc == default)
-            throw new InvalidDataException("The saved Steam library could not be read. Relink in Settings.");
-        return snapshot;
+        if (json.Length == 0 || json.Length > ResponseLimit) return null;
+        try
+        {
+            var snapshot = JsonSerializer.Deserialize<SteamLibrarySnapshot>(json);
+            return snapshot is { AppIds: not null } && ValidSteamId(snapshot.SteamId)
+                && !snapshot.AppIds.Contains(0) && snapshot.SyncedAtUtc != default ? snapshot : null;
+        }
+        catch (JsonException) { return null; }
     }
 
-    internal static string Status(AppDbContext db)
+    internal static bool HasSavedLink(AppDbContext db) => CatalogService.GetSetting(db, SnapshotKey).Length > 0;
+
+    internal static bool IsStale(AppDbContext db, SteamLibrarySnapshot snapshot) =>
+        snapshot.SyncedAtUtc < DateTime.UtcNow.AddDays(-1)
+        || CatalogService.GetSetting(db, "steam.result").Length > 0
+        || ActiveCooldown(db, DateTimeOffset.UtcNow) != null;
+
+    internal static string Status(AppDbContext db, SteamLibrarySnapshot? saved)
     {
-        var saved = Read(db);
-        if (saved == null) return "Steam not linked.";
-        var stale = saved.SyncedAtUtc < DateTime.UtcNow.AddDays(-1) ? " · saved ownership may be out of date" : "";
-        var result = CatalogService.GetSetting(db, "steam.result");
-        return $"Steam · last synced {saved.SyncedAtUtc.ToLocalTime():g}{stale}"
+        var status = saved == null
+            ? HasSavedLink(db) ? "Saved Steam evidence unavailable. Relink or unlink in Settings." : "Steam not linked."
+            : $"Steam · last synced {saved.SyncedAtUtc.ToLocalTime():g}"
+                + (IsStale(db, saved) ? " · saved evidence may be out of date" : "");
+        var cooldown = ActiveCooldown(db, DateTimeOffset.UtcNow);
+        var result = cooldown?.Message ?? CatalogService.GetSetting(db, "steam.result");
+        return status
             + (result.Length > 0 ? $" · {result}" : "");
+    }
+
+    private static SteamRateLimitException? ActiveCooldown(AppDbContext db, DateTimeOffset now) =>
+        DateTimeOffset.TryParse(CatalogService.GetSetting(db, RetryKey), CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var retryAt) && retryAt > now ? new(retryAt) : null;
+
+    private void SaveCooldown(SteamRateLimitException limit)
+    {
+        using var db = Context();
+        CatalogService.SetSetting(db, RetryKey, limit.RetryAt.ToString("O"));
+        if (HasSavedLink(db))
+            CatalogService.SetSetting(db, "steam.result", "Steam rate limited the last sync. Showing saved library evidence.");
+        db.SaveChanges();
     }
 
     internal async Task LinkAsync(string profile, string key, CancellationToken cancellationToken = default)
@@ -80,9 +113,20 @@ internal sealed class SteamLibrary
         await SyncLock.WaitAsync(cancellationToken);
         try
         {
+            var cooldown = await Task.Run(() =>
+            {
+                using var db = Context();
+                return ActiveCooldown(db, clock.GetUtcNow());
+            }, cancellationToken);
+            if (cooldown != null) throw cooldown;
             steamId ??= await ResolveAsync(vanity!, key, cancellationToken);
             var apps = await FetchAsync(steamId, key, cancellationToken);
             await Task.Run(() => Save(new(steamId, DateTime.UtcNow, apps), key, cancellationToken), cancellationToken);
+        }
+        catch (SteamRateLimitException limit)
+        {
+            await Task.Run(() => SaveCooldown(limit), CancellationToken.None);
+            throw;
         }
         finally { SyncLock.Release(); }
     }
@@ -93,20 +137,22 @@ internal sealed class SteamLibrary
         await SyncLock.WaitAsync(cancellationToken);
         try
         {
-            var saved = await Task.Run(() =>
+            var (saved, status) = await Task.Run<(SteamLibrarySnapshot?, string)>(() =>
             {
                 using var db = Context();
                 var snapshot = Read(db);
-                if (snapshot == null) return null;
-                if (!manual && CatalogService.GetSetting(db, "steam.automatic") == "false") return null;
+                if (snapshot == null)
+                    return (null, manual && HasSavedLink(db) ? "Saved Steam evidence unavailable. Relink or unlink in Settings." : "");
+                if (!manual && CatalogService.GetSetting(db, "steam.automatic") == "false") return (null, "");
+                if (ActiveCooldown(db, clock.GetUtcNow()) is { } pending) return (null, pending.Message);
                 if (!manual && DateTime.TryParse(CatalogService.GetSetting(db, "steam.lastAttempt"),
                     CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var attempted)
-                    && attempted > DateTime.UtcNow.AddDays(-1)) return null;
+                    && attempted > DateTime.UtcNow.AddDays(-1)) return (null, "");
                 CatalogService.SetSetting(db, "steam.lastAttempt", DateTime.UtcNow.ToString("O"));
                 db.SaveChanges();
-                return snapshot;
+                return (snapshot, "");
             }, cancellationToken);
-            if (saved == null) return "";
+            if (saved == null) return status;
             try
             {
                 var key = await Task.Run(credentials.Get, cancellationToken);
@@ -117,11 +163,16 @@ internal sealed class SteamLibrary
                 return "Steam library synced.";
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+            catch (SteamRateLimitException limit)
+            {
+                await Task.Run(() => SaveCooldown(limit), CancellationToken.None);
+                return limit.Message + " Showing saved library evidence.";
+            }
             catch (Exception ex)
             {
                 // HTTP exceptions can contain the API key in their URL. Never trace or persist them.
                 System.Diagnostics.Trace.TraceWarning($"Steam sync failed ({ex.GetType().Name}).");
-                const string message = "Steam sync unavailable; showing saved ownership. Check your key and Game details privacy in Settings, then retry.";
+                const string message = "Steam sync unavailable. Showing saved library evidence. Check your key and Game details privacy in Settings, then retry.";
                 await Task.Run(() =>
                 {
                     using var db = Context();
@@ -148,8 +199,14 @@ internal sealed class SteamLibrary
                     || s.Key == "steam.result" || s.Key == "steam.lastAttempt"));
                 db.SaveChanges();
                 cancellationToken.ThrowIfCancellationRequested();
+                var previousKey = credentials.Get();
                 credentials.Remove();
-                transaction.Commit();
+                try { transaction.Commit(); }
+                catch
+                {
+                    RestoreCredential(previousKey);
+                    throw;
+                }
             }, cancellationToken);
         }
         finally { SyncLock.Release(); }
@@ -162,6 +219,7 @@ internal sealed class SteamLibrary
         CatalogService.SetSetting(db, SnapshotKey, JsonSerializer.Serialize(snapshot));
         CatalogService.SetSetting(db, "steam.lastAttempt", snapshot.SyncedAtUtc.ToString("O"));
         CatalogService.SetSetting(db, "steam.result", "");
+        if (db.CatalogSettings.Find(RetryKey) is { } cooldown) db.CatalogSettings.Remove(cooldown);
         db.SaveChanges();
         cancellationToken.ThrowIfCancellationRequested();
         var previousKey = replacementKey == null ? null : credentials.Get();
@@ -173,13 +231,15 @@ internal sealed class SteamLibrary
         }
         catch
         {
-            if (keySaved)
-            {
-                try { if (previousKey == null) credentials.Remove(); else credentials.Save(previousKey); }
-                catch { System.Diagnostics.Trace.TraceWarning("Steam credential rollback unavailable. Relink in Settings."); }
-            }
+            if (keySaved) RestoreCredential(previousKey);
             throw;
         }
+    }
+
+    private void RestoreCredential(string? previousKey)
+    {
+        try { if (previousKey == null) credentials.Remove(); else credentials.Save(previousKey); }
+        catch { System.Diagnostics.Trace.TraceWarning("Steam credential rollback unavailable. Relink in Settings."); }
     }
 
     internal static bool ValidSteamId(string value) => ulong.TryParse(value, NumberStyles.None,
@@ -245,16 +305,25 @@ internal sealed class SteamLibrary
         using var request = new HttpRequestMessage(HttpMethod.Get,
             $"https://api.steampowered.com/{method}?key={Uri.EscapeDataString(key)}&{parameters}");
         using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            var now = clock.GetUtcNow();
+            var retry = response.Headers.RetryAfter;
+            var retryAt = retry?.Date ?? (retry?.Delta is { } delta && delta > TimeSpan.Zero && delta <= DateTimeOffset.MaxValue - now
+                ? now + delta : now.AddMinutes(1));
+            throw new SteamRateLimitException(retryAt > now ? retryAt : now.AddMinutes(1));
+        }
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             throw new InvalidOperationException("Steam rejected the API key. Check your key and retry.");
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException("Steam is unavailable. Retry later.");
+        if (response.Content.Headers.ContentLength > ResponseLimit) throw new InvalidDataException("Steam response is too large.");
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var bytes = new MemoryStream();
         var buffer = new byte[8192];
         int read;
         while ((read = await stream.ReadAsync(buffer, cancellationToken)) > 0)
         {
-            if (bytes.Length + read > 8 * 1024 * 1024) throw new InvalidDataException("Steam response is too large.");
+            if (bytes.Length + read > ResponseLimit) throw new InvalidDataException("Steam response is too large.");
             bytes.Write(buffer, 0, read);
         }
         return JsonDocument.Parse(bytes.ToArray());
@@ -271,22 +340,47 @@ internal static class SteamGameMatching
             ?? throw new InvalidDataException("Steam identity mappings could not be read.");
     });
 
-    internal static bool IsOwned(GameMetadata? metadata, IEnumerable<StoreOffer> offers, SteamLibrarySnapshot? library)
+    internal static bool IsOwned(GameMetadata? metadata, IEnumerable<StoreOffer> offers, SteamLibrarySnapshot? library,
+        CatalogService.SteamIdentityDocument? identities = null) =>
+        Match(metadata, offers, library, identities) == SteamMatch.Matched;
+
+    internal static SteamMatch Match(GameMetadata? metadata, IEnumerable<StoreOffer> offers, SteamLibrarySnapshot? library,
+        CatalogService.SteamIdentityDocument? identities) =>
+        MatchAppIds(metadata, offers, library?.AppIds, identities);
+
+    internal static SteamMatch MatchAppIds(GameMetadata? metadata, IEnumerable<StoreOffer> offers,
+        IReadOnlySet<uint>? appIds, CatalogService.SteamIdentityDocument? identities)
     {
-        if (metadata?.Reviewed != true || library == null) return false;
+        if (appIds == null) return SteamMatch.Unknown;
+        if (metadata?.Reviewed != true) return SteamMatch.Unmapped;
+        if (identities != null)
+        {
+            if (!identities.Identities.TryGetValue(metadata.CatalogId, out var identity) || identity.State != "Reviewed"
+                || !identity.Apps.Any(app => app.Kind is "FullGame" or "Demo" or "Prologue"))
+                return SteamMatch.Unmapped;
+            return identity.Apps.Any(app => appIds.Contains(app.AppId)) ? SteamMatch.Matched : SteamMatch.NotObserved;
+        }
         var steamOffers = offers.Where(o => CatalogSources.PopularName(o.Source) == "Steam").ToList();
         // An app licence does not prove ownership of deluxe editions, packages or bundles.
-        if (steamOffers.Any(o => o.Edition != "Base game")) return false;
+        if (steamOffers.Any(o => o.Edition != "Base game")) return SteamMatch.Unmapped;
         var ids = new HashSet<uint>();
         if (metadata.ItadId != null && StoreIds.Value.TryGetValue(metadata.ItadId, out var mappedId) && mappedId > 0)
             ids.Add(mappedId);
         foreach (var offer in steamOffers)
             if (Uri.TryCreate(offer.Url, UriKind.Absolute, out var uri) && uri.Scheme == "https"
-                && uri.Host.Equals("store.steampowered.com", StringComparison.OrdinalIgnoreCase) && uri.UserInfo.Length == 0)
+                && uri.Host.Equals("store.steampowered.com", StringComparison.OrdinalIgnoreCase) && uri.UserInfo.Length == 0 && uri.IsDefaultPort)
             {
                 var parts = uri.AbsolutePath.Trim('/').Split('/');
-                if (parts.Length >= 2 && parts[0] == "app" && uint.TryParse(parts[1], out var id) && id > 0) ids.Add(id);
+                if (parts.Length >= 2 && parts[0] == "app"
+                    && uint.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var id) && id > 0) ids.Add(id);
             }
-        return ids.Count == 1 && library.AppIds.Contains(ids.Single());
+        return ids.Count switch
+        {
+            0 => SteamMatch.Unmapped,
+            1 => appIds.Contains(ids.Single()) ? SteamMatch.Matched : SteamMatch.NotObserved,
+            _ => SteamMatch.Ambiguous
+        };
     }
 }
+
+internal enum SteamMatch { Unknown, Matched, Unmapped, NotObserved, Ambiguous }

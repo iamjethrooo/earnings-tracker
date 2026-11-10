@@ -1,10 +1,47 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using EarningsTracker.Data;
 
 namespace EarningsTracker.Utilities;
 
+internal readonly record struct PersonalGameRatings(int Grinding, int Replay)
+{
+    internal bool IsValid => Grinding is >= 0 and <= 3 && Replay is >= 0 and <= 3;
+}
+
 internal sealed class AppSettings(DbContextOptions<AppDbContext>? options = null)
 {
+    private const string RatingsPrefix = "games.ratings.";
+
+    internal static Dictionary<int, PersonalGameRatings> ReadGameRatings(AppDbContext db)
+    {
+        var result = new Dictionary<int, PersonalGameRatings>();
+        foreach (var row in db.CatalogSettings.AsNoTracking().Where(row => row.Key.StartsWith(RatingsPrefix)))
+        {
+            if (!int.TryParse(row.Key.AsSpan(RatingsPrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var id)
+                || row.Value.Split(',') is not [var grinding, var replay]
+                || !int.TryParse(grinding, NumberStyles.None, CultureInfo.InvariantCulture, out var grindingRating)
+                || !int.TryParse(replay, NumberStyles.None, CultureInfo.InvariantCulture, out var replayRating))
+                continue;
+
+            var ratings = new PersonalGameRatings(grindingRating, replayRating);
+            if (ratings.IsValid) result[id] = ratings;
+        }
+        return result;
+    }
+
+    internal void SaveGameRatings(int gameId, PersonalGameRatings ratings)
+    {
+        if (!ratings.IsValid) throw new ArgumentOutOfRangeException(nameof(ratings));
+        using var db = Context();
+        var key = RatingsPrefix + gameId.ToString(CultureInfo.InvariantCulture);
+        if (ratings != default)
+            CatalogService.SetSetting(db, key, FormattableString.Invariant($"{ratings.Grinding},{ratings.Replay}"));
+        else if (db.CatalogSettings.Find(key) is { } existing)
+            db.CatalogSettings.Remove(existing);
+        db.SaveChanges();
+    }
+
     internal int GamesDefaultSort
     {
         get => int.TryParse(Get("games.defaultSort"), out var value) && value is >= 0 and <= 3 ? value : 2;
