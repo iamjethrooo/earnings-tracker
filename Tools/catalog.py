@@ -1,6 +1,7 @@
 """Reviewed catalog preparation. Python 3.11+, standard library only; no secrets in output."""
 import argparse
 import datetime as dt
+from decimal import Decimal
 import hashlib
 import json
 import os
@@ -232,6 +233,7 @@ def prices(args):
                                "Provenance": "IsThereAnyDeal"})
             game["Offers"] = offers
     stamp(catalog)
+    validate(catalog)
     save(args.output, catalog)
     print(f"Refreshed Philippine prices for {len(games)} mapped games")
 
@@ -284,7 +286,10 @@ def validate(catalog):
         raise ValueError("Invalid catalog publication time")
     if not isinstance(catalog.get("Games"), list) or len(catalog["Games"]) > 10000:
         raise ValueError("Invalid catalog entries")
-    ids, names = set(), set()
+    from collections import Counter
+    title_counts = Counter(name.strip().casefold() for game in catalog["Games"]
+                           for name in [game["Name"], *game.get("Aliases", [])])
+    ids, names, roster_rates = set(), set(), set()
     for game in catalog["Games"]:
         identity = game["CatalogId"]
         if not identity or identity in ids:
@@ -295,6 +300,26 @@ def validate(catalog):
         occurrence = game.get("NameOccurrence")
         if occurrence is not None and (not 1 <= occurrence <= game.get("ExpectedNameCount", 0) or game.get("Aliases")):
             raise ValueError("Invalid duplicate occurrence mapping")
+        if (addition := game.get("RosterAddition")) is not None:
+            name = game["Name"]
+            if (schema != 2 or not game.get("Reviewed") or occurrence is not None
+                    or game.get("ExpectedNameCount") is not None or not valid_roster_title(name)
+                    or any(title_counts[title.strip().casefold()] != 1 for title in [name, *game.get("Aliases", [])])
+                    or not isinstance(addition, dict) or set(addition) - {"GameName"} != {"RatePerHour", "MinutesCap"}):
+                raise ValueError(f"Invalid roster addition for {name}")
+            rate, cap = addition["RatePerHour"], addition["MinutesCap"]
+            if (type(rate) not in (int, float) or not 0 < rate <= 2147483647
+                    or Decimal(str(rate)) % Decimal("0.01") != 0
+                    or type(cap) is not int or not 0 < cap <= 2147483647):
+                raise ValueError(f"Invalid starting rate or cap for {name}")
+            game_name = addition.get("GameName")
+            if game_name is not None and (not valid_roster_title(game_name) or game.get("Aliases")
+                                          or game_name.casefold() == name.casefold()):
+                raise ValueError(f"Invalid rate variant name for {name}")
+            rate_identity = ((game_name or name).casefold(), rate)
+            if rate_identity in roster_rates:
+                raise ValueError(f"Duplicate roster rate for {game_name or name}")
+            roster_rates.add(rate_identity)
         for name in [game["Name"], *game.get("Aliases", [])]:
             identity_name = (name.casefold(), occurrence if name == game["Name"] else None)
             if not name.strip() or identity_name in names:
@@ -330,6 +355,11 @@ def validate(catalog):
             parsedate(sub["VerifiedAt"])
 
 
+def valid_roster_title(name):
+    return (isinstance(name, str) and bool(name) and name == name.strip() and len(name) <= 256
+            and not any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in name))
+
+
 def report(args):
     catalog = load(args.catalog)
     validate(catalog)
@@ -349,6 +379,9 @@ def report(args):
             for state in ("Reviewed", "Unresolved", "NotApplicable", "Withdrawn")}
         result["UnresolvedSteamIdentities"] = [{"CatalogId": g["CatalogId"], "Reason": g["SteamIdentity"]["Provenance"]}
             for g in games if g["SteamIdentity"]["State"] == "Unresolved"]
+        result["RosterAdditions"] = [
+            {"CatalogId": game["CatalogId"], "Name": game["Name"], **game["RosterAddition"]}
+            for game in games if game.get("RosterAddition") is not None]
     save(args.output, result)
     print(f'{result["Reviewed"]}/{result["Total"]} reviewed; {len(result["Unresolved"])} unresolved')
 
@@ -444,11 +477,22 @@ def check_order(args):
         raise ValueError("Catalog version already exists")
     if (incoming_time, incoming["Version"]) <= (previous_time, previous["Version"]):
         raise ValueError("Catalog channel must advance")
+    additions = {game["CatalogId"]: game.get("RosterAddition") for game in incoming["Games"]}
+    for game in previous["Games"]:
+        if (terms := game.get("RosterAddition")) is not None and additions.get(game["CatalogId"]) != terms:
+            raise ValueError(f'Keep published roster addition and starting terms for {game["CatalogId"]}')
+
+
+def prepare(args):
+    catalog = load(args.catalog)
+    stamp(catalog)
+    validate(catalog)
+    save(args.output, catalog)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["candidates", "enrich", "prices", "report", "package", "check_order"])
+    parser.add_argument("command", choices=["candidates", "enrich", "prepare", "prices", "report", "package", "check_order"])
     parser.add_argument("--catalog", default=str(ROOT / "Data/catalog.json"))
     parser.add_argument("--review", default=str(ROOT / "Data/catalog-review.json"))
     parser.add_argument("--artwork", default=str(ROOT / "Data/Artwork"))

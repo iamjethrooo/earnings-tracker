@@ -7,8 +7,9 @@ This is an independent project, unaffiliated with Nerve or other platforms.
 ## Features
 
 - Import sessions and payouts, reconcile earnings, and retain an audit history of changes.
-- Review earnings, payments, and trends in the Dashboard and Statistics pages.
+- Review earnings, payments, and trends, and compare verified earnings per hour by game.
 - Browse a bundled games catalog with artwork, store offers, Philippine prices, and PC Game Pass availability.
+- Find installed games with earning time left in the current cap.
 - Track ownership, purchase costs, and break-even estimates; optionally sync Steam ownership.
 - Use saved data offline and manage database backups and restores in Settings.
 

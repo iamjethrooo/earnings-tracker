@@ -58,6 +58,8 @@ namespace EarningsTracker.Tests
         [InlineData("$1.20oops")]
         [InlineData("($5.00)")]
         [InlineData("$1.001")]
+        [InlineData("$1.230000000000000000000000000001")]
+        [InlineData("$7922816251426433759354395033.51")]
         [InlineData("$0.00")]
         [Trait("Category", "Regression")]
         public void MalformedMarkdownAmountsAreRejected(string amount)
@@ -91,6 +93,27 @@ namespace EarningsTracker.Tests
             var parsed = PayoutTextParser.ParseDetailed("|6/6/2026|—|Earning|Example — 1 min recording (force-verified)|Verified|+$1.50|");
             Assert.Empty(parsed.ForceVerifiedSessions);
             Assert.Single(parsed.SkippedRows);
+        }
+
+        [Fact]
+        public void InvalidHeaderAndDurationLeaveOtherRowsAvailableWithAccurateLineNumbers()
+        {
+            var parsed = PayoutTextParser.ParseDetailed("""
+                |6/5/2026|—|Payment|Before|Paid|$1.00|
+
+                |Posted|Recorded|Type|Description|Status|Amount|USD Amount|
+                |6/5/2026|—|Payment|Ambiguous amount|Paid|$2.00|$3.00|
+                |Posted|Recorded|Type|Description|Status|Amount|
+                |6/6/2026|6/5/2026|Earning|Example — 2147483648 min recording (force-verified)|Verified|$1.00|
+                |6/5/2026|—|Payment|After|Paid|$4.00|
+                """);
+
+            Assert.Equal(new[] { "Before", "After" }, parsed.Payouts.Select(payout => payout.Description));
+            Assert.Empty(parsed.ForceVerifiedSessions);
+            Assert.Collection(parsed.FailedRows,
+                row => Assert.StartsWith("Line 3: duplicate", row),
+                row => Assert.StartsWith("Line 4: could not read", row),
+                row => Assert.StartsWith("Line 6: could not extract", row));
         }
     }
 }

@@ -111,7 +111,7 @@ namespace EarningsTracker.Views
                 _isLoading = true;
                 LoadStatusPanel.Visibility = Visibility.Visible;
                 LoadStatusText.Text = "Loading Statistics…";
-                RetryLoadButton.IsEnabled = EarningsRangeComboBox.IsEnabled = false;
+                RetryLoadButton.IsEnabled = EarningsRangeComboBox.IsEnabled = GameEarningsMode.IsEnabled = false;
                 try
                 {
                     using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
@@ -148,7 +148,7 @@ namespace EarningsTracker.Views
                 finally
                 {
                     _isLoading = false;
-                    RetryLoadButton.IsEnabled = EarningsRangeComboBox.IsEnabled = true;
+                    RetryLoadButton.IsEnabled = EarningsRangeComboBox.IsEnabled = GameEarningsMode.IsEnabled = true;
                 }
                 changesSaved = _queuedSavedRefresh;
             } while (_reloadRequested);
@@ -260,26 +260,57 @@ namespace EarningsTracker.Views
             EarningsTrendCanvas.Height = _hasRangeData ? 230 : 80;
             TrendPanel.MinHeight = _hasRangeData ? 300 : 180;
             TrendValuesExpander.Visibility = _hasRangeData ? Visibility.Visible : Visibility.Collapsed;
-            var gameTotals = sessions
-                .Where(session =>
+            UpdateGameEarnings(sessions);
+        }
+
+        private void UpdateGameEarnings(List<Session> sessions)
+        {
+            var byHour = GameEarningsMode.SelectedIndex == 1;
+            var inRange = sessions.Where(session =>
+            {
+                var day = GetRecordedDay(session);
+                return day >= _rangeStart && day <= _rangeEnd;
+            });
+
+            // Rate calculations need both a stable game identity and a usable duration.
+            if (byHour)
+                inRange = inRange.Where(session => session.GameId.HasValue && session.Duration > TimeSpan.Zero);
+
+            var totals = inRange
+                .GroupBy(session => (Id: byHour ? session.GameId : null, Name: byHour ? null : session.GameName))
+                .Select(group => new
                 {
-                    var sessionDate = GetRecordedDay(session);
-                    return sessionDate >= _rangeStart && sessionDate <= _rangeEnd;
+                    group.Key.Id,
+                    Name = group.Key.Name ?? group.OrderByDescending(GetRecordedDay)
+                        .ThenByDescending(session => session.Id).First().GameName,
+                    Earnings = group.Sum(session => session.Earnings),
+                    Hours = group.Sum(session => session.Duration.Ticks / (decimal)TimeSpan.TicksPerHour)
                 })
-                .GroupBy(session => session.GameName)
-                .Select(group => new { Name = group.Key, Earnings = group.Sum(session => session.Earnings) })
-                .OrderByDescending(group => group.Earnings)
+                .ToList();
+            var sameNameCounts = totals.ToLookup(total => total.Name, StringComparer.OrdinalIgnoreCase);
+            var ranked = totals.Select(total => new
+                {
+                    Name = sameNameCounts[total.Name].Count() > 1 && total.Id.HasValue
+                        ? $"{total.Name} (#{total.Id})" : total.Name,
+                    total.Earnings,
+                    total.Hours,
+                    Value = byHour ? total.Earnings / total.Hours : total.Earnings
+                })
+                .OrderByDescending(total => total.Value)
+                .ThenByDescending(total => byHour ? total.Hours : 0m)
                 .Take(8)
                 .ToList();
-            var maxEarnings = gameTotals.Count == 0 ? 0m : gameTotals.Max(group => Math.Max(0m, group.Earnings));
+            var maximum = ranked.Count == 0 ? 0m : ranked[0].Value;
 
-            ((BatchObservableCollection<GameEarningsItem>)GameEarnings).ReplaceAll(gameTotals.Select(total => new GameEarningsItem
-                {
-                    GameName = total.Name,
-                    Earnings = total.Earnings,
-                    EarningsText = FormatUsd(total.Earnings),
-                    Share = maxEarnings > 0 ? (double)Math.Max(0m, total.Earnings) / (double)maxEarnings * 100d : 0d
-                }));
+            ((BatchObservableCollection<GameEarningsItem>)GameEarnings).ReplaceAll(ranked.Select(total => new GameEarningsItem
+            {
+                GameName = total.Name,
+                Earnings = total.Earnings,
+                EarningsText = FormatUsd(total.Earnings),
+                VerifiedHourlyRate = byHour ? total.Value : null,
+                VerifiedHours = byHour ? total.Hours : null,
+                Share = maximum > 0m ? (double)(Math.Max(0m, total.Value) / maximum) * 100d : 0d
+            }));
             GameEarningsPanel.MinHeight = GameEarnings.Count > 0 ? 300 : 180;
         }
 
@@ -596,7 +627,15 @@ namespace EarningsTracker.Views
         public decimal Earnings { get; init; }
         public string EarningsText { get; init; } = string.Empty;
         public double Share { get; init; }
-        public string AccessibleSummary => $"{GameName}. Verified session earnings: {EarningsText}. {Share:N0}% of the highest earner in this range.";
+        public decimal? VerifiedHourlyRate { get; init; }
+        public decimal? VerifiedHours { get; init; }
+        public string VerifiedHoursText => VerifiedHours is not decimal hours ? ""
+            : hours < 0.01m ? "<0.01 h" : $"{hours:N2} h";
+        public string ValueText => VerifiedHourlyRate is decimal rate
+            ? $"{CurrencyDisplay.FormatUsd(rate)}/h · {VerifiedHoursText}" : EarningsText;
+        public string AccessibleSummary => VerifiedHourlyRate.HasValue
+            ? $"{GameName}. {ValueText} verified. Session earnings: {EarningsText}."
+            : $"{GameName}. Verified session earnings: {EarningsText}. {Share:N0}% of the highest earner in this range.";
     }
 }
 

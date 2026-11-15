@@ -40,32 +40,37 @@ namespace EarningsTracker.ViewModels
         public bool IsLoading { get; private set; }
         public string? LoadError { get; private set; }
         public bool ShowEmptyState => HasLoaded && !IsLoading && LoadError == null && AvailableGamesCount == 0;
-        public string EmptyStateText => Games.Count == 0
-            ? "No games yet. Refresh catalog to check for available games."
-            : "No games match these filters. Adjust your search or filters above.";
+        public string EmptyStateText => _installedOnly && !Installations.IsConfigured
+            ? "Enable installation sources in Settings or open Local installations to learn more."
+            : Games.Count == 0
+                ? "No games yet. Open Updates to check for game list updates."
+                : "No games match these filters. Adjust your search or filters above.";
         internal bool HasLoaded { get; private set; }
         public List<string> GenreOptions { get; private set; } = ["All genres"];
         public List<string> StoreOptions { get; private set; } = ["All stores"];
         private string _selectedGenre = "All genres", _selectedStore = "All stores";
-        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly, _steamOnly, _multiplayerOnly;
+        private bool _freeOnly, _ownedOnly, _gamePassOnly, _playableOnly, _steamOnly, _multiplayerOnly, _installedOnly, _timeLeftOnly;
         public string SelectedGenre { get => _selectedGenre; set { if (_selectedGenre == value) return; _selectedGenre = value; ApplyFilters(); } }
         public string SelectedStore { get => _selectedStore; set { if (_selectedStore == value) return; _selectedStore = value; ApplyFilters(); } }
         public bool FreeOnly { get => _freeOnly; set { if (_freeOnly == value) return; _freeOnly = value; ApplyFilters(); OnPropertyChanged(nameof(FreeOnly)); } }
         public bool OwnedOnly { get => _ownedOnly; set { if (_ownedOnly == value) return; _ownedOnly = value; ApplyFilters(); OnPropertyChanged(nameof(OwnedOnly)); } }
         public bool SteamOnly { get => _steamOnly; set { if (_steamOnly == value) return; _steamOnly = value; ApplyFilters(); OnPropertyChanged(nameof(SteamOnly)); } }
+        public bool InstalledOnly { get => _installedOnly; set { if (_installedOnly == value) return; _installedOnly = value; ApplyFilters(); OnPropertyChanged(nameof(InstalledOnly)); } }
+        public bool TimeLeftOnly { get => _timeLeftOnly; set { if (_timeLeftOnly == value) return; _timeLeftOnly = value; ApplyFilters(); OnPropertyChanged(nameof(TimeLeftOnly)); } }
         public bool GamePassOnly { get => _gamePassOnly; set { if (_gamePassOnly == value) return; _gamePassOnly = value; ApplyFilters(); OnPropertyChanged(nameof(GamePassOnly)); } }
         public bool PlayableOnly { get => _playableOnly; set { if (_playableOnly == value) return; _playableOnly = value; ApplyFilters(); OnPropertyChanged(nameof(PlayableOnly)); } }
         public bool MultiplayerOnly { get => _multiplayerOnly; set { if (_multiplayerOnly == value) return; _multiplayerOnly = value; ApplyFilters(); OnPropertyChanged(nameof(MultiplayerOnly)); } }
         // Clearing preserves the separate archived-visibility preference and current sort.
         public bool CanClearFilters => !string.IsNullOrEmpty(_searchText) || _bookmarkedOnly
             || _selectedGenre != "All genres" || _selectedStore != "All stores"
-            || _freeOnly || _ownedOnly || _gamePassOnly || _playableOnly || _steamOnly || _multiplayerOnly;
+            || _freeOnly || _ownedOnly || _gamePassOnly || _playableOnly || _steamOnly || _multiplayerOnly || _installedOnly || _timeLeftOnly;
         public int SecondaryFilterCount => (_freeOnly ? 1 : 0) + (_steamOnly ? 1 : 0)
             + (_gamePassOnly ? 1 : 0) + (_showArchived ? 1 : 0);
         public string MoreFiltersText => SecondaryFilterCount == 0 ? "More filters" : $"More filters ({SecondaryFilterCount})";
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
         public string SteamStatus { get; private set; } = "";
+        internal LocalInstallationSnapshot Installations { get; private set; } = new(false, [], null);
         public bool ShowPriceSortHelp { get; private set; }
         public bool ShowGrindingRatings { get; private set; }
         public bool ShowReplayRatings { get; private set; }
@@ -78,13 +83,14 @@ namespace EarningsTracker.ViewModels
             ILookup<int, StoreOffer> Offers, ILookup<int, SubscriptionAvailability> Subscriptions,
             Dictionary<int, GameOwnership> Owned, Dictionary<string, ExchangeRate> Rates, HashSet<string> MySubscriptions,
             SteamLibrarySnapshot? Steam, string SteamStatus, bool SteamStale, CatalogService.SteamIdentityDocument? SteamIdentities,
-            HashSet<uint>? InstalledAppIds);
+            LocalInstallationSnapshot Installations);
 
         private CatalogSnapshot ReadCatalog()
         {
             var settings = new AppSettings(_databaseOptions);
             var mySubscriptions = settings.Subscriptions();
-            var installedAppIds = SteamInstallations.Read(settings.Get(SteamInstallations.SettingsKey));
+            var installations = LocalGameInstallations.Read(settings.Get(SteamInstallations.SettingsKey),
+                settings.Get(LocalGameInstallations.FoldersKey), settings.Get(LocalGameInstallations.WindowsKey) == "true");
             using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
             using var transaction = db.Database.BeginTransaction();
             var metadata = db.GameMetadata.AsNoTracking().ToDictionary(x => x.GameId);
@@ -96,39 +102,75 @@ namespace EarningsTracker.ViewModels
             var steam = SteamLibrary.Read(db);
             var steamStatus = SteamLibrary.Status(db, steam);
             CatalogService.SteamIdentityDocument? steamIdentities = null;
-            if (steam != null || installedAppIds != null)
+            if (steam != null || installations.SteamAppIds != null)
             {
                 try { steamIdentities = CatalogService.ReadSteamIdentities(db); }
                 catch (InvalidDataException)
                 {
                     // A damaged mapping document must not re-enable legacy matching or hide the game list.
                     steam = null;
-                    if (installedAppIds != null) installedAppIds = [];
+                    installations = installations with { SteamAppIds = null };
                     steamStatus += " · Catalog Steam mappings unavailable.";
                 }
             }
             return new(metadata, genres, offers, subscriptions, owned, rates, mySubscriptions,
-                steam, steamStatus, steam != null && SteamLibrary.IsStale(db, steam), steamIdentities, installedAppIds);
+                steam, steamStatus, steam != null && SteamLibrary.IsStale(db, steam), steamIdentities, installations);
         }
 
         internal void ReloadCatalog() => ApplyCatalog(ReadCatalog());
-        internal async Task ReloadCatalogAsync() => ApplyCatalog(await Task.Run(ReadCatalog));
+        internal async Task ReloadCatalogAsync()
+        {
+            var ownershipAtStart = Games.ToDictionary(item => item.Game.Id, item => item.Ownership);
+            var snapshot = await Task.Run(ReadCatalog);
+            foreach (var item in Games)
+            {
+                // Keep an ownership edit saved while the background catalog read was in flight.
+                if (item.Ownership is { } ownership && ownershipAtStart.TryGetValue(item.Game.Id, out var previous)
+                    && !ReferenceEquals(ownership, previous))
+                    snapshot.Owned[item.Game.Id] = ownership;
+            }
+            ApplyCatalog(snapshot);
+        }
+
+        internal void UpdateCycleProgress(Game game, decimal minutes)
+        {
+            var item = Games.FirstOrDefault(row => row.Game.Id == game.Id);
+            if (item == null) return;
+            item.Game.CapResetDate = game.CapResetDate;
+            item.SetCycleMinutes(minutes);
+            if (_timeLeftOnly) ApplyFilters();
+        }
 
         private void ApplyCatalog(CatalogSnapshot snapshot)
         {
-            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions, steam, steamStatus, steamStale, steamIdentities, installedAppIds) = snapshot;
+            var (metadata, genres, offers, subscriptions, owned, rates, mySubscriptions, steam, steamStatus, steamStale, steamIdentities, installations) = snapshot;
             MySubscriptions = mySubscriptions;
+            Installations = installations;
+            var localNames = installations.Entries.Where(entry => entry.SteamAppId == null && entry.HasLocalFolder)
+                .GroupBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(group => group.Key, group => group.First().Source, StringComparer.OrdinalIgnoreCase);
+            var uniqueGameNames = Games.GroupBy(item => item.Game.Name, StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Count() == 1).Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
             _reloadingCatalog = true;
             try
             {
                 using var deferred = GamesView.DeferRefresh();
                 foreach (var item in Games)
-                    item.SetCatalog(metadata.GetValueOrDefault(item.Game.Id), genres[item.Game.Id].Select(x => x.Name).ToList(),
-                        offers[item.Game.Id].ToList(), subscriptions[item.Game.Id].ToList(), owned.GetValueOrDefault(item.Game.Id), rates,
-                        SteamGameMatching.Match(metadata.GetValueOrDefault(item.Game.Id), offers[item.Game.Id], steam, steamIdentities),
-                        steam?.SyncedAtUtc, steamStale,
-                        installedAppIds == null ? null : SteamGameMatching.MatchAppIds(metadata.GetValueOrDefault(item.Game.Id),
-                            offers[item.Game.Id], installedAppIds, steamIdentities) == SteamMatch.Matched);
+                {
+                    var game = item.Game;
+                    var gameMetadata = metadata.GetValueOrDefault(game.Id);
+                    var gameOffers = offers[game.Id].ToList();
+                    var installationSource = SteamGameMatching.MatchAppIds(gameMetadata, gameOffers,
+                        installations.SteamAppIds, steamIdentities) == SteamMatch.Matched
+                        ? LocalGameInstallations.SteamSource
+                        : gameMetadata?.Reviewed == true && uniqueGameNames.Contains(game.Name)
+                            ? localNames.GetValueOrDefault(game.Name)
+                            : null;
+                    item.SetCatalog(gameMetadata, genres[game.Id].Select(x => x.Name).ToList(), gameOffers,
+                        subscriptions[game.Id].ToList(), owned.GetValueOrDefault(game.Id), rates,
+                        SteamGameMatching.Match(gameMetadata, gameOffers, steam, steamIdentities),
+                        steam?.SyncedAtUtc, steamStale, installationSource, installations.IsConfigured);
+                }
                 GameRatingSuggestions.Apply(Games);
             }
             finally { _reloadingCatalog = false; }
@@ -237,7 +279,7 @@ namespace EarningsTracker.ViewModels
             {
                 System.Diagnostics.Trace.TraceError(ex.ToString());
                 LoadError = ex.GetBaseException().Message;
-                SetStatus("Could not load games. Choose Refresh catalog to retry. " + ex.GetBaseException().Message);
+                SetStatus("Could not load games. Use the Updates menu to retry. " + ex.GetBaseException().Message);
             }
             finally { _loadTask = null; IsLoading = false; OnPropertyChanged(nameof(IsLoading)); OnPropertyChanged(nameof(ShowEmptyState)); OnPropertyChanged(nameof(AvailableGamesText)); }
         }
@@ -337,10 +379,11 @@ namespace EarningsTracker.ViewModels
         {
             _searchText = "";
             _selectedGenre = "All genres"; _selectedStore = "All stores";
-            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = _steamOnly = _multiplayerOnly = false;
+            _freeOnly = _ownedOnly = _gamePassOnly = _playableOnly = _steamOnly = _multiplayerOnly = _installedOnly = _timeLeftOnly = false;
             _bookmarkedOnly = false;
             foreach (var property in new[] { nameof(SelectedGenre), nameof(SelectedStore), nameof(FreeOnly), nameof(OwnedOnly),
-                nameof(GamePassOnly), nameof(PlayableOnly), nameof(SteamOnly), nameof(BookmarkedOnly), nameof(MultiplayerOnly) }) OnPropertyChanged(property);
+                nameof(GamePassOnly), nameof(PlayableOnly), nameof(SteamOnly), nameof(BookmarkedOnly), nameof(MultiplayerOnly),
+                nameof(InstalledOnly), nameof(TimeLeftOnly) }) OnPropertyChanged(property);
             ApplyFilters();
         }
 
@@ -371,6 +414,8 @@ namespace EarningsTracker.ViewModels
                 if (_freeOnly && !gameItem.FreeToPlay) return false;
                 if (_ownedOnly && !gameItem.IsOwned) return false;
                 if (_steamOnly && !gameItem.IsSteamOwned) return false;
+                if (_installedOnly && !gameItem.IsInstalled) return false;
+                if (_timeLeftOnly && !gameItem.HasTimeLeftToEarn) return false;
                 if (_multiplayerOnly && gameItem.Metadata is not { Reviewed: true, SupportsMultiplayer: true }) return false;
                 var now = DateTime.UtcNow;
                 if (_gamePassOnly && (CatalogPresentation.GamePassEntry(gameItem.Subscriptions) is not { } gamePass

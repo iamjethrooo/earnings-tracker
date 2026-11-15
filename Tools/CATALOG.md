@@ -2,7 +2,7 @@
 
 The catalog is independent of earnings. `Data/catalog.json` assigns stable IDs to every seeded title. Do not regenerate these IDs or change earnings data to match providers. The initial catalog deliberately marks all unverified entries unresolved.
 
-The populated bundle contains 564 reviewed identities/genre records, 563 artwork records, 485 offer/source records, and 55 reviewed Philippine PC Game Pass mappings. All 506 active identities are resolved; archived entries require no resolution. OPTCG Simulator retains an artwork placeholder and unverified purchase prices stay unknown. `Tools/populate_catalog.py` prepares exact title matches, corroborates conflicting identities using shared Steam IDs, caches ITAD mappings, and verifies permanent free access against official Philippine Steam listings. `Tools/apply_edition_choices.py` and `Tools/review_remaining.py` record reviewed identities and the owner's explicit choices. These are maintainer tools; desktop users configure their optional ITAD key in Settings and refresh prices through Settings → Refresh now or Games → Refresh catalog.
+The populated bundle contains 566 reviewed identities/genre records, 563 artwork records, 487 offer/source records, and 55 reviewed Philippine PC Game Pass mappings. All 508 active identities are resolved; archived entries require no resolution. MAVRIX, Wreckreation, and OPTCG Simulator use artwork placeholders. Unverified purchase prices stay unknown. `Tools/populate_catalog.py` prepares exact title matches, corroborates conflicting identities using shared Steam IDs, caches ITAD mappings, and verifies permanent free access against official Philippine Steam listings. `Tools/apply_edition_choices.py` and `Tools/review_remaining.py` record reviewed identities and the owner's explicit choices. These are maintainer tools. Desktop users can configure an optional IsThereAnyDeal key in **Settings → Store offers**.
 
 Duplicate seed titles have NameOccurrence and ExpectedNameCount. Initial import uses the original ascending game-ID order only when the exact duplicate count matches; otherwise those entries stay unmatched. Once assigned, the persisted stable catalog ID takes precedence. Do not remove duplicate financial records or add aliases to occurrence mappings.
 
@@ -286,8 +286,8 @@ Manual checks can retry after a failure. Rate limits do not trigger an
 immediate retry. The catalog check has a 25-second deadline, bounded downloads,
 and a limited redirect chain.
 
-Activation treats the snapshot as complete. An unmatched entry creates no
-earning game. An omitted entry loses its active enrichment, offers,
+Activation treats the snapshot as complete. An unmatched entry can create an
+earning game only through a confirmed roster addition described below. An omitted entry loses its active enrichment, offers,
 subscriptions, and provider mappings while retaining its stable local link.
 A reintroduced entry reuses that link. See
 [database storage](../Docs/Database.md) for live-price and snapshot-retention rules.
@@ -421,4 +421,68 @@ The workflow runs only on manual dispatch with `CATALOG_PUBLISH_ENABLED` set to 
 
 Desktop clients check the manifest at most once daily after opening Games, and can refresh manually. Updates validate the schema, mappings, and checksums before importing in one SQLite transaction. Missing releases/providers leave saved data available. Optional personal keys enable manual price refresh. FX refresh uses Frankfurter's keyless USD-based daily rates, preserving the last valid rates offline. The initial public channel will be unavailable until the first approved snapshot is published.
 
+Use **Games → Updates → Check for game list updates** or **Settings → Catalog updates** to check for the maintainer's snapshot and current exchange rates. **Refresh store offers** is available directly on Games, in its Updates menu, and under **Settings → Store offers**. It fetches current prices and store links directly from IsThereAnyDeal for reviewed mappings. Settings shows the last successful offer check. On a provider failure the app keeps saved offers. **Set up price refresh…** directs users without a key to Settings.
+
 For offline installation, keep the reviewed catalog in `Data/catalog.json` and artwork in `Data/Artwork` before building. Both are copied into the app output. Initial prices remain visible after becoming stale (48 hours), with their checked dates; users can enter an optional IsThereAnyDeal key and manually refresh prices. Nobody needs an IGDB account to use the app. FX dates are displayed on estimates. Ownership is manual and persists independently of catalog refreshes.
+
+## Publish roster and price changes between desktop releases
+
+Start from the latest published snapshot for the target channel so you carry
+forward its mappings and reviewed offers. For roster additions, use schema 2
+and add a reviewed entry with a new stable `CatalogId`, its exact title and
+any reviewed aliases, and its required `SteamIdentity` (use `Unresolved` if it
+has no reviewed Steam mapping). Add this field to the entry:
+
+```json
+"RosterAddition": { "RatePerHour": 2.50, "MinutesCap": 3000 }
+```
+
+Use a positive USD hourly rate with at most two decimal places and a positive
+whole-minute cap. Use unique names and aliases across the catalog. To add a
+different rate for the same game, give the variant its own stable
+`CatalogId` and a distinct catalog `Name` such as `Example (2.50 USD/hr)`.
+Set `GameName` to the exact title used in session imports:
+
+```json
+"RosterAddition": { "GameName": "Example", "RatePerHour": 2.50, "MinutesCap": 3000 }
+```
+
+Use a separate entry for each rate. A rate variant uses its stable ID to
+link to its earning row. If the same game and hourly rate already exist
+under another ID or without a link, the preview skips that variant.
+Existing rates, caps, archive status, and session assignments stay intact.
+Keep previously published additions and their starting terms in subsequent
+snapshots so users can skip releases and still install them. The publishing
+workflow checks this against the active channel.
+
+For roster or metadata edits, stamp and validate a new snapshot offline.
+For updated PH store offers, use `prices` instead of `prepare`. It uses your
+maintainer `ITAD_API_KEY`, retains provider verification and expiry dates,
+and stamps the result. Both commands retain roster declarations.
+
+```powershell
+python Tools/catalog.py prepare --catalog .local-docs/catalog-edited.json --output .local-docs/catalog-candidate.json
+python Tools/catalog.py report --catalog .local-docs/catalog-candidate.json --output .local-docs/catalog-coverage.json
+# To refresh store offers instead of stamping the edited file offline
+python Tools/catalog.py prices --catalog .local-docs/catalog-edited.json --output .local-docs/catalog-candidate.json
+```
+
+Review the final candidate, including the roster additions and terms in the
+coverage report. After approval, commit it as `Data/catalog-v2.json` and use
+the existing **Reviewed catalog snapshots** workflow with `schema2` and the
+actual minimum compatible app version. If this is the first schema-2
+publication, follow the legacy-channel transition above first. Existing schema-2 clients can read
+the metadata and prices, while the first desktop build with roster support
+can also add games. Keep the provider redistribution and publishing gates
+above. A catalog-only price update follows the same publish path for its
+compatible channel.
+
+In Games or Settings, **Check for game list updates** previews the new titles
+and their terms. **Add games** creates the listed titles. **Skip additions**
+still allows the catalog and prices to update, and the same snapshot can be
+reviewed again later. Automatic checks can announce new games. Where a title
+already has a stable link, or an ordinary addition uniquely matches an
+unlinked local title, the app uses the existing row. Conflicting matches
+are shown and skipped.
+Catalog recovery restores metadata and mappings while keeping any added earning
+games and their audit entries.

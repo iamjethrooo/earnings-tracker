@@ -52,6 +52,7 @@ internal static class DatabaseInitialization
         }
         db.Database.Migrate();
         DbInitializer.Initialize(db);
+        GameService.ApplyBundledRosterUpdate(db);
         AppSettings.InitializeDefaults(db);
     }
 

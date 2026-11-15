@@ -14,7 +14,7 @@ OpenID verifies the SteamID. Library access still requires the Web API's own aut
 
 The app keeps one active snapshot with its SteamID, unique AppIDs and last successful sync in UTC. Games can refresh automatically at most once per day when enabled, with manual refresh available. A sync failure shows saved evidence with a warning, and a snapshot older than a day is marked potentially out of date. Missing credentials, hidden or malformed responses, duplicate AppIDs, and count mismatches leave the last successful snapshot intact. An explicit valid zero count can replace it. A successful account switch replaces the previous snapshot and key. A failed switch preserves the old account, and unlink removes the active snapshot and key. Keep the last-success time separate from attempt and error status, and keep request URLs and keys out of diagnostics.
 
-Use **Sync now** in Settings or **Refresh catalog** in Games to retry. If the key or saved snapshot is unavailable, relink the account in Settings. **Unlink** removes the saved library and key. Each request has a 25-second deadline, an 8 MiB response limit, and redirects disabled. On HTTP 429, the app stores the retry time from a valid `Retry-After` header or waits one minute if no usable time is present. Manual sync, automatic sync, and linking honor that deadline, including after restart. The last successful snapshot and timestamp stay available during the cooldown.
+Use **Settings → Steam account → Sync now** to retry. If the key or saved snapshot is unavailable, relink the account in Settings. **Unlink** removes the saved library and key. Each request has a 25-second deadline, an 8 MiB response limit, and redirects disabled. On HTTP 429, the app stores the retry time from a valid `Retry-After` header or waits one minute if no usable time is present. Manual sync, automatic sync, and linking honor that deadline, including after restart. The last successful snapshot and timestamp stay available during the cooldown.
 
 ## Ownership and filtering
 
@@ -26,18 +26,39 @@ Manual ownership is the user's assertion. A matching Steam row is evidence that 
 
 ## Local installation indicators
 
-In **Settings → Steam account → Local Steam installation indicators**, choose
-up to eight local `steamapps` folders. The app saves the selected paths in the
-profile, including in database backups. Selecting **Disable install indicators**
-clears them. The app reads only the selected folders and needs no Steam account
-link. For a second or custom library, select its own `steamapps` folder.
+In **Settings → Local installations**, choose up to eight local `steamapps`
+folders, opt in to Windows installed apps, or add up to 32 individual game
+folders. Select each game's folder for portable and unregistered games.
+The app uses the selected folder's name and checks that the folder exists
+without searching its contents. Use **Clear Steam folders** or **Clear game
+folders** to forget those paths. No Steam account is needed for local evidence.
 
 Game Details shows a local installation when a reviewed AppID matches an
 app manifest with a fully installed state and an existing install directory.
 Missing, inaccessible, incomplete, and unfamiliar manifests yield an unknown
-state. Steam's local manifest format can change. Installation is device
-evidence only. The Owned and Playable now filters continue to use their
-existing evidence. [PRO-50](https://linear.app/botlog/issue/PRO-50/optionally-show-read-only-local-steam-installed-game-indicators)
+state. Steam's local manifest format can change. A Windows entry with an
+existing local installation folder or a selected game folder can match a
+reviewed catalog game by its exact, unique title. Duplicate game titles and
+registrations without an accessible installation folder stay out of the
+catalog filter. [Windows Installer registry fields](https://learn.microsoft.com/en-us/windows/win32/msi/uninstall-registry-key)
+
+In Games, choose **Installed** to find catalog matches from any enabled source.
+The row badge identifies the source. Combine **Installed** and **Time left to earn**
+to find detected games with an active rate and time remaining in their current cap.
+The Installed filter can also be combined with **Steam
+library**, **Owned**, or **Playable now**. Those filters keep their existing
+evidence rules. Choose **View installed apps** to refresh the local scan and
+browse by name or source, including titles outside the catalog and games
+absent from the linked Steam library. The list displays Windows desktop
+registrations, which can include other apps and can miss games that do not
+register there. An entry labeled **registration only** has no verified local
+folder. The list names any sources it could check only partially, such as an
+unavailable Steam folder or an unreadable portion of the Windows registration
+list. Results from accessible locations remain visible. Discovery creates no
+earning-game or ownership records.
+
+Scan results are kept in memory. Selected paths and the Windows-source
+preference are saved in the profile and included in database backups.
 
 ## Fixtures and implementation gate
 

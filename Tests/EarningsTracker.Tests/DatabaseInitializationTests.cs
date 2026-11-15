@@ -5,6 +5,7 @@ using EarningsTracker.Models;
 using EarningsTracker.Utilities;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace EarningsTracker.Tests;
 
@@ -28,8 +29,7 @@ public class DatabaseInitializationTests
             Description = "Synthetic signed correction", Status = "Verified", Amount = -1.23m, ReconciliationState = "Separate" }, options: database.Options);
         for (var attempt = 0; attempt < 2; attempt++) DatabaseInitialization.Initialize(db);
         using var read = database.CreateContext();
-        Assert.Equal(game.Id, Assert.Single(read.Games).Id);
-        Assert.Equal(game.CapResetDate, read.Games.Single().CapResetDate);
+        Assert.Equal(game.CapResetDate, read.Games.Single(saved => saved.Id == game.Id).CapResetDate);
         Assert.Equal(1.2345m, Assert.Single(read.Sessions).Earnings);
         Assert.Equal(-1.23m, Assert.Single(read.Payouts).Amount);
         Assert.Single(read.PayoutChanges);
@@ -37,6 +37,101 @@ public class DatabaseInitializationTests
         Assert.Equal(10.50m, Assert.Single(read.GameOwnership).PurchaseAmount);
         Assert.Equal("false", CatalogService.GetSetting(read, "updates.automatic"));
         Assert.Equal("true", CatalogService.GetSetting(read, "subscription.PC Game Pass"));
+    }
+
+    [Fact]
+    public void ExistingProfileReceivesBundledGamesAndAnAuditedRateUpdateOnlyOnce()
+    {
+        using var database = new TestDatabase();
+        int predecessorId;
+        var capReset = new DateTime(2026, 10, 1);
+        using (var db = database.CreateContext())
+        {
+            var predecessor = new Game { Name = "predecessor", RatePerHour = 1.5m, MinutesCap = 3000m, CapResetDate = capReset };
+            db.Sessions.Add(new Session { Game = predecessor, GameName = "Predecessor", Earnings = 1.2345m });
+            db.SaveChanges();
+            predecessorId = predecessor.Id;
+        }
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var db = database.CreateContext();
+            DatabaseInitialization.Initialize(db);
+            CatalogService.ImportBundled(db);
+        }
+
+        using var read = database.CreateContext();
+        Assert.Equal(3, read.Games.Count());
+        Assert.All(read.Games, game =>
+        {
+            Assert.False(game.IsArchived);
+            Assert.Equal(2m, game.RatePerHour);
+            Assert.Equal(3000m, game.MinutesCap);
+        });
+        Assert.Equal(new[] { "MAVRIX", "Wreckreation", "predecessor" }, read.Games.OrderBy(game => game.Name).Select(game => game.Name).ToArray());
+        Assert.Equal(3, read.GameMetadata.Count());
+        Assert.Equal(capReset, read.Games.Single(game => game.Id == predecessorId).CapResetDate);
+        var session = Assert.Single(read.Sessions);
+        Assert.Equal(predecessorId, session.GameId);
+        Assert.Equal(1.2345m, session.Earnings);
+        var audit = Assert.Single(read.GameChanges);
+        Assert.Equal(predecessorId, audit.GameId);
+        Assert.Equal("Bundled rate changed", audit.ChangeType);
+        using var before = JsonDocument.Parse(audit.BeforeValuesJson);
+        using var after = JsonDocument.Parse(audit.AfterValuesJson);
+        Assert.Equal(1.5m, before.RootElement.GetProperty("RatePerHour").GetDecimal());
+        Assert.Equal(2m, after.RootElement.GetProperty("RatePerHour").GetDecimal());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RosterUpdatePreservesCustomizedAndAmbiguousEntries(bool duplicatePredecessor)
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        var mavrix = new Game { Name = "mavrix", RatePerHour = 3m, MinutesCap = 60m, IsArchived = true };
+        var predecessor = new Game { Name = "Predecessor", RatePerHour = 1.5m, MinutesCap = duplicatePredecessor ? 3000m : 60m };
+        db.Games.AddRange(mavrix, predecessor);
+        if (duplicatePredecessor)
+            db.Games.Add(new Game { Name = "PREDECESSOR", RatePerHour = 1m, MinutesCap = 120m, IsArchived = true });
+        db.SaveChanges();
+
+        DatabaseInitialization.Initialize(db);
+
+        using var read = database.CreateContext();
+        Assert.Equal(duplicatePredecessor ? 4 : 3, read.Games.Count());
+        var savedMavrix = read.Games.Single(game => game.Id == mavrix.Id);
+        Assert.Equal(3m, savedMavrix.RatePerHour);
+        Assert.Equal(60m, savedMavrix.MinutesCap);
+        Assert.True(savedMavrix.IsArchived);
+        Assert.Equal(1.5m, read.Games.Single(game => game.Id == predecessor.Id).RatePerHour);
+        Assert.Empty(read.GameChanges);
+    }
+
+    [Fact]
+    public void FailedRosterAuditRollsBackNewGamesAndRateChange()
+    {
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            db.Games.Add(new Game { Name = "Predecessor", RatePerHour = 1.5m, MinutesCap = 3000m });
+            db.SaveChanges();
+            db.Database.ExecuteSqlRaw("CREATE TRIGGER RejectRosterAudit BEFORE INSERT ON GameChanges BEGIN SELECT RAISE(ABORT, 'test roster audit failure'); END;");
+            Assert.Throws<DbUpdateException>(() => DatabaseInitialization.Initialize(db));
+        }
+
+        using (var read = database.CreateContext())
+        {
+            Assert.Equal(1.5m, Assert.Single(read.Games).RatePerHour);
+            Assert.Empty(read.GameChanges);
+            read.Database.ExecuteSqlRaw("DROP TRIGGER RejectRosterAudit");
+        }
+
+        using var retry = database.CreateContext();
+        DatabaseInitialization.Initialize(retry);
+        Assert.Equal(3, retry.Games.Count());
+        Assert.Single(retry.GameChanges);
     }
 
     [Fact]

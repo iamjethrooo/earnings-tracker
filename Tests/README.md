@@ -1,6 +1,6 @@
 # Automated tests
 
-The test project uses xUnit v3, the Visual Studio test runner, and real SQLite databases. It targets `net10.0-windows` because it references the WPF application. Run on Windows with the .NET 10 SDK and Windows Desktop runtime.
+The test project uses xUnit v3 and real SQLite databases. It targets `net10.0-windows` because it references the WPF application. Run on Windows with the SDK pinned in [global.json](../global.json) and the Windows Desktop runtime. The [Windows CI workflow](../.github/workflows/windows-ci.yml) builds Debug and Release on pull requests and runs the suite through xUnit's in-process runner.
 
 ## Run
 

@@ -14,14 +14,12 @@ namespace EarningsTracker.Tests;
 public class ReleaseHistoryTests
 {
     [Fact]
-    public void BundledHistoryIncludesEveryPublishedVersionAndSeparatesPendingChanges()
+    public void BundledHistoryIncludesEveryVersionAndMarksTheCandidateInstalled()
     {
-        var entries = ReleaseHistory.Load("1.2.0");
-        Assert.Equal(new[] { "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Where(entry => !entry.Unreleased).Select(entry => entry.Version));
-        var pending = Assert.Single(entries, entry => entry.Unreleased);
-        Assert.Equal("Not yet published", pending.DateLabel);
+        var entries = ReleaseHistory.Load("1.6.0");
+        Assert.Equal(new[] { "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
         var installed = Assert.Single(entries, entry => entry.IsInstalled);
-        Assert.Equal("1.2.0", installed.Version);
+        Assert.Equal("1.6.0", installed.Version);
         Assert.True(installed.IsExpanded);
         Assert.All(entries.Where(entry => entry != installed), entry => Assert.False(entry.IsExpanded));
         Assert.All(entries.Where(entry => !entry.Unreleased), entry => Assert.Contains("UTC", entry.DateLabel));
@@ -75,8 +73,7 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
             window.UpdateLayout();
             var list = (ListBox)window.FindName("Releases");
             var entries = list.Items.Cast<ReleaseHistoryEntry>().ToList();
-            Assert.Equal(5, entries.Count(entry => !entry.Unreleased));
-            Assert.Single(entries, entry => entry.Unreleased);
+            Assert.Equal(7, entries.Count);
             var installed = (ReleaseHistoryEntry)list.SelectedItem;
             Assert.True(installed.IsInstalled);
             Assert.True(installed.IsExpanded);

@@ -1,0 +1,28 @@
+name: Windows build and tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet restore EarningsTracker.slnx
+      - run: dotnet build EarningsTracker.slnx --configuration ${{ matrix.configuration }} --no-restore
+      - name: Run xUnit tests
+        run: dotnet run --project Tests/EarningsTracker.Tests/EarningsTracker.Tests.csproj --configuration ${{ matrix.configuration }} --no-build --no-restore -- -noColor

@@ -45,7 +45,15 @@ public sealed class CatalogEntry
     public List<SubscriptionAvailability> Subscriptions { get; set; } = [];
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public CatalogSteamIdentity? SteamIdentity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public CatalogRosterAddition? RosterAddition { get; set; }
 }
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record CatalogRosterAddition(
+    [property: JsonRequired] decimal RatePerHour,
+    [property: JsonRequired] int MinutesCap,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? GameName = null);
 
 public sealed record CatalogSteamIdentity(string State, string? ReviewedAt, string Provenance, List<CatalogSteamApp> Apps);
 public sealed record CatalogSteamApp(uint AppId, string Kind);
@@ -114,6 +122,10 @@ internal static class CatalogService
             throw new InvalidDataException("Unsupported or invalid catalog header.");
         var ids = new HashSet<string>(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var rosterRates = new Dictionary<string, HashSet<decimal>>(StringComparer.OrdinalIgnoreCase);
+        var titleCounts = snapshot.Games.SelectMany(entry => entry.Aliases.Prepend(entry.Name))
+            .GroupBy(name => name?.Trim() ?? "", StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
         foreach (var entry in snapshot.Games)
         {
             if (string.IsNullOrWhiteSpace(entry.CatalogId) || !ids.Add(entry.CatalogId)
@@ -131,6 +143,22 @@ internal static class CatalogService
             foreach (var alias in entry.Aliases)
                 if (string.IsNullOrWhiteSpace(alias) || !names.Add(alias + "#"))
                     throw new InvalidDataException("Duplicate catalog alias.");
+            if (entry.RosterAddition is { } addition)
+            {
+                var gameName = addition.GameName ?? entry.Name;
+                if (snapshot.SchemaVersion != 2 || !entry.Reviewed
+                    || entry.NameOccurrence.HasValue || entry.ExpectedNameCount.HasValue || !ValidRosterTitle(entry.Name)
+                    || addition.RatePerHour <= 0 || addition.RatePerHour > int.MaxValue
+                    || decimal.Round(addition.RatePerHour, 2) != addition.RatePerHour || addition.MinutesCap <= 0
+                    || entry.Aliases.Prepend(entry.Name).Any(name => titleCounts[name.Trim()] != 1)
+                    || (addition.GameName != null && (!ValidRosterTitle(gameName) || entry.Aliases.Count != 0
+                        || string.Equals(gameName, entry.Name, StringComparison.OrdinalIgnoreCase))))
+                    throw new InvalidDataException($"Invalid roster addition for {entry.CatalogId}.");
+                if (!rosterRates.TryGetValue(gameName, out var rates))
+                    rosterRates.Add(gameName, rates = []);
+                if (!rates.Add(addition.RatePerHour))
+                    throw new InvalidDataException($"Duplicate roster rate for {gameName}.");
+            }
             if (entry.CoverUrl != "" && (!IsHttps(entry.CoverUrl) || entry.CoverSha256?.Length != 64
                 || !entry.CoverSha256.All(Uri.IsHexDigit)))
                 throw new InvalidDataException("Artwork requires HTTPS and a SHA-256 checksum.");
@@ -162,6 +190,9 @@ internal static class CatalogService
     }
 
     internal static bool ValidCurrency(string value) => value?.Length == 3 && value.All(c => c >= 'A' && c <= 'Z');
+
+    private static bool ValidRosterTitle(string name) => !string.IsNullOrWhiteSpace(name)
+        && name == name.Trim() && name.Length <= 256 && !name.Any(char.IsControl);
 
     private static bool ValidSteamIdentity(CatalogSteamIdentity identity, DateTime publishedAt)
     {
@@ -208,16 +239,19 @@ internal static class CatalogService
     }
 
     internal enum ActivationStatus { Applied, UpToDate, Older, Incompatible, Rejected }
-    internal sealed record ActivationResult(ActivationStatus Status, List<string> Unmatched);
+    internal sealed record ActivationResult(ActivationStatus Status, List<string> Unmatched,
+        RosterPreview? Roster = null, int GamesAdded = 0);
+    internal sealed record RosterCandidate(string CatalogId, string Name, CatalogRosterAddition Terms);
+    internal sealed record RosterPreview(List<RosterCandidate> Additions, List<string> Conflicts);
     private sealed record SavedPayload(int SchemaVersion, string Version, string Sha256, string Payload, HashSet<string>? MatchedIds = null);
     internal sealed record RollbackVersions(string Active, string Target);
 
     internal static List<string> Import(AppDbContext db, CatalogSnapshot snapshot) => Activate(db, snapshot).Unmatched;
 
-    // A snapshot never creates/deletes earning games or touches user-owned data.
     internal static ActivationResult Activate(AppDbContext db, CatalogSnapshot snapshot,
-        CancellationToken cancellationToken = default, bool checkedRemotely = false)
-        => Activate(db, snapshot, cancellationToken, checkedRemotely, null);
+        CancellationToken cancellationToken = default, bool checkedRemotely = false,
+        bool previewRoster = false, RosterPreview? approvedRoster = null)
+        => Activate(db, snapshot, cancellationToken, checkedRemotely, null, previewRoster, approvedRoster);
 
     internal static RollbackVersions GetRollbackVersions(AppDbContext db)
     {
@@ -229,7 +263,7 @@ internal static class CatalogService
     }
 
     internal static void Rollback(AppDbContext db, RollbackVersions confirmed, CancellationToken cancellationToken = default)
-        => Activate(db, null, cancellationToken, false, confirmed);
+        => Activate(db, null, cancellationToken, false, confirmed, false, null);
 
     private static (CatalogSnapshot Snapshot, HashSet<string>? MatchedIds) ReadPreviousSnapshot(AppDbContext db)
     {
@@ -248,7 +282,8 @@ internal static class CatalogService
     }
 
     private static ActivationResult Activate(AppDbContext db, CatalogSnapshot? incoming,
-        CancellationToken cancellationToken, bool checkedRemotely, RollbackVersions? rollback)
+        CancellationToken cancellationToken, bool checkedRemotely, RollbackVersions? rollback,
+        bool previewRoster, RosterPreview? approvedRoster)
     {
         using var transaction = db.Database.BeginTransaction();
         var (snapshot, restoreMembers) = incoming == null ? ReadPreviousSnapshot(db) : (incoming, null);
@@ -270,11 +305,38 @@ internal static class CatalogService
         var activePublished = GetSetting(db, "catalog.published");
         if (rollback == null && GetSetting(db, "catalog.rejected." + snapshot.Version) == hash)
             return new(ActivationStatus.Rejected, []);
-        if (activeVersion == snapshot.Version)
+        var alreadyActive = activeVersion == snapshot.Version;
+        if (alreadyActive && snapshot.SchemaVersion == 2 && knownHash.Length == 0
+            && (ReadSteamIdentities(db) is not { } active || active.Sha256 != hash))
+            throw new InvalidDataException("A catalog version cannot be reused for a different snapshot.");
+        if (!alreadyActive && rollback == null
+            && DateTime.TryParse(activePublished, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var last)
+            && (snapshot.PublishedAt < last || (snapshot.PublishedAt == last
+                && ((snapshot.SchemaVersion == 2 && activeSchema != "2")
+                    || string.CompareOrdinal(snapshot.Version, activeVersion) <= 0))))
+            return new(ActivationStatus.Older, []);
+
+        var games = db.Games.ToList();
+        var metadata = db.GameMetadata.ToList();
+        var variantIds = snapshot.Games.Where(entry => entry.RosterAddition?.GameName != null)
+            .Select(entry => entry.CatalogId).ToHashSet(StringComparer.Ordinal);
+        var variantNames = snapshot.Games.Where(entry => variantIds.Contains(entry.CatalogId))
+            .Select(entry => entry.RosterAddition!.GameName!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var linkedVariantGameIds = metadata.Where(link => variantIds.Contains(link.CatalogId))
+            .Select(link => link.GameId).ToHashSet();
+        var legacyGames = games.Where(game => !linkedVariantGameIds.Contains(game.Id)).ToList();
+        var roster = PlanRoster(snapshot, games, legacyGames, metadata, variantNames,
+            out var conflicts, out var existingRosterGames);
+        if (previewRoster)
+            return new(alreadyActive ? ActivationStatus.UpToDate : ActivationStatus.Applied, [], roster);
+        if (approvedRoster != null && (!approvedRoster.Additions.SequenceEqual(roster.Additions)
+            || !approvedRoster.Conflicts.SequenceEqual(roster.Conflicts)))
+            throw new InvalidDataException("The game list changed after preview. Check for updates again.");
+
+        var additions = approvedRoster?.Additions ?? [];
+        // Automatic checks and older clients can activate the same payload before roster approval.
+        if (alreadyActive && additions.Count == 0)
         {
-            if (snapshot.SchemaVersion == 2 && knownHash.Length == 0
-                && (ReadSteamIdentities(db) is not { } active || active.Sha256 != hash))
-                throw new InvalidDataException("A catalog version cannot be reused for a different snapshot.");
             if (checkedRemotely)
             {
                 SetSetting(db, "updates.catalogSuccess", DateTime.UtcNow.ToString("O"));
@@ -282,17 +344,11 @@ internal static class CatalogService
                 cancellationToken.ThrowIfCancellationRequested();
                 transaction.Commit();
             }
-            return new(ActivationStatus.UpToDate, []);
+            return new(ActivationStatus.UpToDate, [], roster);
         }
-        if (rollback == null && DateTime.TryParse(activePublished, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var last)
-            && (snapshot.PublishedAt < last || (snapshot.PublishedAt == last
-                && ((snapshot.SchemaVersion == 2 && activeSchema != "2")
-                    || string.CompareOrdinal(snapshot.Version, activeVersion) <= 0))))
-            return new(ActivationStatus.Older, []);
         // Import mutates offer and subscription entity keys. Keep the validated input reusable.
         snapshot = Parse(payload, hash);
-        var games = db.Games.ToList();
-        var metadata = db.GameMetadata.ToList();
+        var addedGames = GameService.AddFromCatalog(db, additions, snapshot.Version);
         if (rollback != null)
         {
             var rejectedHash = GetSetting(db, "catalog.hash." + activeVersion);
@@ -301,7 +357,7 @@ internal static class CatalogService
             SetSetting(db, "catalog.rejected." + activeVersion, rejectedHash);
             db.CatalogSettings.Remove(db.CatalogSettings.Find(PreviousPayloadKey)!);
         }
-        else if (GetSetting(db, ActivePayloadKey) is { Length: > 0 } activePayload)
+        else if (!alreadyActive && GetSetting(db, ActivePayloadKey) is { Length: > 0 } activePayload)
         {
             SetSetting(db, PreviousPayloadKey, activePayload);
             db.CatalogSettings.RemoveRange(db.CatalogSettings.Where(row => row.Key == "catalog.previous-materialized"));
@@ -323,16 +379,16 @@ internal static class CatalogService
         foreach (var entry in snapshot.Games)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (restoreMembers != null && !restoreMembers.Contains(entry.CatalogId))
+            if (conflicts.Contains(entry.CatalogId) || (restoreMembers != null && !restoreMembers.Contains(entry.CatalogId)))
             {
                 unresolved.Add(entry.Name);
                 continue;
             }
             var existing = metadata.SingleOrDefault(x => x.CatalogId == entry.CatalogId);
-            var matches = existing == null
-                ? games.Where(x => string.Equals(x.Name, entry.Name, StringComparison.OrdinalIgnoreCase)
-                    || entry.Aliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase)).OrderBy(x => x.Id).ToList()
-                : games.Where(x => x.Id == existing.GameId).ToList();
+            var matches = addedGames.TryGetValue(entry.CatalogId, out var added) ? [added]
+                : existing != null ? games.Where(x => x.Id == existing.GameId).ToList()
+                : existingRosterGames.TryGetValue(entry.CatalogId, out var rosterGame) ? [rosterGame]
+                : entry.RosterAddition == null ? FindTitleMatches(entry, legacyGames) : [];
             if (existing == null && entry.NameOccurrence.HasValue)
                 matches = matches.Count == entry.ExpectedNameCount
                     ? [matches[entry.NameOccurrence.Value - 1]] : [];
@@ -356,16 +412,13 @@ internal static class CatalogService
             existing.SupportsMultiplayer = entry.SupportsMultiplayer;
             existing.MultiplayerProvenance = entry.MultiplayerProvenance;
             existing.MultiplayerVerifiedAt = entry.MultiplayerVerifiedAt;
-            var preserveLivePrices = samePriceMapping && DateTime.TryParse(GetSetting(db, "prices.live." + game.Id), CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind, out var liveAt) && liveAt > snapshot.PublishedAt;
-            if (!preserveLivePrices) RemoveLivePriceMarker(db, game.Id);
             db.GameGenres.RemoveRange(db.GameGenres.Where(x => x.GameId == game.Id));
-            db.StoreOffers.RemoveRange(db.StoreOffers.Where(x => x.GameId == game.Id && (!preserveLivePrices || x.Provenance != "IsThereAnyDeal")));
+            var offersToAdd = MergeOffers(db, game.Id, entry.Offers, samePriceMapping, snapshot.PublishedAt, rollback != null);
             db.SubscriptionAvailability.RemoveRange(db.SubscriptionAvailability.Where(x => x.GameId == game.Id));
             // Flush removals before adding identical composite genre keys.
             db.SaveChanges();
             db.GameGenres.AddRange(entry.Genres.Select(x => new GameGenre { GameId = game.Id, Name = x }));
-            foreach (var offer in entry.Offers.Where(x => !preserveLivePrices || x.Provenance != "IsThereAnyDeal"))
+            foreach (var offer in offersToAdd)
             { offer.Id = 0; offer.GameId = game.Id; db.StoreOffers.Add(offer); }
             foreach (var sub in entry.Subscriptions) { sub.Id = 0; sub.GameId = game.Id; db.SubscriptionAvailability.Add(sub); }
         }
@@ -387,7 +440,94 @@ internal static class CatalogService
         db.SaveChanges();
         cancellationToken.ThrowIfCancellationRequested();
         transaction.Commit();
-        return new(ActivationStatus.Applied, unresolved);
+        return new(ActivationStatus.Applied, unresolved, roster, addedGames.Count);
+    }
+
+    private static List<Game> FindTitleMatches(CatalogEntry entry, List<Game> games) => games
+        .Where(game => string.Equals(game.Name, entry.Name, StringComparison.OrdinalIgnoreCase)
+            || entry.Aliases.Contains(game.Name, StringComparer.OrdinalIgnoreCase))
+        .OrderBy(game => game.Id).ToList();
+
+    private static List<StoreOffer> MergeOffers(AppDbContext db, int gameId, List<StoreOffer> incoming,
+        bool samePriceMapping, DateTime publishedAt, bool restoring)
+    {
+        var saved = db.StoreOffers.Where(offer => offer.GameId == gameId).ToList();
+        var incomingLiveSource = incoming.Where(IsItad).ToList();
+        // A metadata-only publication advances the snapshot date without refreshing its quotes.
+        var preserveLiveBatch = samePriceMapping
+            && DateTime.TryParse(GetSetting(db, "prices.live." + gameId), CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind, out var liveAt)
+            && (liveAt > publishedAt || (incomingLiveSource.Count > 0
+                && incomingLiveSource.All(offer => offer.VerifiedAt <= liveAt)));
+        if (!preserveLiveBatch) RemoveLivePriceMarker(db, gameId);
+
+        var keep = new HashSet<StoreOffer>();
+        if (preserveLiveBatch) keep.UnionWith(saved.Where(IsItad));
+        var additions = new List<StoreOffer>();
+        var comparable = saved.Where(offer => !restoring && (samePriceMapping || !IsItad(offer)))
+            .ToLookup(OfferKey);
+        foreach (var group in incoming.Where(offer => !preserveLiveBatch || !IsItad(offer)).GroupBy(OfferKey))
+        {
+            var previous = comparable[group.Key].ToList();
+            if (previous.Count == 1 && group.Count() == 1 && previous[0].VerifiedAt > group.Single().VerifiedAt)
+                keep.Add(previous[0]);
+            else
+                additions.AddRange(group);
+        }
+        db.StoreOffers.RemoveRange(saved.Where(offer => !keep.Contains(offer)));
+        return additions;
+    }
+
+    private static bool IsItad(StoreOffer offer) => offer.Provenance == "IsThereAnyDeal";
+
+    private static (string Source, string Edition, string Region, string Currency, string Provenance, string Url)
+        OfferKey(StoreOffer offer) => (offer.Source, offer.Edition, offer.Region, offer.Currency, offer.Provenance,
+            IsItad(offer) ? "" : offer.Url);
+
+    private static RosterPreview PlanRoster(CatalogSnapshot snapshot, List<Game> games, List<Game> legacyGames,
+        List<GameMetadata> metadata, HashSet<string> variantNames,
+        out HashSet<string> conflicts, out Dictionary<string, Game> existingRosterGames)
+    {
+        conflicts = new(StringComparer.Ordinal);
+        existingRosterGames = new(StringComparer.Ordinal);
+        var preview = new RosterPreview([], []);
+        var linkedCatalogIds = metadata.Select(link => link.CatalogId).ToHashSet(StringComparer.Ordinal);
+        var linkedGameIds = metadata.Select(link => link.GameId).ToHashSet();
+        foreach (var entry in snapshot.Games.OrderBy(entry => entry.CatalogId, StringComparer.Ordinal))
+        {
+            if (entry.RosterAddition is not { } terms || linkedCatalogIds.Contains(entry.CatalogId))
+                continue;
+            if (terms.GameName is { } gameName)
+            {
+                // An existing same-rate row requires an explicit stable link before it can be reused.
+                if (games.Any(game => string.Equals(game.Name.Trim(), gameName, StringComparison.OrdinalIgnoreCase)
+                    && game.RatePerHour == terms.RatePerHour))
+                {
+                    conflicts.Add(entry.CatalogId);
+                    preview.Conflicts.Add(entry.Name);
+                }
+                else
+                    preview.Additions.Add(new(entry.CatalogId, gameName, terms));
+                continue;
+            }
+            var titles = entry.Aliases.Prepend(entry.Name).Select(title => title.Trim())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var sharedTitle = variantNames.Contains(entry.Name);
+            var candidates = (sharedTitle ? games.Where(game => game.RatePerHour == terms.RatePerHour) : legacyGames)
+                .Where(game => titles.Contains(game.Name.Trim())).ToList();
+            if (candidates.Count == 0)
+                preview.Additions.Add(new(entry.CatalogId, entry.Name, terms));
+            else if (candidates.Count != 1 || linkedGameIds.Contains(candidates[0].Id)
+                || (sharedTitle && candidates[0].MinutesCap != terms.MinutesCap)
+                || FindTitleMatches(entry, candidates).Count != 1)
+            {
+                conflicts.Add(entry.CatalogId);
+                preview.Conflicts.Add(entry.Name);
+            }
+            else
+                existingRosterGames.Add(entry.CatalogId, candidates[0]);
+        }
+        return preview;
     }
 
     internal static string GetSetting(AppDbContext db, string key) => db.CatalogSettings.Find(key)?.Value ?? "";

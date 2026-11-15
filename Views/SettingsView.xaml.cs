@@ -15,6 +15,7 @@ public partial class SettingsView : UserControl
     private readonly SettingsViewModel model;
     private readonly DbContextOptions<AppDbContext>? options;
     private bool loadingPreferences = true;
+    private bool canRefreshStoreOffers;
     private CancellationTokenSource? steamWork;
     private readonly SteamLibrary steamLibrary;
     public SettingsView() : this(null) { }
@@ -33,7 +34,64 @@ public partial class SettingsView : UserControl
         loadingPreferences = false;
         UpdateKeyStatus();
         UpdateSteamInstallStatus();
+        UpdateLocalInstallationSettings();
         Unloaded += (_, _) => { ApiKey.Clear(); SteamKey.Clear(); steamWork?.Cancel(); };
+    }
+    private void UpdateLocalInstallationSettings()
+    {
+        try
+        {
+            var settings = new AppSettings(options);
+            WindowsInstallations.IsChecked = settings.Get(LocalGameInstallations.WindowsKey) == "true";
+            var count = LocalGameInstallations.ReadFolders(settings.Get(LocalGameInstallations.FoldersKey)).Length;
+            LocalFolderStatus.Text = count == 0 ? "No game folders selected." : $"Game folders selected: {count}.";
+        }
+        catch
+        {
+            WindowsInstallations.IsEnabled = false;
+            LocalFolderStatus.Text = "Installation preferences could not be read. Reopen Settings to retry.";
+        }
+    }
+
+    private void WindowsInstallations_Click(object sender, RoutedEventArgs e)
+    {
+        var enabled = WindowsInstallations.IsChecked == true;
+        try { new AppSettings(options).Set(LocalGameInstallations.WindowsKey, enabled ? "true" : "false"); }
+        catch
+        {
+            WindowsInstallations.IsChecked = !enabled;
+            LocalFolderStatus.Text = "Windows installation preference could not be saved. Try again.";
+        }
+    }
+
+    private void ChooseLocalFolders_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Select individual game installation folders", Multiselect = true };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+        try
+        {
+            var settings = new AppSettings(options);
+            var selected = LocalGameInstallations.ReadFolders(settings.Get(LocalGameInstallations.FoldersKey))
+                .Concat(dialog.FolderNames).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            if (selected.Length > LocalGameInstallations.MaxFolders || selected.Any(path => !LocalGameInstallations.IsLocalFolderPath(path)))
+            {
+                LocalFolderStatus.Text = $"Choose up to {LocalGameInstallations.MaxFolders} local game folders.";
+                return;
+            }
+            settings.Set(LocalGameInstallations.FoldersKey, JsonSerializer.Serialize(selected));
+            UpdateLocalInstallationSettings();
+        }
+        catch { LocalFolderStatus.Text = "Game folders could not be saved. Try again."; }
+    }
+
+    private void ClearLocalFolders_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            new AppSettings(options).Set(LocalGameInstallations.FoldersKey, "");
+            UpdateLocalInstallationSettings();
+        }
+        catch { LocalFolderStatus.Text = "Game folders could not be cleared. Try again."; }
     }
     private void UpdateSteamInstallStatus()
     {
@@ -132,8 +190,17 @@ public partial class SettingsView : UserControl
     }
     private void UpdateKeyStatus()
     {
-        try { KeyStatus.Text = string.IsNullOrEmpty(CatalogCredentials.Get()) ? "Not configured" : "Saved"; }
-        catch { KeyStatus.Text = "Credential status unavailable"; }
+        try
+        {
+            canRefreshStoreOffers = !string.IsNullOrWhiteSpace(CatalogCredentials.Get());
+            KeyStatus.Text = canRefreshStoreOffers ? "Saved" : "Not configured";
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            canRefreshStoreOffers = false;
+            KeyStatus.Text = "Credential status unavailable";
+        }
+        RefreshOffers.Content = canRefreshStoreOffers ? "Refresh store offers" : "Set up price refresh…";
     }
     private void ReleaseHistory_Click(object sender, RoutedEventArgs e)
     {
@@ -192,22 +259,58 @@ public partial class SettingsView : UserControl
     }
     private async void Refresh_Click(object sender, RoutedEventArgs e)
     {
-        Refresh.IsEnabled = RollbackCatalog.IsEnabled = false;
-        ShowFeedback("Checking catalog, exchange rates, and live prices…");
+        Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = false;
+        ShowFeedback("Checking for game list updates…", target: CatalogUpdateFeedback);
+        string? result = null;
         try
         {
-            var result = await new CatalogUpdates(options).RefreshAsync(true);
+            result = await new CatalogUpdates(options).RefreshAsync(true,
+                confirmRoster: preview => Modals.CatalogRosterWindow.Confirm(this, preview));
+            var tone = result.Contains("keeping saved", StringComparison.OrdinalIgnoreCase)
+                ? FeedbackTone.Warning : FeedbackTone.Neutral;
+            ShowFeedback(result, tone, CatalogUpdateFeedback);
             model.Reload();
-            // Update results can contain partial failures; keep those warnings visible.
-            ShowFeedback(result, result.Contains("unavailable", StringComparison.OrdinalIgnoreCase)
-                ? FeedbackTone.Warning : FeedbackTone.Neutral);
         }
-        catch { ShowFeedback("Update failed. Saved data remains available. Retry later.", FeedbackTone.Error); }
-        finally { Refresh.IsEnabled = RollbackCatalog.IsEnabled = true; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError($"Game list update check failed ({ex.GetType().Name}).");
+            ShowFeedback(result == null ? "Could not complete the update check. Reopen Settings or retry later."
+                : result + " Reopen Settings to reload update details.", FeedbackTone.Warning, CatalogUpdateFeedback);
+        }
+        finally { Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = true; }
+    }
+    private async void RefreshOffers_Click(object sender, RoutedEventArgs e)
+    {
+        if (!canRefreshStoreOffers)
+        {
+            ApiKey.Focus();
+            return;
+        }
+
+        Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = false;
+        ShowFeedback("Refreshing store offers…", target: StoreOffersFeedback);
+        try
+        {
+            var result = await new CatalogUpdates(options).RefreshStoreOffersAsync();
+            var tone = result.StartsWith("Store offers unavailable", StringComparison.Ordinal)
+                ? FeedbackTone.Warning : FeedbackTone.Neutral;
+            ShowFeedback(result, tone, StoreOffersFeedback);
+            model.Reload();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError($"Store offer refresh failed ({ex.GetType().Name}).");
+            ShowFeedback("Could not complete the offer refresh. Reopen Settings or retry later.", FeedbackTone.Error, StoreOffersFeedback);
+        }
+        finally
+        {
+            UpdateKeyStatus();
+            Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = true;
+        }
     }
     private async void RollbackCatalog_Click(object sender, RoutedEventArgs e)
     {
-        Refresh.IsEnabled = RollbackCatalog.IsEnabled = false;
+        Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = false;
         bool committed = false;
         try
         {
@@ -241,7 +344,7 @@ public partial class SettingsView : UserControl
                 ? "Catalog restored, but Settings could not refresh. Reopen Settings."
                 : "Catalog restore could not be completed. Check the previous version and retry.", FeedbackTone.Warning);
         }
-        finally { Refresh.IsEnabled = RollbackCatalog.IsEnabled = true; }
+        finally { Refresh.IsEnabled = RefreshOffers.IsEnabled = RollbackCatalog.IsEnabled = true; }
     }
     private void Export_Click(object sender, RoutedEventArgs e)
     {
@@ -299,7 +402,7 @@ public partial class SettingsView : UserControl
         }
         finally { BackupButton.IsEnabled = RestoreButton.IsEnabled = true; }
     }
-    internal void ShowFeedback(string message, FeedbackTone tone = FeedbackTone.Neutral)
+    internal void ShowFeedback(string message, FeedbackTone tone = FeedbackTone.Neutral, TextBlock? target = null)
     {
         var resource = tone switch
         {
@@ -308,8 +411,9 @@ public partial class SettingsView : UserControl
             FeedbackTone.Error => "RejectedTextColor",
             _ => "SecondaryTextColor"
         };
-        Feedback.SetResourceReference(TextBlock.ForegroundProperty, resource);
-        Feedback.Text = message;
+        target ??= Feedback;
+        target.SetResourceReference(TextBlock.ForegroundProperty, resource);
+        target.Text = message;
     }
 }
 

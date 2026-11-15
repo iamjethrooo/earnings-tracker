@@ -1,6 +1,60 @@
 [
   {
-    "unreleased": true,
+    "version": "1.6.0",
+    "publishedAt": "2026-11-15T08:01:56Z",
+    "unreleased": false,
+    "summary": "Get new games and catalog updates between app releases, find installed games with earning time left, and compare your verified earnings per hour.",
+    "upgradeNotes": [
+      "Keep an independent backup of your application data before upgrading.",
+      "This update adds MAVRIX and Wreckreation. If your list contains exactly one Predecessor entry and it is active at $1.50 per hour with a 3,000-minute cap, the app updates that entry to $2.00 per hour and records the change in the game history."
+    ],
+    "sections": [
+      {
+        "category": "What's New",
+        "heading": "Game List Updates Between App Releases",
+        "changes": [
+          "Check for game list updates in Games or Settings to preview new earning games with their hourly rates and time caps before adding them.",
+          "Games with multiple hourly rates appear separately in the preview and keep their own session histories.",
+          "Published price and catalog updates can still apply when you skip the new games."
+        ]
+      },
+      {
+        "category": "What's New",
+        "heading": "Find Installed Games With Time Left to Earn",
+        "changes": [
+          "Browse installed apps from selected Steam libraries, Windows registrations, and game folders. The browser identifies sources it could only check in part.",
+          "Combine Installed and Time left to earn to find detected catalog games with an active rate and time left in the current cap."
+        ]
+      },
+      {
+        "category": "What's New",
+        "heading": "Compare Verified Earnings per Hour",
+        "changes": [
+          "Switch the Statistics game ranking to earnings per hour. Each row shows the verified playtime used for the calculation."
+        ]
+      },
+      {
+        "category": "Improvements",
+        "heading": "Browse Games During Updates",
+        "changes": [
+          "Open saved games while update checks run. Store offers have a separate refresh action.",
+          "Saving a cap reset immediately updates progress and filter results in the Games list."
+        ]
+      },
+      {
+        "category": "Bug Fixes",
+        "heading": "Keep Payouts Distinct When Importing",
+        "changes": [
+          "Payment rows preserve their optional transaction IDs even when pasted without a header.",
+          "The preview identifies malformed entries by line and rejects amounts that cannot be stored exactly."
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.5.0",
+    "publishedAt": "2026-11-10T03:46:40Z",
+    "unreleased": false,
     "summary": "Find installed Steam games, sort by your own ratings, and recover from a catalog update in Settings.",
     "upgradeNotes": [
       "Keep an independent backup of your application data before upgrading.",
@@ -44,7 +98,7 @@
   },
   {
     "version": "1.4.0",
-    "publishedAt": "2026-11-08T15:07:04Z",
+    "publishedAt": "2026-11-08T15:16:10Z",
     "unreleased": false,
     "summary": "Find multiplayer games more easily, browse a cleaner Games library, and explore your update history—even offline.",
     "introduction": "Version 1.4.0 introduces multiplayer filtering, an in-app release history, and several interface refinements that make Earnings Tracker easier to navigate and use.",

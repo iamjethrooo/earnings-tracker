@@ -92,6 +92,49 @@ public class StatisticsRefinementTests(WpfTestHost host)
         Assert.Equal(Visibility.Visible, ((Border)view.FindName("LoadStatusPanel")).Visibility);
     });
 
+    [Fact]
+    public Task HourlyRankingUsesLinkedVerifiedPlaytimeAndPreservesHistoricalGameIdentities() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        var today = new DateTime(2026, 11, 10);
+        using (var db = database.CreateContext())
+        {
+            var current = new Game { Name = "Same title", RatePerHour = 99m };
+            var historical = new Game { Name = "Same title", IsArchived = true };
+            Session Play(Game? game, int daysAgo, int minutes, decimal earnings, SessionStatus status = SessionStatus.Verified) =>
+                new() { Game = game, GameName = "Same title", Date = today.AddDays(-daysAgo),
+                    Duration = TimeSpan.FromMinutes(minutes), Earnings = earnings, Status = status };
+            db.Sessions.AddRange(
+                Play(current, 0, 30, 3m), Play(current, 10, 90, 9m),
+                Play(current, 40, 60, 18m), Play(current, 0, 0, 100m),
+                Play(current, 0, 60, 100m, SessionStatus.Pending), Play(null, 0, 60, 100m),
+                Play(historical, 0, 60, 10m));
+            db.SaveChanges();
+        }
+
+        var view = new StatisticsView(database.Options);
+        var range = (ComboBox)view.FindName("EarningsRangeComboBox");
+        range.SelectedIndex = 0;
+        await view.LoadStatistics(asOfDate: today);
+        Assert.Equal(222m, Assert.Single(view.GameEarnings).Earnings);
+        ((ComboBox)view.FindName("GameEarningsMode")).SelectedIndex = 1;
+
+        Assert.Equal(new decimal?[] { 10m, 6m }, view.GameEarnings.Select(row => row.VerifiedHourlyRate));
+        Assert.Equal(new decimal?[] { 1m, 2m }, view.GameEarnings.Select(row => row.VerifiedHours));
+        Assert.Equal(2, view.GameEarnings.Select(row => row.GameName).Distinct().Count());
+        range.SelectedIndex = 1;
+        Assert.All(view.GameEarnings, row => Assert.Equal(10m, row.VerifiedHourlyRate));
+        Assert.Equal(3m, view.GameEarnings[0].VerifiedHours);
+
+        view.Measure(new Size(740, 1100));
+        view.Arrange(new Rect(0, 0, 740, 1100));
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        view.UpdateLayout();
+        var panel = (Border)view.FindName("GameEarningsPanel");
+        Assert.Contains(Descendants<TextBlock>(panel), text =>
+            text.Visibility == Visibility.Visible && text.Text == view.GameEarnings[0].ValueText && text.ActualWidth > 0);
+    });
+
     [Theory]
     [InlineData(560, true)]
     [InlineData(740, false)]

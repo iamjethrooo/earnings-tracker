@@ -29,7 +29,7 @@ public class CleanInstallationTests
                 Assert.Equal(db.Database.GetMigrations(), db.Database.GetAppliedMigrations());
                 Assert.False(db.Database.HasPendingModelChanges());
                 Assert.Empty(db.Database.GetPendingMigrations());
-                Assert.Equal(579, db.Games.Count());
+                Assert.Equal(581, db.Games.Count());
                 Assert.NotEmpty(db.GameMetadata);
                 Assert.NotEmpty(db.GameGenres);
                 Assert.NotEmpty(db.StoreOffers);

@@ -71,6 +71,10 @@
                     </Grid>
                     <WrapPanel x:Name="GamesToolbar">
                         <CheckBox Content="Playable now" IsChecked="{Binding PlayableOnly}" Style="{StaticResource FilterCheckBox}"/>
+                        <CheckBox x:Name="InstalledFilter" Content="Installed" IsChecked="{Binding InstalledOnly}" Style="{StaticResource FilterCheckBox}"
+                                  ToolTip="Games detected on this PC by the sources enabled in Settings."/>
+                        <CheckBox x:Name="TimeLeftFilter" Content="Time left to earn" IsChecked="{Binding TimeLeftOnly}" Style="{StaticResource FilterCheckBox}"
+                                  ToolTip="Active games with a positive earning rate and time remaining in their verified-session cap."/>
                         <CheckBox Content="Owned" IsChecked="{Binding OwnedOnly}" Style="{StaticResource FilterCheckBox}"/>
                         <CheckBox x:Name="BookmarkFilter" Content="Bookmarked" IsChecked="{Binding BookmarkedOnly, Mode=TwoWay}" Style="{StaticResource FilterCheckBox}"/>
                         <CheckBox x:Name="MultiplayerFilter" Content="Multiplayer" IsChecked="{Binding MultiplayerOnly}" Style="{StaticResource FilterCheckBox}"
@@ -116,9 +120,24 @@
                 </StackPanel>
             </Border>
             <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                <DockPanel><Button x:Name="RefreshCatalogButton" DockPanel.Dock="Right" Content="Refresh catalog" Style="{StaticResource SecondaryButton}" Click="RefreshCatalog_Click" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <DockPanel>
+                    <WrapPanel x:Name="LibraryActions" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="0,0,0,8">
+                        <Button x:Name="LocalInstallationsButton" Content="View installed apps" Style="{StaticResource SecondaryButton}" Click="LocalInstallations_Click" Margin="0,0,8,4"/>
+                        <Button x:Name="StoreOffersButton" Content="Set up price refresh…" Style="{StaticResource SecondaryButton}" Click="StoreOffers_Click" Margin="0,0,4,4"/>
+                        <Button x:Name="UpdatesButton" Content="Updates ▾" AutomationProperties.Name="Updates menu" Style="{StaticResource SecondaryButton}" Click="Updates_Click" Margin="0,0,0,4">
+                            <Button.ContextMenu>
+                                <ContextMenu Placement="Bottom">
+                                    <MenuItem x:Name="StoreOffersMenuItem" Header="Set up price refresh…" Click="StoreOffers_Click"/>
+                                    <MenuItem Header="Check for game list updates" Click="RefreshCatalog_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </WrapPanel>
                     <StackPanel><TextBlock Text="{Binding AvailableGamesText}" Style="{StaticResource ItemSubtitle}" AutomationProperties.LiveSetting="Polite"/>
                         <TextBlock Text="{Binding CatalogStatus}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="CatalogUpdateFeedback" Visibility="Collapsed" Style="{StaticResource ItemSubtitle}"
+                                   TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+                        <TextBlock x:Name="StoreOffersFeedback" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
                         <TextBlock Text="{Binding SteamStatus}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,0"/>
                     </StackPanel>
                 </DockPanel>
@@ -156,6 +175,10 @@
                                         Visibility="{Binding IsSteamOwned, Converter={StaticResource Show}}">
                                     <TextBlock Text="{Binding SteamBadge}" Style="{StaticResource ItemSubtitle}"/>
                                 </Border>
+                                <Border Style="{StaticResource TransactionBadge}" ToolTip="{Binding InstallationEvidence}" Margin="0,0,8,0"
+                                        Visibility="{Binding IsInstalled, Converter={StaticResource Show}}">
+                                    <TextBlock Text="{Binding InstallationBadge}" Style="{StaticResource ItemSubtitle}"/>
+                                </Border>
                                 <TextBlock Text="{Binding SourceText}" Style="{StaticResource ItemSubtitle}" TextTrimming="CharacterEllipsis" MaxWidth="220" VerticalAlignment="Center"/>
                             </WrapPanel>
                             <TextBlock Text="{Binding OwnershipError}" Style="{StaticResource InlineValidationText}"/>
@@ -175,7 +198,7 @@
                                 <TextBlock Text="Cycle" Style="{StaticResource ItemSubtitle}"/>
                                 <TextBlock Text="{Binding CycleProgressText}" Margin="0,4,0,0" ToolTip="Verified sessions in the current cap cycle"/>
                                 <ProgressBar Style="{StaticResource MetricProgressBar}" Value="{Binding CycleProgressPercent, Mode=OneWay}" Height="4" Margin="0,4,0,0" Visibility="{Binding HasCycleProgress, Converter={StaticResource Show}}"/>
-                                <TextBlock Text="{Binding CycleStatusText}" Style="{StaticResource ItemSubtitle}" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding TimeLeftToEarnText}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Acquisition" Style="{StaticResource ItemSubtitle}"/>
@@ -368,8 +391,8 @@
 
                         <TextBlock Text="{Binding Catalog.PurchaseEvidence}" Style="{StaticResource PageDescription}"/>
                         <TextBlock Text="{Binding Catalog.SteamEvidence}" Style="{StaticResource PageDescription}"/>
-                        <TextBlock Text="{Binding Catalog.SteamInstallation}" Style="{StaticResource PageDescription}"
-                                   Visibility="{Binding Catalog.ShowsSteamInstallation, Converter={StaticResource Show}}"/>
+                        <TextBlock Text="{Binding Catalog.InstallationEvidence}" Style="{StaticResource PageDescription}"
+                                   Visibility="{Binding Catalog.ShowsInstallation, Converter={StaticResource Show}}"/>
                         <TextBlock Text="{Binding Catalog.BreakEvenText}" Style="{StaticResource PageDescription}"/>
                         <Button Content="Edit ownership" Style="{StaticResource SecondaryButton}" Click="Ownership_Click" HorizontalAlignment="Left" Margin="0,12,0,0"/>
                         <TextBlock Text="Subscription evidence" Style="{StaticResource SectionHeading}" Margin="0,16,0,0"/>
@@ -470,8 +493,8 @@
                             <TextBlock TextWrapping="Wrap"><Run Text="{Binding Name}"/><Run Text=" · #"/><Run Text="{Binding Id}"/><Run Text=" · "/><Run Text="{Binding RatePerHour, StringFormat={}{0:C2}/hr, ConverterCulture=en-US}"/><Run Text=" · "/><Run Text="{Binding MinutesCap}"/><Run Text=" min cap · archived: "/><Run Text="{Binding IsArchived}"/></TextBlock>
                         </DataTemplate></ListBox.ItemTemplate></ListBox>
                     </StackPanel></Expander>
-                    <Expander Header="Cap-reset history" Margin="0,0,0,12"><StackPanel>
-                        <TextBlock Text="No reset history" Margin="0,8,0,0">
+                    <Expander Header="Game change history" Margin="0,0,0,12"><StackPanel>
+                        <TextBlock Text="No game changes" Margin="0,8,0,0">
                             <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource PageDescription}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding CapResetHistory.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
                         </TextBlock>
                         <ListBox ItemsSource="{Binding CapResetHistory}" MaxHeight="240" Background="Transparent" BorderThickness="0" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"><ListBox.ItemTemplate><DataTemplate><Expander Margin="0,8">

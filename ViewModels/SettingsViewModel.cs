@@ -13,6 +13,7 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public string SubscriptionStatus { get; private set; } = "";
     public string UpdateStatus { get; private set; } = "";
+    public string StoreOffersStatus { get; private set; } = "";
     public string RateStatus { get; private set; } = "";
     public string SteamStatus { get; private set; } = "";
     public string SteamProfile { get; private set; } = "";
@@ -62,7 +63,8 @@ internal sealed class SettingsViewModel : INotifyPropertyChanged
             + "Outdated availability may have changed. Stale verification does not confirm removal or grant Playable now.";
         var catalogVersion = settings.Get("catalog.version");
         var catalogLabel = catalogVersion.Length > 0 ? catalogVersion : "Unavailable";
-        UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog last confirmed: {Date(settings.Get("updates.catalogSuccess"))}\nLive prices checked: {Date(settings.Get("updates.pricesSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nActive catalog: {catalogLabel} · {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
+        UpdateStatus = $"Last attempt: {Date(settings.Get("updates.lastAttempt"))}\nCatalog last confirmed: {Date(settings.Get("updates.catalogSuccess"))}\nExchange rates checked: {Date(settings.Get("updates.ratesSuccess"))}\nActive catalog: {catalogLabel} · {Date(settings.Get("catalog.published"))}\n{settings.Get("updates.result")}";
+        StoreOffersStatus = $"Store offers last checked: {Date(settings.Get("updates.pricesSuccess"))}";
         var rate = db.ExchangeRates.AsNoTracking().SingleOrDefault(r => r.Currency == "PHP");
         RateStatus = rate == null ? "No saved PHP exchange rate. Refresh to check rates."
             : $"1 USD = {rate.PerUsd:N4} PHP · rate dated {rate.Date:yyyy-MM-dd}";

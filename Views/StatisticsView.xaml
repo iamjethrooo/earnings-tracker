@@ -122,13 +122,36 @@
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
                                 <TextBlock Text="Earnings by game" Style="{StaticResource SectionHeading}"/>
-                                <TextBlock Text="Top 8 · verified session earnings" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                <ComboBox x:Name="GameEarningsMode" Style="{StaticResource FilterDropdown}" HorizontalAlignment="Left"
+                                          SelectedIndex="0" SelectionChanged="EarningsRangeComboBox_SelectionChanged"
+                                          AutomationProperties.Name="Rank games by" Margin="0,6,0,0">
+                                    <ComboBoxItem Content="Total verified earnings"/>
+                                    <ComboBoxItem Content="Verified earnings per hour"/>
+                                </ComboBox>
+                                <TextBlock Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Top 8 · verified session earnings"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=GameEarningsMode}" Value="1">
+                                                    <Setter Property="Text" Value="Top 8 · linked verified sessions with recorded playtime"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
-                            <TextBlock Grid.Row="1" Text="No verified sessions in this period." TextWrapping="Wrap">
+                            <TextBlock Grid.Row="1" TextWrapping="Wrap">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers><DataTrigger Binding="{Binding GameEarnings.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                        <Setter Property="Text" Value="No verified sessions in this period."/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding GameEarnings.Count}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedIndex, ElementName=GameEarningsMode}" Value="1">
+                                                <Setter Property="Text" Value="No linked verified sessions with recorded playtime in this period."/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
@@ -140,7 +163,7 @@
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding GameName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding AccessibleSummary}" AutomationProperties.Name="{Binding AccessibleSummary}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <ProgressBar Style="{StaticResource MetricProgressBar}" Grid.Column="1" Value="{Binding Share, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding EarningsText}" FontSize="{StaticResource FontSizeSupporting}" TextAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ValueText}" FontSize="{StaticResource FontSizeSupporting}" TextAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

@@ -36,22 +36,113 @@ public class GamesRefinementTests(WpfTestHost host)
     }
 
     [Fact]
+    public Task StoreOfferSetupIsAvailableFromTheToolbarAndUpdatesMenu() => host.RunAsync(() =>
+    {
+        using var database = new TestDatabase();
+        var view = new GamesView(database.Options);
+        var offers = (Button)view.FindName("StoreOffersButton");
+        var updates = (Button)view.FindName("UpdatesButton");
+        var menuItems = updates.ContextMenu.Items.Cast<MenuItem>().ToArray();
+        Assert.Equal("Set up price refresh…", offers.Content);
+        Assert.Equal(offers.Content, menuItems[0].Header);
+        Assert.Equal("Check for game list updates", menuItems[1].Header);
+
+        var settingsRequests = 0;
+        view.SettingsRequested += (_, _) => settingsRequests++;
+        offers.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        menuItems[0].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Assert.Equal(2, settingsRequests);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
+    public Task SavedGamesStayInteractiveDuringAnUpdateCheck() => host.RunAsync(async () =>
+    {
+        using var database = new TestDatabase();
+        Seed(database);
+        var view = new GamesView(database.Options);
+        var model = (GamesViewModel)view.DataContext;
+        var list = (ListBox)view.FindName("GamesList");
+        var feedback = (TextBlock)view.FindName("CatalogUpdateFeedback");
+        var check = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var refresh = view.RefreshCatalogAsync(manual: true, checkCatalog: () => check.Task);
+        try
+        {
+            Assert.False(refresh.IsCompleted);
+            Assert.True(list.IsEnabled);
+            Assert.Equal(Visibility.Visible, feedback.Visibility);
+            var game = model.Games.First().Game;
+            view.OpenGameDetails(game);
+            Assert.Same(game, view.SelectedGame);
+        }
+        finally
+        {
+            check.SetResult("Catalog update unavailable; keeping saved data.");
+            await refresh;
+        }
+        Assert.Equal(Visibility.Collapsed, feedback.Visibility);
+        Assert.Contains("keeping saved data", model.CatalogStatus);
+    });
+
+    [Fact]
+    public Task SavedCapResetRefreshesTheCurrentLibraryAndTimeLeftFilter() => host.RunAsync(() =>
+    {
+        using var database = new TestDatabase();
+        var reset = DateTime.Today;
+        using (var db = database.CreateContext())
+        {
+            var game = new Game { Id = 1, Name = "Capped game", MinutesCap = 60, RatePerHour = 2 };
+            db.Games.Add(game);
+            db.Sessions.Add(new Session { GameId = game.Id, GameName = game.Name, Date = reset.AddDays(-1),
+                Duration = TimeSpan.FromMinutes(60), Status = SessionStatus.Verified });
+            db.SaveChanges();
+        }
+        var view = new GamesView(database.Options);
+        var model = (GamesViewModel)view.DataContext;
+        var item = Assert.Single(model.Games);
+        Assert.Equal(0, item.MinutesLeftToEarn);
+        view.OpenGameDetails(item.Game);
+        model.TimeLeftOnly = true;
+        Assert.Empty(model.GamesView);
+
+        GameService.SaveCapResetDate(item.Game.Id, reset, database.Options);
+        view.SelectedGame!.CapResetDate = reset;
+        view.RefreshSelectedGameSessions();
+
+        Assert.Equal(60, item.MinutesLeftToEarn);
+        Assert.Equal("Not started", item.CycleStatusText);
+        Assert.Equal(1, model.AvailableGamesCount);
+        Assert.Same(item, Assert.Single(model.GamesView.Cast<GameItemViewModel>()));
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task LibraryCycleProgressUsesOnlyVerifiedSessionsAfterTheSavedResetDate() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
         using (var db = database.CreateContext())
         {
             var game = new Game { Name = "Cycle progress", RatePerHour = 2m, MinutesCap = 120m, CapResetDate = new DateTime(2026, 10, 1) };
-            db.Games.Add(game);
+            var capped = new Game { Name = "Capped", RatePerHour = 1m, MinutesCap = 5m };
+            db.Games.AddRange(game, capped,
+                new Game { Name = "Unknown cap", RatePerHour = 1m },
+                new Game { Name = "No rate", MinutesCap = 120m },
+                new Game { Name = "Archived", RatePerHour = 1m, MinutesCap = 120m, IsArchived = true });
             db.SaveChanges();
             db.Sessions.AddRange(
+                new Session { GameId = capped.Id, GameName = capped.Name, Duration = TimeSpan.FromMinutes(10), Status = SessionStatus.Verified },
                 new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 10, 2), RecordedDate = new DateTime(2026, 10, 2), Duration = TimeSpan.FromMinutes(45), Status = SessionStatus.Verified },
                 new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 10, 3), RecordedDate = new DateTime(2026, 10, 3), Duration = TimeSpan.FromMinutes(40), Status = SessionStatus.Pending },
                 new Session { GameId = game.Id, GameName = game.Name, Date = new DateTime(2026, 9, 30), RecordedDate = new DateTime(2026, 9, 30), Duration = TimeSpan.FromMinutes(60), Status = SessionStatus.Verified });
             db.SaveChanges();
         }
 
-        var item = Assert.Single(new GamesViewModel(database.Options).Games);
+        var model = new GamesViewModel(database.Options) { ShowArchived = true, TimeLeftOnly = true };
+        var item = Assert.Single(model.GamesView.Cast<GameItemViewModel>());
+        Assert.Equal(75m, item.MinutesLeftToEarn);
+        model.ClearFilters();
+        Assert.False(model.TimeLeftOnly);
+        Assert.Equal(5, model.GamesView.Cast<GameItemViewModel>().Count());
         Assert.True(item.HasCycleProgress);
         Assert.Equal(37.5m, item.CycleProgressPercent);
         Assert.Equal("0.75 / 2h", item.CycleProgressText);
@@ -376,6 +467,7 @@ public class GamesRefinementTests(WpfTestHost host)
     [Theory]
     [InlineData(740)]
     [InlineData(1212)]
+    [InlineData(1480)]
     public Task SecondaryFiltersStayOpenAndToolbarWrapsWithoutClipping(double width) => host.RunAsync(async () =>
     {
         using var database = new TestDatabase();
@@ -387,13 +479,15 @@ public class GamesRefinementTests(WpfTestHost host)
             window.Show();
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             var toolbar = (Border)view.FindName("FilterToolbar");
-            Assert.InRange(toolbar.ActualHeight, 76, width < 1000 ? 130 : 90);
+            Assert.InRange(toolbar.ActualHeight, 76, width < 1480 ? 130 : 90);
             foreach (var control in Descendants<Control>(toolbar).Where(control => control.TemplatedParent == null && control is CheckBox or ComboBox or Button or TextBox))
             {
                 var bounds = control.TransformToAncestor(view).TransformBounds(new Rect(control.RenderSize));
                 Assert.InRange(bounds.Right, 0, view.ActualWidth);
                 Assert.InRange(control.ActualHeight, 32, 36);
             }
+            ((CheckBox)view.FindName("InstalledFilter")).IsChecked = true;
+            ((CheckBox)view.FindName("TimeLeftFilter")).IsChecked = true;
             var more = (Button)view.FindName("MoreFiltersButton");
             var popup = (Popup)view.FindName("MoreFiltersPopup");
             more.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -405,6 +499,8 @@ public class GamesRefinementTests(WpfTestHost host)
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             var model = (GamesViewModel)view.DataContext;
             Assert.True(popup.IsOpen);
+            Assert.True(model.InstalledOnly);
+            Assert.True(model.TimeLeftOnly);
             Assert.Equal(4, model.SecondaryFilterCount);
             Assert.Equal("More filters (4)", model.MoreFiltersText);
             Assert.True(model.CanClearFilters);

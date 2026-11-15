@@ -19,7 +19,7 @@ public class CatalogTests
     {
         using var database = new TestDatabase(); using var db = database.CreateContext();
         EarningsTracker.Data.DbInitializer.Initialize(db); CatalogService.ImportBundled(db);
-        Assert.Equal(579, db.Games.Count());
+        Assert.Equal(581, db.Games.Count());
         var reviewed = db.GameMetadata.ToDictionary(x => x.GameId, x => x.Reviewed);
         Assert.All(db.Games.Where(g => !g.IsArchived), g => Assert.True(reviewed[g.Id]));
         Assert.All(db.SubscriptionAvailability, s => Assert.Equal("PC Game Pass", s.Service));
@@ -48,6 +48,126 @@ public class CatalogTests
         Games = [new CatalogEntry { CatalogId = "stable-id", Name = "Example", Reviewed = true,
             Genres = ["Action"], Offers = [Offer()], Provenance = "Reviewed fixture" }]
     };
+
+    private static CatalogSnapshot RosterSnapshot()
+    {
+        var snapshot = Snapshot("catalog-roster");
+        snapshot.SchemaVersion = 2;
+        snapshot.PublishedAt = DateTime.UtcNow;
+        snapshot.Games.Add(new CatalogEntry { CatalogId = "new-game", Name = "New game", Reviewed = true,
+            RosterAddition = new(2.50m, 3000), Genres = ["Action"] });
+        foreach (var entry in snapshot.Games)
+            entry.SteamIdentity = new("Unresolved", null, "Pending review", []);
+        return snapshot;
+    }
+
+    [Fact]
+    public async Task RemoteRosterCanBeApprovedAfterCatalogActivationAndSurvivesCatalogRollback()
+    {
+        using var database = new TestDatabase();
+        using (var db = database.CreateContext())
+        {
+            db.Games.Add(new Game { Name = "Example", RatePerHour = 1.5m, MinutesCap = 100 });
+            db.SaveChanges();
+            CatalogService.Import(db, Snapshot("catalog-initial"));
+        }
+        var snapshot = RosterSnapshot();
+        var payload = JsonSerializer.Serialize(snapshot, CatalogService.JsonOptions);
+        var asset = "https://github.com/iamjethrooo/earnings-tracker/releases/download/catalog-roster/catalog.json";
+        var manifest = JsonSerializer.Serialize(new CatalogManifest
+        {
+            SchemaVersion = 2, Version = snapshot.Version, CatalogUrl = asset, MinimumClientVersion = "1.5.0",
+            Sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))
+        });
+        using var client = new HttpClient(new FakeHandler(request =>
+            request.RequestUri!.AbsoluteUri == CatalogUpdates.SchemaTwoManifestUrl ? Ok(manifest)
+                : request.RequestUri.AbsoluteUri == asset ? Ok(payload)
+                : new(HttpStatusCode.ServiceUnavailable)));
+        var updates = new CatalogUpdates(database.Options, client, new Version(1, 5, 0));
+        var token = TestContext.Current.CancellationToken;
+        Assert.Contains("New games available: 1", await updates.RefreshAsync(false, token));
+        Assert.Contains("New games available: 1", await updates.RefreshAsync(true, token, _ => false));
+        using (var db = database.CreateContext()) Assert.Single(db.Games);
+
+        Assert.Contains("Games added: 1", await updates.RefreshAsync(true, token, preview =>
+        {
+            var candidate = Assert.Single(preview.Additions);
+            Assert.Equal(new CatalogRosterAddition(2.50m, 3000), candidate.Terms);
+            return true;
+        }));
+        Assert.Contains("is up to date", await updates.RefreshAsync(true, token,
+            _ => throw new InvalidOperationException("An already added game should not prompt again.")));
+
+        using var reopened = database.CreateContext();
+        var added = reopened.Games.Single(game => game.Name == "New game");
+        Assert.Equal(added.Id, reopened.GameMetadata.Single(link => link.CatalogId == "new-game").GameId);
+        Assert.Equal(added.Id, reopened.GameChanges.Single().GameId);
+        Assert.Equal(2.50m, added.RatePerHour);
+        var rollback = CatalogService.GetRollbackVersions(reopened);
+        Assert.Equal("catalog-initial", rollback.Target);
+        CatalogService.Rollback(reopened, rollback, token);
+        Assert.Equal(added.Id, reopened.Games.Single(game => game.Name == "New game").Id);
+        Assert.Equal(1.5m, reopened.Games.Single(game => game.Name == "Example").RatePerHour);
+        Assert.Equal(added.Id, reopened.GameMetadata.Single(link => link.CatalogId == "new-game").GameId);
+        Assert.Single(reopened.GameChanges);
+    }
+
+    [Fact]
+    public void RosterApprovalIsRecheckedWhenAnExistingTitleAppears()
+    {
+        using var database = new TestDatabase();
+        var snapshot = RosterSnapshot();
+        var token = TestContext.Current.CancellationToken;
+        CatalogService.RosterPreview preview;
+        using (var db = database.CreateContext())
+        {
+            preview = CatalogService.Activate(db, snapshot, token, previewRoster: true).Roster!;
+            Assert.Single(preview.Additions);
+            db.Games.AddRange(new Game { Name = "New game", IsArchived = true }, new Game { Name = "New game" });
+            db.SaveChanges();
+        }
+        using var reopened = database.CreateContext();
+        Assert.Throws<InvalidDataException>(() => CatalogService.Activate(reopened, snapshot, token, approvedRoster: preview));
+        var result = CatalogService.Activate(reopened, snapshot, token);
+        Assert.Equal("New game", Assert.Single(result.Roster!.Conflicts));
+        Assert.Equal(2, reopened.Games.Count());
+        Assert.Empty(reopened.GameChanges);
+        Assert.Empty(reopened.GameMetadata);
+    }
+
+    [Fact]
+    public void RosterAddsDistinctRatesWithoutClaimingHistoricalRows()
+    {
+        using var database = new TestDatabase();
+        using var db = database.CreateContext();
+        var oldGame = new Game { Name = "Example", RatePerHour = 1.50m, MinutesCap = 3000, IsArchived = true };
+        db.Games.Add(oldGame);
+        db.SaveChanges();
+        var session = new Session { GameId = oldGame.Id, GameName = oldGame.Name, Earnings = 1.25m };
+        db.Sessions.Add(session);
+        db.SaveChanges();
+
+        var snapshot = RosterSnapshot();
+        snapshot.Games.RemoveAt(1);
+        foreach (var rate in new[] { 1.50m, 2.00m, 2.50m })
+            snapshot.Games.Add(new() { CatalogId = $"rate-{rate}", Name = $"Example ({rate}/hr)",
+                Reviewed = true, SteamIdentity = new("Unresolved", null, "Pending review", []),
+                RosterAddition = new(rate, 3000, "Example") });
+        var token = TestContext.Current.CancellationToken;
+        var preview = CatalogService.Activate(db, snapshot, token, previewRoster: true).Roster!;
+        Assert.Equal(2, preview.Additions.Count);
+        Assert.Single(preview.Conflicts);
+        Assert.Equal(2, CatalogService.Activate(db, snapshot, token, approvedRoster: preview).GamesAdded);
+
+        Assert.Equal(3, db.Games.Count());
+        Assert.All(db.Games, game => Assert.Equal("Example", game.Name));
+        Assert.Equal(oldGame.Id, db.GameMetadata.Single(link => link.CatalogId == "stable-id").GameId);
+        Assert.DoesNotContain(db.GameMetadata, link => link.CatalogId == $"rate-{1.50m}");
+        Assert.Equal(oldGame.Id, db.Sessions.Single().GameId);
+        Assert.Equal(1.25m, db.Sessions.Single().Earnings);
+        Assert.True(db.Games.Single(game => game.Id == oldGame.Id).IsArchived);
+        Assert.Empty(CatalogService.Activate(db, snapshot, token, previewRoster: true).Roster!.Additions);
+    }
 
     [Fact]
     public void CatalogRollbackSurvivesRestartAndKeepsPostUpdateFinancialEdits()
@@ -392,8 +512,8 @@ public class CatalogTests
         var seedPath = Path.Combine(AppContext.BaseDirectory, "Data", "games.json");
         EarningsTracker.Data.DbInitializer.Initialize(db, seedPath);
         CatalogService.ImportBundled(db);
-        Assert.Equal(579, db.Games.Count()); Assert.Equal(579, db.GameMetadata.Count());
-        Assert.Equal(579, db.GameMetadata.Select(x => x.CatalogId).Distinct().Count());
+        Assert.Equal(581, db.Games.Count()); Assert.Equal(581, db.GameMetadata.Count());
+        Assert.Equal(581, db.GameMetadata.Select(x => x.CatalogId).Distinct().Count());
         var bundled = CatalogService.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Data", "catalog.json")));
         Assert.Equal(bundled.Games.Count(x => x.Reviewed), db.GameMetadata.Count(x => x.Reviewed));
     }
@@ -675,15 +795,45 @@ public class CatalogTests
         Assert.True(Record.Exception(() => CatalogService.Parse(payload)) is JsonException or InvalidDataException);
     }
 
-    [Fact]
-    public void SnapshotCannotOverwriteNewerPersonalLivePrices()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SnapshotCannotOverwriteNewerPersonalLivePrices(bool republishedLater)
     {
         using var database = new TestDatabase(); using var db = database.CreateContext();
         db.Games.Add(new Game { Name = "Example" }); db.SaveChanges(); CatalogService.Import(db, Snapshot());
         var offer = db.StoreOffers.Single(); offer.SalePrice = 100;
-        CatalogService.SetSetting(db, "prices.live." + offer.GameId, DateTime.UtcNow.ToString("O")); db.SaveChanges();
-        CatalogService.Import(db, Snapshot("v2"));
+        var liveAt = DateTime.UtcNow.AddSeconds(-10);
+        CatalogService.SetSetting(db, "prices.live." + offer.GameId, liveAt.ToString("O")); db.SaveChanges();
+        var next = Snapshot("v2");
+        next.Games[0].Offers[0].VerifiedAt = liveAt.AddMinutes(-2);
+        if (republishedLater) next.PublishedAt = liveAt.AddSeconds(1);
+        CatalogService.Import(db, next);
         Assert.Equal(100m, db.StoreOffers.Single().SalePrice);
+    }
+
+    [Fact]
+    public void RepublishingOldQuotesKeepsNewerSavedPrices()
+    {
+        using var database = new TestDatabase(); using var db = database.CreateContext();
+        db.Games.Add(new Game { Name = "Example" }); db.SaveChanges();
+        var first = Snapshot("catalog-fresh-quotes");
+        var quote = first.Games[0].Offers[0];
+        quote.VerifiedAt = first.PublishedAt.AddMinutes(-1);
+        quote.SalePrice = 100m;
+        CatalogService.Import(db, first);
+
+        var stale = Snapshot("catalog-roster-edit");
+        stale.PublishedAt = first.PublishedAt.AddSeconds(1);
+        stale.Games[0].Offers[0].VerifiedAt = quote.VerifiedAt.AddDays(-1);
+        CatalogService.Import(db, stale);
+        Assert.Equal(100m, db.StoreOffers.Single().SalePrice);
+
+        var fresh = Snapshot("catalog-price-refresh");
+        fresh.PublishedAt = stale.PublishedAt.AddSeconds(1);
+        fresh.Games[0].Offers[0].VerifiedAt = quote.VerifiedAt.AddSeconds(1);
+        CatalogService.Import(db, fresh);
+        Assert.Equal(500m, db.StoreOffers.Single().SalePrice);
     }
 
     [Fact]

@@ -18,15 +18,17 @@ namespace EarningsTracker.Utilities
         public static PayoutParseResult ParseDetailed(string importText)
         {
             var result = new PayoutParseResult();
-            var lines = importText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = importText.ReplaceLineEndings("\n").Split('\n');
             Dictionary<string, int>? header = null;
+            var invalidHeader = false;
             for (var i = 0; i < lines.Length; i++)
             {
                 var raw = lines[i].Trim();
                 if (string.IsNullOrWhiteSpace(raw))
                     continue;
                 string[] cols;
-                if (raw.Contains('|'))
+                var isTableRow = raw.Contains('|');
+                if (isTableRow)
                 {
                     cols = raw.Trim('|').Split('|').Select(CleanCell).ToArray();
                 }
@@ -41,9 +43,18 @@ namespace EarningsTracker.Utilities
                 var possibleHeader = cols.Select(NormalizeHeader).ToArray();
                 if (possibleHeader.Contains("posted") && possibleHeader.Contains("type") && possibleHeader.Contains("amount"))
                 {
-                    header = possibleHeader.Select((name, index) => (name, index))
-                        .Where(item => item.name.Length > 0)
-                        .ToDictionary(item => item.name, item => item.index, StringComparer.OrdinalIgnoreCase);
+                    var columns = possibleHeader.Select((name, index) => (name, index))
+                        .Where(item => item.name.Length > 0).ToList();
+                    invalidHeader = columns.Select(item => item.name).Distinct().Count() != columns.Count;
+                    if (invalidHeader)
+                        result.FailedRows.Add($"Line {i + 1}: duplicate column names. Correct the header before importing its rows.");
+                    else
+                        header = columns.ToDictionary(item => item.name, item => item.index, StringComparer.OrdinalIgnoreCase);
+                    continue;
+                }
+                if (isTableRow && invalidHeader)
+                {
+                    result.FailedRows.Add($"Line {i + 1}: could not read the transaction under the invalid table header.");
                     continue;
                 }
                 if (cols.Length < 6)
@@ -51,16 +62,18 @@ namespace EarningsTracker.Utilities
                     result.FailedRows.Add($"Line {i + 1}: expected at least six table columns.");
                     continue;
                 }
-                int Index(string name, int fallback) => header != null && header.TryGetValue(name, out var index) ? index : fallback;
+                var rowHeader = isTableRow ? header : null;
+                int Index(string name, int fallback) => rowHeader != null && rowHeader.TryGetValue(name, out var index) ? index : fallback;
                 var postedIndex = Index("posted", 0);
                 var recordedIndex = Index("recorded", 1);
                 var typeIndex = Index("type", 2);
                 var descriptionIndex = Index("description", 3);
                 var statusIndex = Index("status", 4);
                 var amountIndex = Index("amount", 5);
-                var sourceIdIndex = new[] { "sourceid", "transactionid", "referenceid", "id" }
-                    .Select(name => header != null && header.TryGetValue(name, out var index) ? index : -1)
-                    .FirstOrDefault(index => index >= 0, -1);
+                var sourceIdIndex = rowHeader == null
+                    ? (isTableRow && cols.Length == 7 ? 6 : -1)
+                    : new[] { "sourceid", "transactionid", "referenceid", "id" }
+                        .Select(name => Index(name, -1)).FirstOrDefault(index => index >= 0, -1);
                 if (new[] { postedIndex, recordedIndex, typeIndex, descriptionIndex, statusIndex, amountIndex }.Any(index => index >= cols.Length))
                 {
                     result.FailedRows.Add($"Line {i + 1}: row does not contain all required transaction columns.");
@@ -76,13 +89,30 @@ namespace EarningsTracker.Utilities
                 var description = cols[descriptionIndex].Trim();
                 var status = cols[statusIndex].Trim();
                 var amountMatch = Regex.Match(cols[amountIndex], @"^\s*(?<sign>[+-]?)\s*\$\s*(?<amount>(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)(?:\.[0-9]+)?)\s*$");
-                if (!amountMatch.Success || !decimal.TryParse(amountMatch.Groups["amount"].Value.Replace(",", ""), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var amount))
+                if (!amountMatch.Success)
                 {
                     result.FailedRows.Add($"Line {i + 1}: invalid USD amount '{cols[amountIndex]}'.");
                     continue;
                 }
+                var number = amountMatch.Groups["amount"].Value.Replace(",", "");
+                var parts = number.Split('.');
+                var whole = parts[0].TrimStart('0');
+                var fraction = parts.Length == 2 ? parts[1].TrimEnd('0') : "";
+                if (fraction.Length > 2)
+                {
+                    result.FailedRows.Add($"Line {i + 1}: USD amount must be non-zero and have no more than two decimal places.");
+                    continue;
+                }
+                var exactNumber = (whole.Length == 0 ? "0" : whole) + (fraction.Length == 0 ? "" : "." + fraction);
+                // TryParse can round a value whose significant digits exceed decimal precision.
+                if (!decimal.TryParse(exactNumber, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var amount)
+                    || amount.ToString("0.##", CultureInfo.InvariantCulture) != exactNumber)
+                {
+                    result.FailedRows.Add($"Line {i + 1}: USD amount cannot be represented exactly.");
+                    continue;
+                }
                 if (amountMatch.Groups["sign"].Value == "-") amount = -amount;
-                if (amount == 0m || decimal.Round(amount, 2) != amount)
+                if (amount == 0m)
                 {
                     result.FailedRows.Add($"Line {i + 1}: USD amount must be non-zero and have no more than two decimal places.");
                     continue;
@@ -121,7 +151,8 @@ namespace EarningsTracker.Utilities
                         continue;
                     }
                     var match = Regex.Match(description, @"^(?<game>.+?)\s+[—–-]\s+(?<minutes>\d+)\s+min(?:ute)?s? recording", RegexOptions.IgnoreCase);
-                    if (!match.Success)
+                    if (!match.Success || !int.TryParse(match.Groups["minutes"].Value, NumberStyles.None,
+                        CultureInfo.InvariantCulture, out var minutes))
                     {
                         result.FailedRows.Add($"Line {i + 1}: could not extract game and duration from force-verified earning.");
                         continue;
@@ -137,7 +168,7 @@ namespace EarningsTracker.Utilities
                         Date = recordedDate,
                         RecordedDate = recordedDate,
                         PostedDate = postedDate,
-                        Duration = TimeSpan.FromMinutes(int.Parse(match.Groups["minutes"].Value, CultureInfo.InvariantCulture)),
+                        Duration = TimeSpan.FromMinutes(minutes),
                         Earnings = amount,
                         Status = Enums.SessionStatus.Verified,
                         IsForceVerified = true,

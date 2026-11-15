@@ -52,6 +52,9 @@ class CatalogToolTests(unittest.TestCase):
                     "Provenance": "Exact synthetic PC experience", "Apps": [{"AppId": 1001, "Kind": "FullGame"}]}
                 catalog.save(args.review, review)
                 catalog.enrich(args)
+                candidate = catalog.load(args.output)
+                candidate["Games"][0]["RosterAddition"] = {"RatePerHour": 2.5, "MinutesCap": 3000}
+                catalog.save(args.output, candidate)
                 args.catalog, args.output = args.output, path / "package"
                 with patch.object(catalog, "ROOT", path):
                     catalog.save(path / "Data/games.json", [{"Name": "Example"}])
@@ -68,7 +71,49 @@ class CatalogToolTests(unittest.TestCase):
             self.assertEqual(manifest["MinimumClientVersion"], "1.5.0")
             self.assertEqual(manifest["Version"], catalog.load(args.catalog)["Version"])
             self.assertEqual((path / "package/catalog.json").read_bytes(), args.catalog.read_bytes())
-            self.assertEqual(catalog.load(path / "package/coverage.json")["SteamIdentityCoverage"]["Reviewed"], 1)
+            coverage = catalog.load(path / "package/coverage.json")
+            self.assertEqual(coverage["SteamIdentityCoverage"]["Reviewed"], 1)
+            self.assertEqual(coverage["RosterAdditions"], [
+                {"CatalogId": "a", "Name": "Example", "RatePerHour": 2.5, "MinutesCap": 3000}])
+
+    def test_roster_terms_must_be_valid_and_survive_later_snapshots(self):
+        self.snapshot.update(SchemaVersion=2, Version="catalog-old", PublishedAt="2026-01-01T00:00:00Z")
+        game = self.snapshot["Games"][0]
+        game.update(Reviewed=True, SteamIdentity={"State": "Unresolved", "ReviewedAt": None, "Apps": [],
+                                                "Provenance": "Pending review"})
+        for terms in ({"RatePerHour": 1.555, "MinutesCap": 3000}, {"RatePerHour": 2, "MinutesCap": True},
+                      {"RatePerHour": 2, "MinutesCap": 3000, "IsArchived": True}):
+            game["RosterAddition"] = terms
+            with self.subTest(terms=terms), self.assertRaisesRegex(ValueError, "roster addition|starting rate"):
+                catalog.validate(self.snapshot)
+        game["RosterAddition"] = {"RatePerHour": 2, "MinutesCap": 3000}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            previous, current = path / "previous.json", path / "current.json"
+            catalog.save(previous, self.snapshot)
+            catalog.prepare(argparse.Namespace(catalog=previous, output=current))
+            args = argparse.Namespace(catalog=current, previous=previous)
+            catalog.check_order(args)
+            candidate = catalog.load(current)
+            candidate["Games"][0].pop("RosterAddition")
+            catalog.save(current, candidate)
+            with self.assertRaisesRegex(ValueError, "Keep published roster addition"):
+                catalog.check_order(args)
+
+    def test_same_title_roster_variants_require_distinct_rates(self):
+        self.snapshot["SchemaVersion"] = 2
+        first = self.snapshot["Games"][0]
+        first.update(Name="Example (2 USD/hr)", Reviewed=True,
+                     SteamIdentity={"State": "Unresolved", "ReviewedAt": None, "Apps": [],
+                                    "Provenance": "Pending review"},
+                     RosterAddition={"GameName": "Example", "RatePerHour": 2, "MinutesCap": 3000})
+        second = copy.deepcopy(first)
+        second.update(CatalogId="b", Name="Example (2.50 USD/hr)")
+        self.snapshot["Games"].append(second)
+        with self.assertRaisesRegex(ValueError, "Duplicate roster rate"):
+            catalog.validate(self.snapshot)
+        second["RosterAddition"]["RatePerHour"] = 2.5
+        catalog.validate(self.snapshot)
 
     def test_official_manual_metadata_has_no_fabricated_igdb_identity_and_reuses_artwork(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -146,8 +191,8 @@ class CatalogToolTests(unittest.TestCase):
     def test_bootstrap_report_accounts_for_entire_catalog(self):
         snapshot = catalog.load(catalog.ROOT / "Data/catalog.json")
         catalog.validate(snapshot)
-        self.assertEqual(len(snapshot["Games"]), 579)
-        self.assertEqual(len({g["CatalogId"] for g in snapshot["Games"]}), 579)
+        self.assertEqual(len(snapshot["Games"]), 581)
+        self.assertEqual(len({g["CatalogId"] for g in snapshot["Games"]}), 581)
 
     def test_cached_enrichment_requires_no_credentials_and_downloads_artwork_once(self):
         with tempfile.TemporaryDirectory() as directory:

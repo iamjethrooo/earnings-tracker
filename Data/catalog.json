@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Version": "catalog-20261012T034024414899Z-multiplayer-20261108T103507Z",
+  "Version": "catalog-20261012T034024414899Z-multiplayer-20261108T103507Z-roster-20261113",
   "PublishedAt": "2026-10-12T03:40:24.414892Z",
   "Games": [
     {
@@ -43948,6 +43948,61 @@
       "SupportsMultiplayer": true,
       "MultiplayerVerifiedAt": "2026-11-08T10:35:07.865346Z",
       "MultiplayerProvenance": "IGDB structured game modes: Co-operative, Massively Multiplayer Online (MMO), Multiplayer; https://www.igdb.com/games/enlisted"
+    },
+    {
+      "CatalogId": "d6349f57-99a0-4e72-991a-9fc470a2beaa",
+      "Name": "MAVRIX",
+      "Reviewed": true,
+      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/2926900/",
+      "Genres": [
+        "Racing",
+        "Simulation",
+        "Sports"
+      ],
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/2926900/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": null,
+          "SalePrice": null,
+          "Kind": "Unknown",
+          "VerifiedAt": "2026-11-13T06:21:09Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam store page; Philippine price not verified"
+        }
+      ],
+      "Subscriptions": [],
+      "VerifiedAt": "2026-11-13T06:21:09Z"
+    },
+    {
+      "CatalogId": "2033983f-9dc2-4dc7-9a32-71bb87d154cf",
+      "Name": "Wreckreation",
+      "Reviewed": true,
+      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/1594040/",
+      "Genres": [
+        "Action",
+        "Racing"
+      ],
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/1594040/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": null,
+          "SalePrice": null,
+          "Kind": "Unknown",
+          "VerifiedAt": "2026-11-13T06:21:09Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam store page; Philippine price not verified"
+        }
+      ],
+      "Subscriptions": [],
+      "VerifiedAt": "2026-11-13T06:21:09Z"
     }
   ]
 }

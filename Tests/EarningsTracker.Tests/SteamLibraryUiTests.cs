@@ -28,6 +28,7 @@ public class SteamLibraryUiTests(WpfTestHost host)
                 "AppState"
                 {
                     "appid" "220"
+                    "name" "Example"
                     "StateFlags" "4"
                     "installdir" "Example"
                 }
@@ -36,27 +37,50 @@ public class SteamLibraryUiTests(WpfTestHost host)
             using (var db = database.CreateContext())
             {
                 var game = new Game { Name = "Example" };
-                db.Games.Add(game);
+                var portable = new Game { Name = "Portable Game" };
+                db.Games.AddRange(game, portable, new Game { Name = "Unknown install" },
+                    new Game { Name = "Duplicate" }, new Game { Name = "Duplicate" });
                 db.SaveChanges();
-                db.GameMetadata.Add(new GameMetadata { GameId = game.Id, CatalogId = "example", Reviewed = true });
+                db.GameMetadata.AddRange(db.Games.ToList().Select(item => new GameMetadata
+                    { GameId = item.Id, CatalogId = $"fixture-{item.Id}", Reviewed = true }));
                 db.StoreOffers.Add(new StoreOffer { GameId = game.Id, Source = "Steam",
                     Url = "https://store.steampowered.com/app/220/" });
                 db.SaveChanges();
             }
+            var portableFolder = Directory.CreateDirectory(Path.Combine(directory.FullName, "Portable Game"));
+            var untrackedFolder = Directory.CreateDirectory(Path.Combine(directory.FullName, "Outside Catalog"));
+            var duplicateFolder = Directory.CreateDirectory(Path.Combine(directory.FullName, "Duplicate"));
             var settings = new AppSettings(database.Options);
             settings.Set(SteamInstallations.SettingsKey, JsonSerializer.Serialize(new[] { folder }));
+            settings.Set(LocalGameInstallations.FoldersKey, JsonSerializer.Serialize(new[]
+                { portableFolder.FullName, untrackedFolder.FullName, duplicateFolder.FullName }));
             var view = new GamesView(database.Options);
             var model = (GamesViewModel)view.DataContext;
-            var gameItem = Assert.Single(model.Games);
+            var gameItem = model.Games.Single(item => item.Game.Name == "Example");
             Assert.False(gameItem.IsSteamOwned);
             Assert.False(gameItem.IsOwned);
+            model.InstalledOnly = true;
+            Assert.Equal(2, model.AvailableGamesCount);
+            Assert.Equal(new[] { "Example", "Portable Game" }, model.GamesView.Cast<GameItemViewModel>().Select(item => item.Game.Name).Order());
+            Assert.Contains(model.Installations.Entries, entry => entry.Name == "Outside Catalog");
+            model.SteamOnly = true;
+            Assert.Equal(0, model.AvailableGamesCount);
+            model.ClearFilters();
+            Assert.False(model.InstalledOnly);
             view.OpenGameDetails(gameItem.Game);
             Render(view, "steam-install-details.png", 740, 900);
             Assert.Contains(Descendants<TextBlock>(view), text =>
                 text.Text == "Steam installation detected on this PC." && text.ActualHeight > 0);
             settings.Set(SteamInstallations.SettingsKey, "");
+            settings.Set(LocalGameInstallations.FoldersKey, "");
             model.ReloadCatalog();
-            Assert.False(gameItem.ShowsSteamInstallation);
+            Assert.False(gameItem.ShowsInstallation);
+            model.InstalledOnly = true;
+            Assert.Equal(0, model.AvailableGamesCount);
+            Assert.Contains("Enable installation sources", model.EmptyStateText);
+            using var dbAfter = database.CreateContext();
+            Assert.Equal(5, dbAfter.Games.Count());
+            Assert.Empty(dbAfter.GameOwnership);
             return Task.CompletedTask;
         }
         finally { directory.Delete(recursive: true); }

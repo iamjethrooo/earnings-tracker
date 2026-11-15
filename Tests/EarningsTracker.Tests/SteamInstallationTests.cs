@@ -23,8 +23,18 @@ public class SteamInstallationTests
             File.WriteAllText(Path.Combine(second, "appmanifest_222.acf"), Manifest(222, 4).Replace("Example", "Missing"));
             File.WriteAllText(Path.Combine(second, "appmanifest_333.acf"), "malformed");
             Assert.Null(SteamInstallations.Read(""));
-            Assert.Empty(SteamInstallations.Read("malformed")!);
-            Assert.Equal(new uint[] { 123, 456 }, SteamInstallations.Read(JsonSerializer.Serialize(new[] { first, second }))!.Order());
+            var invalid = SteamInstallations.Read("malformed")!;
+            Assert.Empty(invalid.Installed);
+            Assert.True(invalid.IsIncomplete);
+            var scan = SteamInstallations.Read(JsonSerializer.Serialize(new[] { first, second }))!;
+            Assert.False(scan.IsIncomplete);
+            Assert.Equal(new uint[] { 123, 456 }, scan.Installed.Keys.Order());
+            Assert.All(scan.Installed.Values, name => Assert.Equal("Example Game", name));
+
+            var unavailable = Path.Combine(root.FullName, "unavailable", "steamapps");
+            var partial = SteamInstallations.Read(JsonSerializer.Serialize(new[] { unavailable, first }))!;
+            Assert.True(partial.IsIncomplete);
+            Assert.Equal(123u, Assert.Single(partial.Installed).Key);
         }
         finally { root.Delete(recursive: true); }
     }
@@ -33,6 +43,7 @@ public class SteamInstallationTests
         "AppState"
         {
             "appid" "{{id}}"
+            "name" "Example Game"
             "StateFlags" "{{flags}}"
             "installdir" "Example"
             "InstalledDepots"

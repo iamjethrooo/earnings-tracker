@@ -42,6 +42,14 @@ For development, append changes to the single `unreleased: true` entry (no versi
 date). When a release is approved, prepare its entry with the chosen three-part `version`,
 `publishedAt` timestamp, and `unreleased: false`; reconcile that timestamp with actual publication
 before preparing later builds. Do not label unpublished changes as a historical release.
+
+Before packaging the final candidate, reconcile earlier entries with their actual GitHub
+publication timestamps. Convert the upcoming release's Unreleased entry to its versioned
+entry using the intended UTC publication time. Verify that Release History marks the
+candidate version as **Installed** and displays its notes under that version. If the
+candidate still displays its own notes as Unreleased, rebuild it and verify the replacement
+artifacts before publication.
+
 Entries need a summary; sections have a heading and nonempty changes. If no detailed record can be
 verified, leave `sections` empty to show “Detailed release notes unavailable.” Keep migration or
 backup guidance in `upgradeNotes`, above ordinary changes.

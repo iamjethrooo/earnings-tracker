@@ -111,7 +111,7 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
                     new SqliteConnectionStringBuilder(db.Database.GetDbConnection().ConnectionString).DataSource);
                 DatabaseInitialization.Initialize(db);
                 CatalogService.ImportBundled(db);
-                Assert.Equal(579, db.Games.Count());
+                Assert.Equal(581, db.Games.Count());
                 Assert.NotEmpty(db.GameMetadata);
                 Assert.Empty(db.Sessions);
                 Assert.Empty(db.Payouts.IgnoreQueryFilters());

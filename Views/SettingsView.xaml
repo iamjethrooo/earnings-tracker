@@ -34,10 +34,9 @@
     </StackPanel></Border>
     <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Catalog updates" Style="{StaticResource CompactSectionHeading}"/>
-     <DockPanel>
-      <Button x:Name="Refresh" DockPanel.Dock="Right" Content="Refresh now" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="8,0,0,0"/>
-      <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
-     </DockPanel>
+     <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
+     <Button x:Name="Refresh" Content="Check for game list updates" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+     <TextBlock x:Name="CatalogUpdateFeedback" AutomationProperties.LiveSetting="Polite"/>
      <Expander Header="Update details"><StackPanel Margin="0,8,0,0">
       <TextBlock Text="{Binding UpdateStatus}"/>
       <Button x:Name="RollbackCatalog" Content="Restore previous catalog" Click="RollbackCatalog_Click"
@@ -47,13 +46,18 @@
     <Border Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
      <DockPanel>
       <TextBlock x:Name="KeyStatus" DockPanel.Dock="Right" Foreground="{StaticResource SecondaryTextColor}" Margin="12,0,0,0"/>
-      <TextBlock Text="IsThereAnyDeal API key" Style="{StaticResource CompactSectionHeading}" ToolTip="Optional. Enables manual live price refresh."/>
+      <TextBlock Text="Store offers" Style="{StaticResource CompactSectionHeading}"/>
      </DockPanel>
+     <TextBlock Text="Refresh prices and store links from IsThereAnyDeal for games with a reviewed match."/>
+     <Label Target="{Binding ElementName=ApiKey}" Content="IsThereAnyDeal API key" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <PasswordBox x:Name="ApiKey" Padding="8" MaxLength="1000" Background="{StaticResource DefaultBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" AutomationProperties.Name="Replacement IsThereAnyDeal API key" ToolTip="Optional key for live prices. Enter a replacement or leave blank to keep the saved key."/>
-      <Button Grid.Column="1" Content="Save" Click="SaveKey_Click" Style="{StaticResource PrimaryButton}" Padding="12,7" Margin="8,0,0,0"/>
-      <Button Grid.Column="2" Content="Remove" Click="RemoveKey_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" Margin="8,0,0,0"/>
+      <Button Grid.Column="1" Content="Save key" Click="SaveKey_Click" Style="{StaticResource PrimaryButton}" Padding="12,7" Margin="8,0,0,0"/>
+      <Button Grid.Column="2" Content="Remove key" Click="RemoveKey_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" Margin="8,0,0,0"/>
      </Grid>
+     <Button x:Name="RefreshOffers" Content="Set up price refresh…" Click="RefreshOffers_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+     <TextBlock Text="{Binding StoreOffersStatus}" Foreground="{StaticResource SecondaryTextColor}" Margin="0,8,0,0"/>
+     <TextBlock x:Name="StoreOffersFeedback" AutomationProperties.LiveSetting="Polite"/>
     </StackPanel></Border>
     <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Currency &amp; region" Style="{StaticResource CompactSectionHeading}"/>
@@ -88,19 +92,27 @@
       <Button Content="Get a Steam API key" Click="SteamKeyHelp_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8"/>
      </WrapPanel>
      <CheckBox x:Name="SteamAutomatic" Content="Sync when Games opens (at most daily)" Click="SteamAutomatic_Click" Margin="0,0,0,4"/>
-     <Expander Header="Local Steam installation indicators" Margin="0,4,0,4"><StackPanel Margin="0,8,0,0">
-      <TextBlock Text="Choose local steamapps folders to show installation evidence in game details. The app reads Steam manifests in those folders. This works without linking a Steam account." TextWrapping="Wrap"/>
-      <TextBlock x:Name="SteamInstallStatus" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,4"/>
-      <WrapPanel>
-       <Button Content="Choose Steam folders" Click="ChooseSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
-       <Button Content="Disable install indicators" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
-      </WrapPanel>
-     </StackPanel></Expander>
      <Expander Header="Sync details"><StackPanel Margin="0,8,0,0">
       <TextBlock Text="Use your own API key. If you choose to share your library, review Game details under Steam → Edit Profile → Privacy Settings." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
       <TextBlock Text="Steam library uses the last successful sync. Owned uses manual ownership. Playable now also considers current free offers and selected subscriptions. Unlinking keeps manual ownership and purchase costs." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
      </StackPanel></Expander>
     </StackPanel>
+   </StackPanel></Border>
+   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="Local installations" Style="{StaticResource CompactSectionHeading}"/>
+    <TextBlock Text="Choose what Games can check on this PC. Installation evidence is read locally and works without a Steam account." Foreground="{StaticResource SecondaryTextColor}"/>
+    <CheckBox x:Name="WindowsInstallations" Content="Include Windows installed apps" Click="WindowsInstallations_Click" Margin="0,4,0,4"/>
+    <TextBlock Text="Windows lists registered desktop apps, including apps other than games. Choose individual game folders to include portable or unregistered games." Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock x:Name="LocalFolderStatus" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,4"/>
+    <WrapPanel>
+     <Button Content="Add game folders" Click="ChooseLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+     <Button Content="Clear game folders" Click="ClearLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
+    </WrapPanel>
+    <TextBlock x:Name="SteamInstallStatus" AutomationProperties.LiveSetting="Polite" Margin="0,8,0,4"/>
+    <WrapPanel>
+     <Button Content="Choose Steam folders" Click="ChooseSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4" ToolTip="Choose local folders named steamapps."/>
+     <Button Content="Clear Steam folders" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
+    </WrapPanel>
    </StackPanel></Border>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Games display" Style="{StaticResource CompactSectionHeading}"/>

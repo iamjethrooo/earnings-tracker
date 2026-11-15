@@ -44,7 +44,8 @@ internal sealed class CatalogUpdates
     private static readonly HttpClient CatalogClient = new(new HttpClientHandler { AllowAutoRedirect = false });
     private AppDbContext Context() => _options == null ? new() : new(_options);
 
-    internal async Task<string> RefreshAsync(bool manual, CancellationToken cancellationToken = default)
+    internal async Task<string> RefreshAsync(bool manual, CancellationToken cancellationToken = default,
+        Func<CatalogService.RosterPreview, bool>? confirmRoster = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var updateWork = UpdateRestartGuard.Shared.Enter();
@@ -62,7 +63,7 @@ internal sealed class CatalogUpdates
             var messages = new List<string>();
             try
             {
-                messages.Add(await RefreshCatalogAsync(cancellationToken));
+                messages.Add(await RefreshCatalogAsync(cancellationToken, manual ? confirmRoster : null));
             }
             catch (Exception ex) when (Recoverable(ex) && !cancellationToken.IsCancellationRequested)
             {
@@ -75,16 +76,6 @@ internal sealed class CatalogUpdates
                 new AppSettings(_options).Set("updates.ratesSuccess", DateTime.UtcNow.ToString("O")); }
             catch (Exception ex) when (Recoverable(ex))
             { messages.Add("Exchange rates unavailable; keeping saved rates."); }
-            if (manual)
-            {
-                try
-                {
-                    var key = CatalogCredentials.Get();
-                    if (!string.IsNullOrWhiteSpace(key)) messages.Add(await RefreshPricesAsync(key));
-                }
-                catch (Exception ex) when (Recoverable(ex) || ex is System.ComponentModel.Win32Exception)
-                { messages.Add("Live prices unavailable; keeping saved prices. Check your key or retry later."); }
-            }
             var result = string.Join(" ", messages);
             new AppSettings(_options).Set("updates.result", result);
             return result;
@@ -92,7 +83,26 @@ internal sealed class CatalogUpdates
         finally { RefreshLock.Release(); }
     }
 
-    private async Task<string> RefreshCatalogAsync(CancellationToken cancellationToken)
+    internal async Task<string> RefreshStoreOffersAsync()
+    {
+        using var updateWork = UpdateRestartGuard.Shared.Enter();
+        if (!await RefreshLock.WaitAsync(0)) return "A catalog update is already running.";
+        try
+        {
+            var key = CatalogCredentials.Get();
+            return string.IsNullOrWhiteSpace(key)
+                ? "Add an IsThereAnyDeal key in Settings to refresh store offers."
+                : await RefreshPricesAsync(key);
+        }
+        catch (Exception ex) when (Recoverable(ex) || ex is System.ComponentModel.Win32Exception)
+        {
+            return "Store offers unavailable. Showing saved offers. Check your key or retry later.";
+        }
+        finally { RefreshLock.Release(); }
+    }
+
+    private async Task<string> RefreshCatalogAsync(CancellationToken cancellationToken,
+        Func<CatalogService.RosterPreview, bool>? confirmRoster)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(25));
@@ -134,15 +144,36 @@ internal sealed class CatalogUpdates
         var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         if (!hash.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Catalog checksum mismatch.");
+        var snapshot = await Task.Run(() =>
+        {
+            var parsed = CatalogService.Parse(new UTF8Encoding(false, true).GetString(bytes), hash);
+            if (parsed.SchemaVersion != expectedSchema || parsed.Version != versionTag)
+                throw new InvalidDataException("Catalog payload does not match the manifest.");
+            return parsed;
+        }, token);
+        CatalogService.RosterPreview? approval = null;
+        var activationToken = token;
+        if (confirmRoster != null && snapshot.Games.Any(entry => entry.RosterAddition != null))
+        {
+            var preview = await Task.Run(() =>
+            {
+                using var db = Context();
+                return CatalogService.Activate(db, snapshot, token, previewRoster: true).Roster;
+            }, token);
+            if (preview != null && (preview.Additions.Count > 0 || preview.Conflicts.Count > 0))
+            {
+                token.ThrowIfCancellationRequested();
+                if (confirmRoster(preview) && preview.Additions.Count > 0) approval = preview;
+                // Time spent reviewing the preview does not count toward the download deadline.
+                activationToken = cancellationToken;
+            }
+        }
         var result = await Task.Run(() =>
         {
-            var snapshot = CatalogService.Parse(new UTF8Encoding(false, true).GetString(bytes), hash);
-            if (snapshot.SchemaVersion != expectedSchema || snapshot.Version != versionTag)
-                throw new InvalidDataException("Catalog payload does not match the manifest.");
             using var db = Context();
-            return CatalogService.Activate(db, snapshot, token, checkedRemotely: true);
-        }, token);
-        return result.Status switch
+            return CatalogService.Activate(db, snapshot, activationToken, checkedRemotely: true, approvedRoster: approval);
+        }, activationToken);
+        var message = result.Status switch
         {
             CatalogService.ActivationStatus.Applied => $"Catalog {versionTag} applied · {result.Unmatched.Count} unmatched entries.",
             CatalogService.ActivationStatus.UpToDate => $"Catalog {versionTag} is up to date.",
@@ -150,6 +181,13 @@ internal sealed class CatalogUpdates
             CatalogService.ActivationStatus.Rejected => $"Catalog {versionTag} was rolled back. Keeping the saved catalog until a compatible newer version is available.",
             _ => "Catalog update incompatible with saved data."
         };
+        if (result.GamesAdded > 0)
+            message += $" Games added: {result.GamesAdded}.";
+        else if (result.Roster is { Additions.Count: > 0 } pending)
+            message += $" New games available: {pending.Additions.Count}. Check for updates to review them.";
+        if (result.Roster is { Conflicts.Count: > 0 } conflicts)
+            message += $" Existing game conflicts skipped: {conflicts.Conflicts.Count}.";
+        return message;
     }
 
     private async Task<byte[]> GetCatalogBytesAsync(string url, int limit, CancellationToken token)

@@ -1185,7 +1185,7 @@
         "Name": "Predecessor",
         "IsArchived": false,
         "MinutesCap": 3000,
-        "RatePerHour": 1.5
+        "RatePerHour": 2.00
     },
     {
         "Name": "The Long Drive",
@@ -3472,5 +3472,17 @@
         "IsArchived": false,
         "MinutesCap": 3000,
         "RatePerHour": 1.5
+    },
+    {
+        "Name": "MAVRIX",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 2.00
+    },
+    {
+        "Name": "Wreckreation",
+        "IsArchived": false,
+        "MinutesCap": 3000,
+        "RatePerHour": 2.00
     }
 ]

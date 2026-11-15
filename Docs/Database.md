@@ -47,6 +47,14 @@ Startup applies EF Core migrations and initializes bundled game/catalog data bef
 
 New development and scratch profiles initialize from migrations and bundled assets; they do not copy a personal production database. Production startup uses the copy-only transition above. Database migration and recovery must use validated application paths and backups; never treat personal databases as fixtures.
 
+Startup applies the November 2026 bundled game update to existing profiles before importing
+catalog metadata. It adds missing MAVRIX, Predecessor, and Wreckreation entries at $2.00 per hour
+with a 50-hour cap. A single active Predecessor entry with the previous bundled rate and cap
+keeps its game ID and cap-reset date and receives an audited rate change from $1.50 to $2.00 per hour.
+Title matching is case-insensitive. Customized, archived, and ambiguous entries are preserved,
+along with existing session links and stored earnings. The additions and rate audit commit together,
+and restarting does not duplicate them.
+
 Automated persistence tests must pass explicit isolated `DbContextOptions<AppDbContext>` using `TestDatabase` or equivalent. Do not run destructive initialization against the default context.
 
 `20261108103539_AddGameMultiplayerMetadata` adds nullable `GameMetadata.SupportsMultiplayer`,
@@ -116,10 +124,22 @@ Do not mutate an already activated snapshot under the same version/hash.
 The payload retains membership even for unmatched CatalogIds. Omitted entries
 keep their CatalogId → GameId links and lose catalog enrichment, offers,
 subscriptions, and provider mappings. Reintroducing an ID reuses its original
-link. For included entries, a live price check newer than publication survives
-if the ITAD mapping is identical. A removed or changed mapping invalidates
-its saved prices. Exchange rates are refreshed independently. The transaction
-leaves personal and financial rows and the Steam account cache untouched.
+link. For included entries with the same ITAD mapping, a live price check
+newer than publication or at least as recent as all incoming ITAD quotes
+keeps its saved offers. For an individually matched offer, ordinary
+activation keeps the more recently verified quote. A removed or changed
+ITAD mapping invalidates its saved ITAD prices. Exchange rates are refreshed
+independently.
+
+For a manually approved schema-2 roster preview, activation rechecks the
+proposed additions in the transaction. Each new earning row, stable catalog
+link, and game audit entry commits with the catalog. Existing financial and
+personal rows and the Steam account cache are preserved. Approving additions
+after the same catalog bytes are active does not rotate the recovery slot.
+Catalog rollback keeps any added earning rows and their audit history.
+An explicit rate variant uses its own CatalogId and keeps the exact game
+name used in session imports. Variants are excluded from legacy title and
+occurrence matching so their addition cannot shift existing catalog links.
 
 Observed Steam matches remain derived from active catalog mappings and the
 account-scoped `steam.library` snapshot already stored in CatalogSettings.
@@ -140,6 +160,12 @@ an older executable on a schema-2 profile remains unsupported. See the
 [catalog compatibility rules](../Tools/CATALOG.md#feed-compatibility-and-activation).
 
 ## Concurrent edits and import previews
+
+Payout table rows without a header use the standard Posted, Recorded, Type,
+Description, Status, and Amount order. The optional seventh column is the source
+transaction ID. Tables with headers can name the ID column and specify column order.
+The preview reports malformed amounts and durations by line. A table with duplicate
+column names needs a corrected header before the preview can use its rows.
 
 ### Session payout assignments
 

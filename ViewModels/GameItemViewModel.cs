@@ -40,11 +40,16 @@ namespace EarningsTracker.ViewModels
         private bool _steamStale;
         public bool IsSteamOwned => SteamMatch == SteamMatch.Matched;
         public string SteamBadge => _steamStale ? "Steam library · saved" : "Steam library";
-        public bool ShowsSteamInstallation => _steamInstalled.HasValue;
-        public string SteamInstallation => _steamInstalled == true
-            ? "Steam installation detected on this PC."
-            : "Steam installation on this PC is unknown.";
-        private bool? _steamInstalled;
+        public bool ShowsInstallation { get; private set; }
+        public bool IsInstalled => _installationSource != null;
+        public string InstallationBadge => $"Installed · {_installationSource}";
+        public string InstallationEvidence => _installationSource switch
+        {
+            LocalGameInstallations.SteamSource => "Steam installation detected on this PC.",
+            null => "Installation on this PC is unknown.",
+            _ => $"Installation detected on this PC · {_installationSource}."
+        };
+        private string? _installationSource;
         public string SteamEvidence => SteamMatch switch
         {
             SteamMatch.Matched => $"Seen in Steam library · synced {_steamSyncedAt?.ToLocalTime():g}"
@@ -179,6 +184,18 @@ namespace EarningsTracker.ViewModels
         public string CycleProgressText => $"{_cycleMinutes / 60m:0.##} / {Game.MinutesCap / 60m:0.##}h";
         public string CycleStatusText => !HasCycleProgress ? "Not started"
             : Game.MinutesCap > 0 && _cycleMinutes >= Game.MinutesCap ? "Cap reached" : "In progress";
+        public decimal? MinutesLeftToEarn => Game.IsArchived || Game.MinutesCap <= 0
+            ? null
+            : Math.Max(0m, Game.MinutesCap - _cycleMinutes);
+        public bool HasTimeLeftToEarn => MinutesLeftToEarn > 0m && Game.RatePerHour > 0m;
+        public string TimeLeftToEarnText => Game.IsArchived ? "History only" : Game.RatePerHour <= 0m ? "No earning rate" : MinutesLeftToEarn switch
+        {
+            null => "Cap unknown",
+            0m => "Cap reached",
+            < 1m => "<1 min left",
+            decimal minutes => $"{minutes:0.#} min left"
+        };
+
         internal void SetCycleMinutes(decimal minutes)
         {
             _cycleMinutes = minutes;
@@ -186,6 +203,9 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(CycleProgressPercent));
             OnPropertyChanged(nameof(CycleProgressText));
             OnPropertyChanged(nameof(CycleStatusText));
+            OnPropertyChanged(nameof(MinutesLeftToEarn));
+            OnPropertyChanged(nameof(HasTimeLeftToEarn));
+            OnPropertyChanged(nameof(TimeLeftToEarnText));
         }
         public string PotentialText => Game.IsArchived ? "History only" : CurrencyDisplay.FormatUsd(Game.RatePerHour * Game.MinutesCap / 60m);
         public string PotentialBasis => Game.IsArchived ? "Archived earning opportunity" : "";
@@ -211,7 +231,7 @@ namespace EarningsTracker.ViewModels
         internal void SetCatalog(GameMetadata? metadata, List<string> genres, List<StoreOffer> offers,
             List<SubscriptionAvailability> subscriptions, GameOwnership? ownership, IReadOnlyDictionary<string, ExchangeRate> rates,
             SteamMatch steamMatch = SteamMatch.Unknown, DateTime? steamSyncedAt = null, bool steamStale = false,
-            bool? steamInstalled = null)
+            string? installationSource = null, bool installationsConfigured = false)
         {
             var artworkChanged = Metadata?.CoverSha256 != metadata?.CoverSha256 || Metadata?.CoverUrl != metadata?.CoverUrl;
             Metadata = metadata; Genres = genres;
@@ -219,7 +239,8 @@ namespace EarningsTracker.ViewModels
             foreach (var offer in Offers) offer.Source = CatalogSources.PopularName(offer.Source)!;
             Subscriptions = subscriptions; Ownership = ownership; Rates = rates;
             SteamMatch = steamMatch; _steamSyncedAt = steamSyncedAt; _steamStale = steamStale;
-            _steamInstalled = steamInstalled;
+            _installationSource = installationSource;
+            ShowsInstallation = installationsConfigured;
             if (artworkChanged) { _cover = null; _coverRequested = false; OnPropertyChanged(nameof(Cover)); }
             foreach (var property in new[] { nameof(Metadata), nameof(Genres), nameof(Offers), nameof(Subscriptions), nameof(Rates),
                 nameof(GenreText), nameof(SourceText), nameof(Summary), nameof(MetadataStatus), nameof(FreeToPlay),
@@ -229,8 +250,10 @@ namespace EarningsTracker.ViewModels
             OnPropertyChanged(nameof(IsSteamOwned));
             OnPropertyChanged(nameof(SteamBadge));
             OnPropertyChanged(nameof(SteamEvidence));
-            OnPropertyChanged(nameof(ShowsSteamInstallation));
-            OnPropertyChanged(nameof(SteamInstallation));
+            OnPropertyChanged(nameof(ShowsInstallation));
+            OnPropertyChanged(nameof(IsInstalled));
+            OnPropertyChanged(nameof(InstallationBadge));
+            OnPropertyChanged(nameof(InstallationEvidence));
         }
 
         private void NotifyOwnership()

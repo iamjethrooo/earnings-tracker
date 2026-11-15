@@ -223,6 +223,11 @@ Owner-operated checks are not required; those limits remain recorded.
 
 ## Compact Games library and details (PRO-48)
 
+Saved games remain available while update checks run. Progress appears alongside
+the library status and competing refresh actions wait until the current check
+finishes. Saving a cap reset updates the open game's cycle progress in both views
+and reevaluates the Time left to earn filter before returning to the library.
+
 Games uses four primary columns: Game, Rate, Cycle and Acquisition. Game includes compact artwork,
 title, genre, stores, ownership and bookmarking. Full-cycle potential stays in Game Details.
 Below 1,050 DIPs of page-region width the comparison
@@ -232,14 +237,15 @@ selection and scroll position and restores focus when the original item is still
 The identity and comparison columns share the available row width; rate, cycle
 progress and acquisition align across games without a fixed-width inset. Cycle bars use verified
 linked sessions after the saved cap-reset date; pending, rejected, unlinked and pre-reset sessions
-do not contribute. Zero progress hides the track and says “Not started.” Hours use `played / cap`
-with In progress or Cap reached status; the bar clamps to 100% while text retains over-cap hours.
+do not contribute. Zero progress hides the track. Hours use `played / cap` and the bar clamps
+to 100% while text retains over-cap hours. The row shows the remaining minutes, a reached or
+unknown cap, or why the game has no active earning rate.
 Library acquisition evidence shows the store, checked date and stale/expired warnings; edition
 and region remain available in Game Details.
 
 The primary toolbar row contains an expanding search field with an icon, a separately labeled
 sort selector and a secondary Clear filters action. The quick-filter row contains Playable now,
-Owned, Bookmarked, Multiplayer, genre/store and More filters; it wraps at narrower widths. Toolbar controls
+Installed, Time left to earn, Owned, Bookmarked, Multiplayer, genre/store and More filters; it wraps at narrower widths. Toolbar controls
 are 34 DIPs high, with 8-DIP filter gaps and purple selected states. More filters holds
 Free-to-play, Steam library, PC Game Pass and Show archived. Its count includes every checked
 secondary option, including Show archived. Toggling an option keeps the popover open; Escape
@@ -361,6 +367,13 @@ and a 144-DPI export. Physical keyboard/mouse/wheel behavior, screen-reader anno
 monitor-DPI transitions remain unverified; owner-operated manual tests are not an acceptance gate.
 
 ## Statistics charts
+
+In **Statistics → Earnings by game**, select **Verified earnings per hour** to rank the top eight
+game records in the selected date range, including the 30-day and 90-day views. The rate divides
+stored verified session earnings by the total verified hours shown on the row. It uses sessions
+linked to a game record with positive playtime and excludes separate payout adjustments. Historical
+rate records are ranked separately even when they share a title. For example, sessions earning
+$3 in 30 minutes and $9 in 90 minutes produce $6 per hour across 2 hours.
 
 Statistics reuses `MetricPanel`, Dashboard metric text styles, `SurfacePanel`, `SectionHeading`,
 `MetricProgressBar`, and the shared ComboBox. Today uses accent text; other period values use primary text.

@@ -30,7 +30,7 @@ Architecture and conventions below describe the current implementation. Workflow
 
 ## C#, WPF, and asynchronous conventions
 
-- Nullable reference types and implicit usings are enabled. Use the `EarningsTracker` namespace, PascalCase types/members, and the local file's indentation/private-field conventions. Both block and file-scoped namespaces exist; avoid mass formatting or renaming. No repository-wide formatter configuration or `global.json` is checked in.
+- Nullable reference types and implicit usings are enabled. Use the `EarningsTracker` namespace, PascalCase types/members, and the local file's indentation/private-field conventions. Both block and file-scoped namespaces exist; avoid mass formatting or renaming. Use the SDK pinned in `global.json`.
 - Preserve XAML names, binding contexts, dependent-property notifications, command availability, and local trigger precedence. Use the existing `RelayCommand` and observable-state mechanisms rather than adding an MVVM dependency.
 - Use `Task`-returning operations; reserve `async void` for WPF/event boundaries and handle failures there. Publish observable collections and UI objects on their dispatcher. Keep blocking reads, parsing, imports, and artwork decoding off the UI thread using the existing patterns.
 - Preserve coalesced/queued refreshes and stale-result checks. Publish complete snapshots after successful reads; on failure retain the previous snapshot, identify stale data, and expose retry. First-load failures must not present unavailable financial totals as zero.
@@ -44,7 +44,7 @@ Architecture and conventions below describe the current implementation. Workflow
 - `Resources/Styles.xaml` is the compatibility merge entry point. Keep existing resource keys available. In shared dictionaries use `DynamicResource` for tokens from sibling dictionaries and keep `BasedOn` references within the dictionary; views can use loaded `StaticResource` keys. Preserve the assembly resource URI `EarningsTracker`, matching the assembly name.
 - Prefer `PageHost`, panel/heading styles, `ArtworkPresenter`, status variants, and import/feedback styles. Pages own their inset; do not add duplicate host padding. Preserve deliberate status-trigger differences across history, Dashboard, and game details.
 - Keep keyboard focus, accessible names, live feedback, modal containment, and commit close protection. Bound list viewports must retain virtualization/recycling; do not wrap large lists in an unbounded outer scroller.
-- Distinguish empty, filtered-empty, loading, error, and stale states. Keep prices, editions, availability, and stale-data warnings visible when simplifying provenance. Settings backup/restore, game-view defaults, and display preferences remain placeholders unless explicitly in scope.
+- Distinguish empty, filtered-empty, loading, error, and stale states. Keep prices, editions, availability, and stale-data warnings visible when simplifying provenance. Settings includes database backup/restore and saved Games defaults. Follow the existing backup and restore safeguards in [Docs/Database.md](Docs/Database.md).
 
 ## Financial and history integrity
 
@@ -91,11 +91,11 @@ For catalog/tool changes, run `python -m unittest discover -s Tools -p "test_*.p
 
 WPF tests use the `Wpf` collection/`WpfTestHost` dispatcher and actual resources; some create offscreen windows and rendered fixtures without running `App.OnStartup`. Compilation is not runtime verification, offscreen fixtures are not a complete interactive test, and in-memory migrations do not prove filesystem durability. UI changes need appropriate rendered/layout checks plus manual keyboard, DPI, scrolling, and dialog checks. Do not launch the default app merely to verify a build: startup can migrate user data. Use an explicitly isolated manual-test environment.
 
-## Recommended release discipline for 1.0.0
+## Release discipline
 
 - Prioritize compatibility, accounting/history integrity, upgrade safety, and offline access over architectural churn. Run Debug/Release checks and relevant migration/import regressions; record remaining manual checks before release.
-- No product release version is explicitly assigned in the project. Settings shows Development build unless assembly metadata `ReleaseVersion` is supplied; the default assembly version is diagnostic information. When a release is authorized, deliberately align product metadata and assembly/package versions rather than silently declaring 1.0.0.
+- Settings shows Development build unless assembly metadata `ReleaseVersion` is supplied. The default assembly version is diagnostic information. When a release is authorized, align the product metadata and assembly/package versions with the intended release.
 - Catalog snapshot versions and publication are separate from application releases. Keep the `CATALOG_PUBLISH_ENABLED` and provider/review approval gates in place; follow [Tools/CATALOG.md](Tools/CATALOG.md).
-- No application installer/signing/release pipeline or coverage-percentage gate is established here. Confirm release requirements with the user when needed; do not invent packaging policies or claim automated end-to-end coverage.
+- Pull requests run the Windows build and test workflow in Debug and Release. Follow [Docs/Release.md](Docs/Release.md) for Velopack packaging, installer verification, the unsigned-release policy, and publication approval.
 
 Store temporary audits, phase verification reports, and implementation logs in .local-docs/. Keep only maintained technical and operational documentation in Docs/.

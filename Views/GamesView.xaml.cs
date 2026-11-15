@@ -20,6 +20,7 @@ namespace EarningsTracker.Views
     {
         private Game? _selectedGame;
         private readonly DbContextOptions<AppDbContext>? _databaseOptions;
+        private bool _canRefreshStoreOffers;
         private double _libraryOffset;
         private GameItemViewModel? _returnItem;
         private IInputElement? _returnFocus;
@@ -69,6 +70,8 @@ namespace EarningsTracker.Views
         {
             _databaseOptions = databaseOptions;
             InitializeComponent();
+            if (databaseOptions == null)
+                UpdateStoreOffersAction();
 
             DataContext = new GamesViewModel(databaseOptions, loadImmediately: databaseOptions != null);
             var preferences = (GamesViewModel)DataContext;
@@ -192,6 +195,8 @@ namespace EarningsTracker.Views
                 var status = currentGame?.StatusFilters.FirstOrDefault(x => x.IsSelected)?.Status;
                 LoadGameDetails(_selectedGame);
                 currentGame!.FilterSessions(status);
+                if (DataContext is GamesViewModel model)
+                    model.UpdateCycleProgress(currentGame.Game, currentGame.TotalMinutes);
             }
         }
 
@@ -234,12 +239,74 @@ namespace EarningsTracker.Views
 
         private async void RefreshCatalog_Click(object sender, RoutedEventArgs e) => await RefreshCatalogAsync(true);
 
-        private async Task RefreshCatalogAsync(bool manual)
+        private void UpdateStoreOffersAction()
+        {
+            try { _canRefreshStoreOffers = !string.IsNullOrWhiteSpace(CatalogCredentials.Get()); }
+            catch (System.ComponentModel.Win32Exception) { _canRefreshStoreOffers = false; }
+            StoreOffersButton.Content = StoreOffersMenuItem.Header = _canRefreshStoreOffers
+                ? "Refresh store offers" : "Set up price refresh…";
+        }
+
+        private void Updates_Click(object sender, RoutedEventArgs e)
+        {
+            UpdatesButton.ContextMenu.PlacementTarget = UpdatesButton;
+            UpdatesButton.ContextMenu.IsOpen = true;
+        }
+
+        private async void StoreOffers_Click(object sender, RoutedEventArgs e)
+        {
+            if (!LibraryActions.IsEnabled || DataContext is not GamesViewModel model) return;
+            if (!_canRefreshStoreOffers)
+            {
+                SettingsRequested?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            LibraryActions.IsEnabled = false;
+            StoreOffersFeedback.Text = "Refreshing store offers…";
+            try
+            {
+                StoreOffersFeedback.Text = await new CatalogUpdates(_databaseOptions).RefreshStoreOffersAsync();
+                if (model.HasLoaded) await model.ReloadCatalogAsync();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Store offer refresh failed ({ex.GetType().Name}).");
+                StoreOffersFeedback.Text = "Could not refresh the Games view. Reopen Games to see saved offers.";
+            }
+            finally
+            {
+                UpdateStoreOffersAction();
+                LibraryActions.IsEnabled = true;
+            }
+        }
+
+        private async void LocalInstallations_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not GamesViewModel model || !LocalInstallationsButton.IsEnabled) return;
+            LibraryActions.IsEnabled = false;
+            string? warning = null;
+            try { await model.ReloadCatalogAsync(); }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Local installation refresh failed ({ex.GetType().Name}).");
+                warning = "Could not refresh local installations. Close this window and reopen it to retry.";
+            }
+            finally { LibraryActions.IsEnabled = true; }
+            if (!IsLoaded) return;
+
+            var browser = new Modals.LocalInstallationsWindow(model.Installations, warning) { Owner = Window.GetWindow(this) };
+            if (browser.ShowDialog() == true)
+                SettingsRequested?.Invoke(this, EventArgs.Empty);
+            else
+                LocalInstallationsButton.Focus();
+        }
+
+        internal async Task RefreshCatalogAsync(bool manual, Func<Task<string>>? checkCatalog = null)
         {
             if (DataContext is not GamesViewModel model) return;
-            if (!RefreshCatalogButton.IsEnabled) return;
-            RefreshCatalogButton.IsEnabled = false;
-            GamesList.IsEnabled = false;
+            if (!LibraryActions.IsEnabled) return;
+            LibraryActions.IsEnabled = false;
             try
             {
                 if (!model.HasLoaded)
@@ -247,20 +314,31 @@ namespace EarningsTracker.Views
                     await model.LoadGamesAsync();
                     if (!model.HasLoaded) return;
                 }
-                var message = await new CatalogUpdates(_databaseOptions).RefreshAsync(manual);
-                var steamMessage = await new SteamLibrary(_databaseOptions).RefreshAsync(manual);
+                CatalogUpdateFeedback.Text = "Checking for game list updates…";
+                CatalogUpdateFeedback.Visibility = Visibility.Visible;
+                var rosterApproved = false;
+                var message = await (checkCatalog?.Invoke() ?? new CatalogUpdates(_databaseOptions).RefreshAsync(manual,
+                    confirmRoster: preview => rosterApproved = Modals.CatalogRosterWindow.Confirm(this, preview)));
+                var steamMessage = manual ? "" : await new SteamLibrary(_databaseOptions).RefreshAsync(false);
                 if (message != "" || steamMessage != "")
                 {
-                    await model.ReloadCatalogAsync();
-                    if (message != "") model.SetStatus(model.CatalogStatus + " · " + message);
+                    if (rosterApproved) await model.LoadGamesAsync();
+                    else await model.ReloadCatalogAsync();
+                    if (message != "")
+                        model.SetStatus(model.LoadError == null ? model.CatalogStatus + " · " + message
+                            : message + " Reopen Games to reload the list.");
                 }
             }
             catch (Exception ex)
             {
                 Trace.TraceError($"Catalog refresh failed ({ex.GetType().Name}).");
-                model.SetStatus("Update failed. Showing the saved catalog; prices and availability may be out of date. Personal data is still available. Retry Refresh catalog.");
+                model.SetStatus("Update failed. Showing the saved catalog. Use the Updates menu to retry.");
             }
-            finally { RefreshCatalogButton.IsEnabled = true; GamesList.IsEnabled = true; }
+            finally
+            {
+                CatalogUpdateFeedback.Visibility = Visibility.Collapsed;
+                LibraryActions.IsEnabled = true;
+            }
         }
 
         private void OpenCatalogLink_Click(object sender, RoutedEventArgs e)
@@ -404,6 +482,8 @@ namespace EarningsTracker.Views
             catch (PostCommitRefreshException ex)
             {
                 _selectedGame.CapResetDate = resetDate;
+                try { RefreshSelectedGameSessions(); }
+                catch (Exception refreshError) { Trace.TraceError(refreshError.ToString()); }
                 MessageBox.Show(ex.Message, "Saved — refresh failed", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

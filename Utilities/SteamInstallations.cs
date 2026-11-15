@@ -7,6 +7,8 @@ namespace EarningsTracker.Utilities;
 
 internal static partial class SteamInstallations
 {
+    internal sealed record Scan(Dictionary<uint, string> Installed, bool IsIncomplete);
+
     internal const string SettingsKey = "steam.localLibraryFolders";
     internal const int MaxFolders = 8;
     private const int MaxManifests = 4096;
@@ -17,50 +19,82 @@ internal static partial class SteamInstallations
         && string.Equals(Path.GetFileName(Path.TrimEndingDirectorySeparator(path)), "steamapps",
             StringComparison.OrdinalIgnoreCase);
 
-    internal static HashSet<uint>? Read(string setting)
+    internal static Scan? Read(string setting)
     {
         if (setting.Length == 0) return null;
         string[]? folders;
         try { folders = JsonSerializer.Deserialize<string[]>(setting); }
-        catch (JsonException) { return []; }
-        var installed = new HashSet<uint>();
-        if (folders == null || folders.Length > MaxFolders) return installed;
+        catch (JsonException) { return new([], true); }
+        var installed = new Dictionary<uint, string>();
+        if (folders is not { Length: > 0 and <= MaxFolders }) return new(installed, true);
         var buffer = new char[MaxManifestBytes + 1];
+        var incomplete = false;
 
-        foreach (var folder in folders.Where(path => path != null && IsLibraryFolder(path)))
+        foreach (var folder in folders)
         {
             try
             {
-                if (new DriveInfo(Path.GetPathRoot(folder)!).DriveType is not (DriveType.Fixed or DriveType.Removable))
-                    continue;
-                foreach (var manifest in Directory.EnumerateFiles(folder, "appmanifest_*.acf").Take(MaxManifests))
+                if (folder == null || !IsLibraryFolder(folder)
+                    || new DriveInfo(Path.GetPathRoot(folder)!).DriveType is not (DriveType.Fixed or DriveType.Removable))
                 {
+                    incomplete = true;
+                    continue;
+                }
+                var count = 0;
+                foreach (var manifest in Directory.EnumerateFiles(folder, "appmanifest_*.acf"))
+                {
+                    if (++count > MaxManifests)
+                    {
+                        incomplete = true;
+                        break;
+                    }
                     try
                     {
                         if (!uint.TryParse(Path.GetFileNameWithoutExtension(manifest).AsSpan("appmanifest_".Length),
-                                NumberStyles.None, CultureInfo.InvariantCulture, out var id)
-                            || (File.GetAttributes(manifest) & FileAttributes.ReparsePoint) != 0)
+                                NumberStyles.None, CultureInfo.InvariantCulture, out var id))
                             continue;
+                        if ((File.GetAttributes(manifest) & FileAttributes.ReparsePoint) != 0)
+                        {
+                            incomplete = true;
+                            continue;
+                        }
                         using var stream = File.Open(manifest, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                        if (stream.Length > MaxManifestBytes) continue;
+                        if (stream.Length > MaxManifestBytes)
+                        {
+                            incomplete = true;
+                            continue;
+                        }
                         using var reader = new StreamReader(stream);
                         var length = reader.ReadBlock(buffer);
-                        if (length <= MaxManifestBytes && ReadInstallDirectory(new string(buffer, 0, length), id) is { } directory
-                            && Directory.Exists(Path.Combine(folder, "common", directory)))
-                            installed.Add(id);
+                        if (length > MaxManifestBytes)
+                        {
+                            incomplete = true;
+                            continue;
+                        }
+                        if (ReadInstall(new string(buffer, 0, length), id) is { } game)
+                        {
+                            try
+                            {
+                                var attributes = File.GetAttributes(Path.Combine(folder, "common", game.Directory));
+                                if ((attributes & FileAttributes.Directory) != 0)
+                                    installed.TryAdd(id, game.Name);
+                            }
+                            catch (FileNotFoundException) { }
+                            catch (DirectoryNotFoundException) { }
+                        }
                     }
-                    catch (IOException) { }
-                    catch (UnauthorizedAccessException) { }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+                    { incomplete = true; }
                 }
             }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+            { incomplete = true; }
         }
-        return installed;
+        return new(installed, incomplete);
     }
 
     // Read the AppState fields only. Ignore nested sections and unfamiliar manifest layouts.
-    private static string? ReadInstallDirectory(string manifest, uint appId)
+    private static (string Directory, string Name)? ReadInstall(string manifest, uint appId)
     {
         using var reader = new StringReader(manifest);
         if (reader.ReadLine()?.Trim() != "\"AppState\"" || reader.ReadLine()?.Trim() != "{") return null;
@@ -82,9 +116,10 @@ internal static partial class SteamInstallations
             || directory.Length == 0 || directory is "." or ".."
             || directory.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             return null;
-        return directory;
+        var name = fields.GetValueOrDefault("name")?.Trim();
+        return (directory, string.IsNullOrWhiteSpace(name) || name.Length > 256 || name.Any(char.IsControl) ? directory : name);
     }
 
-    [GeneratedRegex("^\"(appid|stateflags|installdir)\"\\s+\"([^\"\\\\]*)\"$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^\"(appid|stateflags|installdir|name)\"\\s+\"([^\"\\\\]*)\"$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ManifestField();
 }

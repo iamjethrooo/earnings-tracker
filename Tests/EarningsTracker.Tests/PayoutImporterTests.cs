@@ -10,6 +10,28 @@ namespace EarningsTracker.Tests
         private static PayoutParseResult Parse(string rows) => PayoutTextParser.ParseDetailed(rows);
 
         [Fact]
+        [Trait("Category", "Regression")]
+        public void HeaderlessIdsKeepSameDayPaymentsDistinctAcrossReimports()
+        {
+            using var database = new TestDatabase();
+            const string input = """
+                |6/5/2026|—|Payment|Batch payout|Paid|-$10.00|PAY-1|
+                |6/5/2026|—|Payment|Batch payout|Paid|-$10.00|PAY-2|
+                """;
+            using var importer = new PayoutImporter(database.CreateContext());
+            var preview = importer.PreviewImport(Parse(input));
+            Assert.Equal(2, preview.AddedCount);
+            importer.ImportPayouts(preview);
+
+            var reimport = importer.PreviewImport(Parse(input));
+            Assert.Equal(2, reimport.UnchangedCount);
+            Assert.Empty(reimport.NewPayouts);
+            using var db = database.CreateContext();
+            Assert.Equal(new[] { "PAY-1", "PAY-2" }, db.Payouts.OrderBy(payout => payout.Id).Select(payout => payout.SourceId));
+            Assert.Equal(2, db.PayoutChanges.Count());
+        }
+
+        [Fact]
         public void ReimportingPaymentsAndAdjustmentsDoesNotAddRowsOrAuditEntries()
         {
             using var database = new TestDatabase();

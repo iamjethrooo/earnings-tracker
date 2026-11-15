@@ -15,6 +15,26 @@ namespace EarningsTracker.Tests;
 public class CatalogUiTests(WpfTestHost host)
 {
     [Fact]
+    public Task RosterPreviewRendersStartingTermsAndConflicts() => host.RunAsync(() =>
+    {
+        var window = new EarningsTracker.Views.Modals.CatalogRosterWindow(new(
+            [new("new-game", "New game", new(2.50m, 3000))], ["Duplicate title"]));
+        var preview = (ListBox)window.FindName("Preview");
+        var apply = (Button)window.FindName("Apply");
+        var cancel = (Button)window.FindName("ClosePreview");
+        Assert.Contains("$2.50/hr", Assert.IsType<string>(preview.Items[0]));
+        Assert.Contains("Duplicate title", Assert.IsType<string>(preview.Items[1]));
+        Assert.False(apply.IsDefault);
+        Assert.True(cancel.IsCancel);
+        var content = (FrameworkElement)window.Content;
+        content.Measure(new Size(360, 280));
+        content.Arrange(new Rect(0, 0, 360, 280));
+        content.UpdateLayout();
+        Render(content, "roster-preview.png", 360, 280);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task OnlyGamePassCanGrantSubscriptionAccessAndPersists() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
