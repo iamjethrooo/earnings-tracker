@@ -64,7 +64,7 @@ namespace EarningsTracker.Tests
             db.SaveChanges();
             var game = db.Games.Single();
             db.Database.ExecuteSqlRaw("INSERT INTO GameMetadata (GameId,CatalogId,Summary,CoverUrl,CoverSha256,Provenance,Reviewed) VALUES ({0},'legacy-id','Original summary','','','Original provenance',1)", game.Id);
-            db.Sessions.Add(new Session { GameId = game.Id, GameName = game.Name, Earnings = 1.2345m });
+            db.Database.ExecuteSqlRaw("INSERT INTO Sessions (GameId,GameName,Date,RecordedDate,Duration,Status,Earnings,IsForceVerified,HasExplicitPayoutAssignment) VALUES ({0},{1},'2026-06-05','2026-06-05','00:20:00',1,'1.2345',0,0);", game.Id, game.Name);
             db.SessionChanges.Add(new SessionChange { SessionId = 1, ChangeType = "Imported", SourceText = "Original evidence" });
             db.Bookmarks.Add(new Bookmark { GameId = game.Id });
             db.GameOwnership.Add(new GameOwnership { GameId = game.Id, IsOwned = true, PurchaseAmount = 42.50m });
@@ -76,7 +76,10 @@ namespace EarningsTracker.Tests
             Assert.Equal("", metadata.MultiplayerProvenance);
             Assert.Equal("Original summary", metadata.Summary);
             Assert.Equal("Original provenance", metadata.Provenance);
-            Assert.Equal(1.2345m, db.Sessions.Single().Earnings);
+            var session = db.Sessions.Single();
+            Assert.Equal(1.2345m, session.Earnings);
+            Assert.Null(session.AfkDuration);
+            Assert.Equal(TimeSpan.FromMinutes(20), session.CapEligibleDuration);
             Assert.Equal("Original evidence", db.SessionChanges.Single().SourceText);
             Assert.Equal(42.50m, db.GameOwnership.Single().PurchaseAmount);
             Assert.Single(db.Bookmarks);

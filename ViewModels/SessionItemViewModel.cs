@@ -206,6 +206,8 @@ namespace EarningsTracker.ViewModels
                 if (minutes > TimeSpan.MaxValue.Ticks / (decimal)TimeSpan.TicksPerMinute)
                     return FieldError(nameof(DraftDurationMinutes), "Enter a duration within the supported range.", out error);
                 duration = TimeSpan.FromTicks((long)decimal.Round(minutes * TimeSpan.TicksPerMinute));
+                if (duration < Session.AfkDuration)
+                    return FieldError(nameof(DraftDurationMinutes), "Duration cannot be shorter than the imported AFK deduction.", out error);
             }
             if (DraftEarnings == _initialEarningsText)
                 earnings = Session.Earnings;
@@ -232,6 +234,7 @@ namespace EarningsTracker.ViewModels
                 RecordedDate = recordedDate,
                 PostedDate = postedDate,
                 Duration = duration,
+                AfkDuration = Session.AfkDuration,
                 Earnings = earnings,
                 Status = DraftStatus,
                 IsForceVerified = DraftIsForceVerified

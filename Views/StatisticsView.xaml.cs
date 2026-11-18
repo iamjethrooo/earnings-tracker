@@ -171,7 +171,7 @@ namespace EarningsTracker.Views
                     gameSessions = gameSessions.Where(session => GetRecordedDay(session) >= game.CapResetDate.Value.Date);
 
                 var matchingSessions = gameSessions.ToList();
-                var verifiedMinutes = matchingSessions.Sum(session => (decimal)session.Duration.TotalMinutes);
+                var verifiedMinutes = matchingSessions.Sum(session => (decimal)session.CapEligibleDuration.TotalMinutes);
                 rows.Add(new GameCapItem(game, verifiedMinutes, matchingSessions.Sum(session => session.Earnings)));
             }
             ((BatchObservableCollection<GameCapItem>)GameCapRows).ReplaceAll(rows);

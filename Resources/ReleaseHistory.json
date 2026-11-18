@@ -1,7 +1,25 @@
 [
   {
+    "version": "1.6.1",
+    "publishedAt": "2026-11-18T12:30:00Z",
+    "unreleased": false,
+    "summary": "Imported Nerve sessions now deduct reported AFK breaks from game cap usage.",
+    "upgradeNotes": [
+      "Keep an independent backup of your application data before upgrading. The app updates its database on first launch to store AFK deductions."
+    ],
+    "sections": [
+      {
+        "heading": "Improved",
+        "changes": [
+          "A 55-minute recording with a 7-minute AFK break uses 48 minutes of the game's cap. The session keeps its recorded duration and reported earnings.",
+          "To apply a deduction to a session already in the tracker, paste the recording again with its AFK deduction line."
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.6.0",
-    "publishedAt": "2026-11-15T08:01:56Z",
+    "publishedAt": "2026-11-15T09:17:27Z",
     "unreleased": false,
     "summary": "Get new games and catalog updates between app releases, find installed games with earning time left, and compare your verified earnings per hour.",
     "upgradeNotes": [

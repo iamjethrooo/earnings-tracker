@@ -16,10 +16,10 @@ public class ReleaseHistoryTests
     [Fact]
     public void BundledHistoryIncludesEveryVersionAndMarksTheCandidateInstalled()
     {
-        var entries = ReleaseHistory.Load("1.6.0");
-        Assert.Equal(new[] { "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
+        var entries = ReleaseHistory.Load("1.6.1");
+        Assert.Equal(new[] { "1.6.1", "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
         var installed = Assert.Single(entries, entry => entry.IsInstalled);
-        Assert.Equal("1.6.0", installed.Version);
+        Assert.Equal("1.6.1", installed.Version);
         Assert.True(installed.IsExpanded);
         Assert.All(entries.Where(entry => entry != installed), entry => Assert.False(entry.IsExpanded));
         Assert.All(entries.Where(entry => !entry.Unreleased), entry => Assert.Contains("UTC", entry.DateLabel));
@@ -64,7 +64,9 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
     [InlineData(960, 800)]
     public Task AllVersionsCanBeExpandedAndScrolledInBoundedDialog(double width, double height) => host.RunAsync(async () =>
     {
-        var window = new ReleaseHistoryWindow("1.4.0", ReleaseHistory.Load)
+        var bundledEntries = ReleaseHistory.Load(null);
+        var installedVersion = bundledEntries.First(entry => !entry.Unreleased).Version;
+        var window = new ReleaseHistoryWindow(installedVersion, ReleaseHistory.Load)
         { Width = width, Height = height, Left = -10000, Top = -10000, ShowInTaskbar = false };
         try
         {
@@ -73,8 +75,9 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
             window.UpdateLayout();
             var list = (ListBox)window.FindName("Releases");
             var entries = list.Items.Cast<ReleaseHistoryEntry>().ToList();
-            Assert.Equal(7, entries.Count);
+            Assert.Equal(bundledEntries.Select(entry => entry.Version), entries.Select(entry => entry.Version));
             var installed = (ReleaseHistoryEntry)list.SelectedItem;
+            Assert.Equal(installedVersion, installed.Version);
             Assert.True(installed.IsInstalled);
             Assert.True(installed.IsExpanded);
             Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(window));

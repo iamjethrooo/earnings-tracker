@@ -316,6 +316,9 @@ namespace EarningsTracker.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<TimeSpan?>("AfkDuration")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("AssignedPayoutId")
                         .HasColumnType("INTEGER");
 

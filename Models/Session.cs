@@ -23,6 +23,9 @@ namespace EarningsTracker.Models
         public DateTime? PostedDate { get; set; }
         public bool IsForceVerified { get; set; }
         public TimeSpan Duration { get; set; }
+        // Null means the source did not report a deduction.
+        public TimeSpan? AfkDuration { get; set; }
+        public TimeSpan CapEligibleDuration => Duration - AfkDuration.GetValueOrDefault();
         public SessionStatus Status { get; set; }
         public decimal Earnings { get; set; }
 

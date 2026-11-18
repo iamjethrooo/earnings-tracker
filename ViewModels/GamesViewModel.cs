@@ -232,7 +232,14 @@ namespace EarningsTracker.ViewModels
             var cycleMinutes = new Dictionary<int, decimal>();
             var verifiedSessions = db.Sessions.AsNoTracking()
                 .Where(session => session.GameId.HasValue && session.Status == SessionStatus.Verified)
-                .Select(session => new { session.GameId, session.Duration, session.Date, session.RecordedDate })
+                .Select(session => new Session
+                {
+                    GameId = session.GameId,
+                    Date = session.Date,
+                    RecordedDate = session.RecordedDate,
+                    Duration = session.Duration,
+                    AfkDuration = session.AfkDuration
+                })
                 .ToList();
 
             foreach (var session in verifiedSessions)
@@ -241,7 +248,7 @@ namespace EarningsTracker.ViewModels
                 if (!resetDates.TryGetValue(gameId, out var resetDate)) continue;
                 var recordedDate = (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
                 if (resetDate.HasValue && recordedDate < resetDate.Value) continue;
-                cycleMinutes[gameId] = cycleMinutes.GetValueOrDefault(gameId) + (decimal)session.Duration.TotalMinutes;
+                cycleMinutes[gameId] = cycleMinutes.GetValueOrDefault(gameId) + (decimal)session.CapEligibleDuration.TotalMinutes;
             }
 
             return new(games, db.Bookmarks.Select(b => b.GameId).ToHashSet(), cycleMinutes, AppSettings.ReadGameRatings(db));

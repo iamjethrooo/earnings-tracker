@@ -105,7 +105,7 @@ namespace EarningsTracker.ViewModels
         public decimal TotalEarnings => CurrentCycleVerifiedSessions.Sum(s => s.Earnings);
         public decimal MaximumEarnings => Game.RatePerHour * Game.MinutesCap / 60;
         public decimal RemainingEarnings => Math.Max(0, MaximumEarnings - TotalEarnings);
-        public decimal TotalMinutes => CurrentCycleVerifiedSessions.Sum(s => Convert.ToDecimal(s.Duration.TotalMinutes));
+        public decimal TotalMinutes => CurrentCycleVerifiedSessions.Sum(s => (decimal)s.CapEligibleDuration.TotalMinutes);
         public decimal RemainingMinutes => Math.Max(0, Game.MinutesCap - TotalMinutes);
         public string MinutesDescription => $"{TotalMinutes:0.##} min consumed · {RemainingMinutes:0.##} min remaining";
 

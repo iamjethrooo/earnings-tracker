@@ -144,6 +144,46 @@ namespace EarningsTracker.Tests
         });
 
         [Fact]
+        public Task ImportedAfkDeductionKeepsCapOpenAcrossGamesDetailsAndStatistics() => host.RunAsync(async () =>
+        {
+            using var database = new TestDatabase();
+            var game = new Game { Name = "Example", MinutesCap = 65, RatePerHour = 3m };
+            using (var seed = database.CreateContext()) { seed.Games.Add(game); seed.SaveChanges(); }
+            const string input = """
+                [Example](https://example.invalid/game-icon.jpg)
+                **Example**
+                Example · Jun 5, 2026 2:06 PM · 42m · File deleted
+                **+$1.75**
+                7 min AFK deducted
+                **Verified**
+                [Example](https://example.invalid/game-icon.jpg)
+                **Example**
+                Example · Jun 5, 2026 3:06 PM · 25m
+                **Folder**
+                **+$1.25**
+                **Verified**
+                """;
+            var importer = new SessionImporter(database.Options);
+            importer.ImportSessions(importer.PreviewImport(SessionTextParser.Parse(input, [game], null)));
+
+            using var read = database.CreateContext();
+            var sessions = read.Sessions.OrderBy(session => session.RecordedDate).ToList();
+            Assert.Equal(TimeSpan.FromMinutes(42), sessions[0].Duration);
+            Assert.Equal(TimeSpan.FromMinutes(7), sessions[0].AfkDuration);
+            Assert.Null(sessions[1].AfkDuration);
+            var details = new GameDetailsViewModel(game, sessions);
+            Assert.Equal(60m, details.TotalMinutes);
+            Assert.Equal(5m, details.RemainingMinutes);
+
+            var games = new GamesViewModel(database.Options) { TimeLeftOnly = true };
+            Assert.Equal(5m, Assert.Single(games.GamesView.Cast<GameItemViewModel>()).MinutesLeftToEarn);
+            var statistics = new StatisticsView(database.Options);
+            await statistics.LoadStatistics(asOfDate: new DateTime(2026, 6, 5, 16, 0, 0));
+            Assert.Equal(60m, Assert.Single(statistics.GameCapRows).VerifiedMinutes);
+            Assert.Equal(3m, statistics.TodayEarnings);
+        });
+
+        [Fact]
         public Task UnlinkedRecordingDoesNotCreateACapRowEvenForAUniqueName() => host.RunAsync(async () =>
         {
             var day = new DateTime(2026, 6, 1);

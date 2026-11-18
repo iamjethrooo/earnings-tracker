@@ -80,7 +80,7 @@ namespace EarningsTracker.Utilities
             return false;
         }
 
-        private static List<Session> ParseGameDetails(string[] lines, List<Game> games, Game game)
+        private static List<Session> ParseGameDetails(string[] lines, string[] sourceLines, List<Game> games, Game game)
         {
             List<Session> sessions = [];
             Session? currentSession = null;
@@ -157,6 +157,9 @@ namespace EarningsTracker.Utilities
                 {
                     continue;
                 }
+                if (TryReadAfkDeduction(currentSession, line, i + 1))
+                    continue;
+
                 if (line.Contains('$'))
                 {
                     ParseEarnings(currentSession, line);
@@ -166,7 +169,7 @@ namespace EarningsTracker.Utilities
                 if (TryParseStatus(line, out var status))
                 {
                     CompleteRecording(currentSession, status, line, hasEarnings, i + 1);
-                    currentSession.ImportSourceText = string.Join("\n", lines[(recordingLine - 1)..(i + 1)]);
+                    currentSession.ImportSourceText = string.Join("\n", sourceLines[(recordingLine - 1)..(i + 1)]);
                     sessions.Add(currentSession);
                     currentSession = null; // Reset currentSession for the next entry
                 }
@@ -177,7 +180,7 @@ namespace EarningsTracker.Utilities
             return sessions;
         }
 
-        private static List<Session> ParseRecordings(string[] lines, List<Game> games, Game? selectedGame)
+        private static List<Session> ParseRecordings(string[] lines, string[] sourceLines, List<Game> games, Game? selectedGame)
         {
             List<Session> sessions = [];
             Session? currentSession = null;
@@ -236,6 +239,9 @@ namespace EarningsTracker.Utilities
                 {
                     continue;
                 }
+                if (TryReadAfkDeduction(currentSession, line, i + 1))
+                    continue;
+
                 if (line.Contains('$'))
                 {
                     ParseEarnings(currentSession, line);
@@ -251,7 +257,7 @@ namespace EarningsTracker.Utilities
                     CompleteRecording(currentSession, status, line, hasEarnings, i + 1);
                     if (!currentSession.GameId.HasValue)
                         MatchRecordingEarnings(currentSession, games, durationText, hasEarnings);
-                    currentSession.ImportSourceText = string.Join("\n", lines[sourceStart..(i + 1)]);
+                    currentSession.ImportSourceText = string.Join("\n", sourceLines[sourceStart..(i + 1)]);
                     sessions.Add(currentSession);
                     currentSession = null; // Reset currentSession for the next entry
                 }
@@ -280,6 +286,26 @@ namespace EarningsTracker.Utilities
         {
             try { return ParseDuration(input); }
             catch (FormatException ex) { throw new InvalidSessionFormatException($"Line {line}: {ex.Message}"); }
+        }
+
+        private static bool TryReadAfkDeduction(Session session, string line, int lineNumber)
+        {
+            if (!Regex.IsMatch(line, @"\bAFK\s+deducted\z", RegexOptions.IgnoreCase))
+                return false;
+
+            if (session.AfkDuration.HasValue)
+                throw new InvalidSessionFormatException($"Line {lineNumber}: the recording lists more than one AFK deduction.");
+
+            var match = Regex.Match(line, @"\A(?<minutes>[0-9]+)\s+min\s+AFK\s+deducted\z", RegexOptions.IgnoreCase);
+            if (!match.Success || !int.TryParse(match.Groups["minutes"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var minutes))
+                throw new InvalidSessionFormatException($"Line {lineNumber}: expected an AFK deduction such as '7 min AFK deducted'.");
+
+            var deduction = TimeSpan.FromMinutes(minutes);
+            if (deduction > session.Duration)
+                throw new InvalidSessionFormatException($"Line {lineNumber}: the AFK deduction exceeds the recording duration.");
+
+            session.AfkDuration = deduction;
+            return true;
         }
 
         private static void EnsureRecordingComplete(Session? session, int line)
@@ -368,12 +394,12 @@ namespace EarningsTracker.Utilities
         private static void MatchRecordingEarnings(Session session, List<Game> games, string durationText, bool hasEarnings)
         {
             if (!hasEarnings || session.Status != Enums.SessionStatus.Verified
-                || session.IsForceVerified || session.Earnings <= 0m || session.Duration <= TimeSpan.Zero)
+                || session.IsForceVerified || session.Earnings <= 0m || session.CapEligibleDuration <= TimeSpan.Zero)
                 return;
             var candidates = games.Where(game => game.Name.Equals(session.GameName, StringComparison.OrdinalIgnoreCase)).ToList();
             // A minute-only source can be truncated or rounded. Seconds explicitly supplied are exact.
             var uncertainty = durationText.Contains('s') ? 0m : durationText.Contains('m') ? 60m : 3600m;
-            var seconds = session.Duration.Ticks / (decimal)TimeSpan.TicksPerSecond;
+            var seconds = session.CapEligibleDuration.Ticks / (decimal)TimeSpan.TicksPerSecond;
             var minimumSeconds = Math.Max(0m, seconds - uncertainty);
             var maximumSeconds = seconds + uncertainty;
             var scale = Math.Max(2, (decimal.GetBits(session.Earnings)[3] >> 16) & 0xff);
@@ -395,8 +421,7 @@ namespace EarningsTracker.Utilities
                 }
                 catch (OverflowException) { return; }
                 var agrees = minimum <= maximumAmount && maximum >= minimumAmount;
-                // Nerve pays the whole recording even when it crosses a cap. Compare the full
-                // duration; never clip the amount to remaining cap minutes or guess a closest rate.
+                // Compare all eligible time, including time past the cap when a recording crosses it.
                 if (!agrees) continue;
                 if (match != null) return;
                 match = candidate;
@@ -425,18 +450,26 @@ namespace EarningsTracker.Utilities
 
         public static List<Session> Parse(string importText, List<Game> games, Game? game)
         {
-            string[] lines = importText.Split(
+            string[] sourceLines = importText.Split(
                 ["\r\n", "\r", "\n"],
                 StringSplitOptions.None
             );
+            var lines = sourceLines.Select(line =>
+            {
+                var content = line.Trim();
+                // Rich-text copies may arrive as Markdown. Keep the original lines for the audit.
+                return content.Length > 4 && content.StartsWith("**") && content.EndsWith("**")
+                    ? content[2..^2].Trim() : content;
+            }).ToArray();
+
             if (LooksLikeRecordingsFormat(lines))
             {
-                return ParseRecordings(lines, games, game);
+                return ParseRecordings(lines, sourceLines, games, game);
             }
 
             if (LooksLikeGameDetailsFormat(lines) && game is not null)
             {
-                return ParseGameDetails(lines, games, game);
+                return ParseGameDetails(lines, sourceLines, games, game);
             }
 
             throw new InvalidSessionFormatException();

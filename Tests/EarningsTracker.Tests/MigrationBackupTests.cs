@@ -63,6 +63,7 @@ public class MigrationBackupTests
             ["20261013055107_InitialCreate"] = typeof(InitialCreate).GetTypeInfo(),
             ["20261107145034_AddSessionPayoutAssignments"] = typeof(AddSessionPayoutAssignments).GetTypeInfo(),
             ["20261108103539_AddGameMultiplayerMetadata"] = typeof(AddGameMultiplayerMetadata).GetTypeInfo(),
+            ["20261118095537_AddSessionAfkDuration"] = typeof(AddSessionAfkDuration).GetTypeInfo(),
             ["20990101000000_BackupProbe"] = typeof(FailingMigration).GetTypeInfo()
         };
         public ModelSnapshot? ModelSnapshot { get; } = new AppDbContextModelSnapshot();

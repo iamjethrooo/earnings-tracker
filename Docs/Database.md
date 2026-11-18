@@ -63,6 +63,11 @@ Automated persistence tests must pass explicit isolated `DbContextOptions<AppDbC
 ownership or history records. Catalog import saves the support claim and dated evidence together.
 Legacy catalogs without these optional fields remain valid and represent unknown support.
 
+`20261118095537_AddSessionAfkDuration` stores the AFK deduction separately from a session's
+recorded duration. Existing rows start with a null deduction and use their recorded duration
+for the cap. Importing a recording with an AFK line saves the deduction and audits it with the
+source text. Later imports that omit the line keep the saved deduction.
+
 ### Startup failure and interrupted-upgrade recovery
 
 Startup keeps financial views closed until migrations, game seeding and default settings succeed. Missing or malformed game seed assets, unsupported migration history, unavailable storage and write failures display **Unable to start tracker** and exit with code 1 after dismissal. Preserve the profile; correct the installation assets, free space or file access, then retry. A seed failure may leave the successfully migrated schema in place; it does not require deleting the database. Existing games do not require re-seeding. Bundled catalog import failure is traced separately and must not block access to financial history.

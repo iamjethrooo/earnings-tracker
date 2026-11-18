@@ -20,7 +20,8 @@ namespace EarningsTracker.Utilities
             var wasVerified = existing.Status == SessionStatus.Verified;
             var assignmentChanged = edited.HasExplicitPayoutAssignment &&
                 (!existing.HasExplicitPayoutAssignment || edited.AssignedPayoutId != existing.AssignedPayoutId);
-            Validate(edited, requireForceVerificationDate: !(assignmentChanged && wasVerified && existing.IsForceVerified && !existing.PostedDate.HasValue));
+            Validate(edited, existing.AfkDuration,
+                requireForceVerificationDate: !(assignmentChanged && wasVerified && existing.IsForceVerified && !existing.PostedDate.HasValue));
             PayoutAssignments.ValidateAssignment(db, edited, existing);
             if (edited.HasExplicitPayoutAssignment)
             {
@@ -63,6 +64,7 @@ namespace EarningsTracker.Utilities
             });
             db.SaveChanges();
             transaction.Commit();
+            edited.AfkDuration = existing.AfkDuration;
             edited.HasExplicitPayoutAssignment = existing.HasExplicitPayoutAssignment;
             edited.AssignedPayoutId = existing.AssignedPayoutId;
             if (linkedGame != null)
@@ -96,11 +98,11 @@ namespace EarningsTracker.Utilities
 
         // Value equality avoids false conflicts from decimal scale changes after SQLite reloads.
         internal sealed record EditState(int? GameId, string GameName, int? PayoutId, DateTime Date,
-            DateTime RecordedDate, DateTime? PostedDate, TimeSpan Duration, SessionStatus Status,
+            DateTime RecordedDate, DateTime? PostedDate, TimeSpan Duration, TimeSpan? AfkDuration, SessionStatus Status,
             decimal Earnings, bool IsForceVerified, bool HasExplicitPayoutAssignment, int? AssignedPayoutId);
 
         internal static EditState CaptureEditState(Session s) => new(s.GameId, s.GameName, s.PayoutId,
-            s.Date, s.RecordedDate, s.PostedDate, s.Duration, s.Status, s.Earnings, s.IsForceVerified,
+            s.Date, s.RecordedDate, s.PostedDate, s.Duration, s.AfkDuration, s.Status, s.Earnings, s.IsForceVerified,
             s.HasExplicitPayoutAssignment, s.AssignedPayoutId);
 
         internal static string Snapshot(Session session) => JsonSerializer.Serialize(new
@@ -114,6 +116,7 @@ namespace EarningsTracker.Utilities
             session.RecordedDate,
             session.PostedDate,
             session.Duration,
+            session.AfkDuration,
             session.Status,
             session.Earnings,
             session.IsForceVerified
@@ -122,12 +125,12 @@ namespace EarningsTracker.Utilities
         internal static void ValidateImportedSession(Session session)
         {
             // Historical force verification may have no known posting date; never invent one.
-            Validate(session, requireForceVerificationDate: false);
+            Validate(session, session.AfkDuration, requireForceVerificationDate: false);
             if (session.Date != session.RecordedDate)
                 throw new ArgumentException("The session date must match its recorded date.");
         }
 
-        private static void Validate(Session session, bool requireForceVerificationDate = true)
+        private static void Validate(Session session, TimeSpan? afkDuration, bool requireForceVerificationDate)
         {
             if (session.RecordedDate == default)
                 throw new ArgumentException("Enter a valid recorded date.");
@@ -135,6 +138,8 @@ namespace EarningsTracker.Utilities
                 throw new ArgumentException("Enter a valid posted date.");
             if (session.Duration < TimeSpan.Zero)
                 throw new ArgumentException("Duration cannot be negative.");
+            if (afkDuration < TimeSpan.Zero || afkDuration > session.Duration)
+                throw new ArgumentException("The AFK deduction must be between zero and the recording duration.");
             ValidateEarnings(session.Earnings);
             if (!Enum.IsDefined(session.Status))
                 throw new ArgumentException("Enter a valid session status.");

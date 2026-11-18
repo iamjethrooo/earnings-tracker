@@ -15,6 +15,11 @@ This is an independent project, unaffiliated with Nerve or other platforms.
 
 Earnings are displayed in USD; catalog prices use PHP.
 
+When you paste Nerve recordings with a line such as `7 min AFK deducted`, the tracker subtracts
+those minutes from the game's cap usage. A 55-minute recording with a 7-minute break uses
+48 minutes of the cap. Sessions still shows the recorded duration and Nerve's reported earnings.
+For a session you already imported, paste it again with the AFK line to update its cap usage.
+
 ## Build and test
 
 Requires Windows and .NET SDK **10.0.402**, pinned in `global.json`, with Windows Desktop support. From the repository root:

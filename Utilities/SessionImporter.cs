@@ -43,6 +43,7 @@ namespace EarningsTracker.Utilities
         {
             var newlyVerified = existing.Status != Enums.SessionStatus.Verified && imported.Status == Enums.SessionStatus.Verified;
             var forceVerified = existing.IsForceVerified || imported.IsForceVerified;
+            var afkDuration = imported.AfkDuration ?? existing.AfkDuration;
             var postedDate = existing.PostedDate;
             if (imported.Status == Enums.SessionStatus.Verified && !existing.IsForceVerified)
                 postedDate = imported.PostedDate ?? existing.PostedDate ?? (forceVerified ? null : imported.Date);
@@ -50,6 +51,7 @@ namespace EarningsTracker.Utilities
             // Decimal scale can change when SQLite reloads a value; compare values, not JSON text.
             var changed = existing.GameId != imported.GameId || existing.GameName != imported.GameName
                 || existing.Duration != imported.Duration || existing.Date != imported.Date
+                || existing.AfkDuration != afkDuration
                 || existing.RecordedDate != imported.RecordedDate || existing.Earnings != imported.Earnings
                 || existing.Status != imported.Status || existing.IsForceVerified != forceVerified
                 || existing.PostedDate != postedDate || (newlyVerified && !existing.HasExplicitPayoutAssignment);
@@ -58,6 +60,7 @@ namespace EarningsTracker.Utilities
             existing.GameId = imported.GameId;
             existing.GameName = imported.GameName;
             existing.Duration = imported.Duration;
+            existing.AfkDuration = afkDuration;
             existing.Date = imported.Date;
             existing.RecordedDate = imported.RecordedDate;
             existing.Earnings = imported.Earnings;
@@ -215,7 +218,12 @@ namespace EarningsTracker.Utilities
                 result.AmbiguousSessions.Add(update.Imported);
             }
             foreach (var update in result.Updates)
-                result.ExpectedSessionStates.Add(update.Id, SessionService.CaptureEditState(db.Sessions.Find(update.Id)!));
+            {
+                var existing = db.Sessions.Find(update.Id)!;
+                if ((update.Imported.AfkDuration ?? existing.AfkDuration) > update.Imported.Duration)
+                    throw new ArgumentException($"The saved AFK deduction for '{existing.GameName}' on {existing.RecordedDate:g} exceeds the imported duration. Paste the recording with its AFK deduction.");
+                result.ExpectedSessionStates.Add(update.Id, SessionService.CaptureEditState(existing));
+            }
             foreach (var session in result.NewSessions)
                 session.HasExplicitPayoutAssignment = true;
             result.PayoutOptions = PayoutAssignments.Options(db.Payouts.AsNoTracking().ToList()).Where(p => p.IsExplicit).ToList();
@@ -250,7 +258,7 @@ namespace EarningsTracker.Utilities
         private static bool SameImportedSession(Session first, Session second) =>
             first.GameId == second.GameId && first.Date == second.Date
             && first.RecordedDate == second.RecordedDate && first.PostedDate == second.PostedDate
-            && first.Duration == second.Duration && first.Status == second.Status
+            && first.Duration == second.Duration && first.AfkDuration == second.AfkDuration && first.Status == second.Status
             && first.Earnings == second.Earnings && first.IsForceVerified == second.IsForceVerified;
     }
 }
