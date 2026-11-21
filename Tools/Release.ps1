@@ -101,7 +101,13 @@ try {
     }
     foreach ($game in $catalog.Games) {
         foreach ($property in $game.PSObject.Properties.Name) {
-            if ($property -notin @('CatalogId', 'Name', 'Aliases', 'NameOccurrence', 'ExpectedNameCount', 'IgdbId', 'ItadId', 'Summary', 'Genres', 'CoverUrl', 'CoverSha256', 'Reviewed', 'VerifiedAt', 'Provenance', 'Offers', 'Subscriptions', 'SupportsMultiplayer', 'MultiplayerVerifiedAt', 'MultiplayerProvenance')) { throw "Personal/unknown catalog entry data: $property" }
+            if ($property -notin @('CatalogId', 'Name', 'Aliases', 'NameOccurrence', 'ExpectedNameCount', 'IgdbId', 'ItadId', 'Summary', 'Genres', 'CoverUrl', 'CoverSha256', 'Reviewed', 'VerifiedAt', 'Provenance', 'Offers', 'Subscriptions', 'SupportsMultiplayer', 'MultiplayerVerifiedAt', 'MultiplayerProvenance', 'RateVariant')) { throw "Personal/unknown catalog entry data: $property" }
+        }
+        $rateVariant = $game.PSObject.Properties['RateVariant']
+        if ($rateVariant -and $null -ne $rateVariant.Value) {
+            $expectedProperties = @('GameName', 'RatePerHour', 'MinutesCap', 'LegacyCatalogId')
+            $actualProperties = @($rateVariant.Value.PSObject.Properties.Name)
+            if (Compare-Object $expectedProperties $actualProperties) { throw 'Personal/unknown or incomplete metadata rate mapping data.' }
         }
         $cover = $game.PSObject.Properties['CoverSha256']
         if ($cover -and $cover.Value -and -not (Test-Path -LiteralPath (Join-Path $publish ("Data/Artwork/" + $cover.Value + '.img')))) { throw 'Published catalog artwork is missing.' }

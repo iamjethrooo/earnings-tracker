@@ -111,13 +111,15 @@ public class DatabasePathIsolationTests(ITestOutputHelper output)
                     new SqliteConnectionStringBuilder(db.Database.GetDbConnection().ConnectionString).DataSource);
                 DatabaseInitialization.Initialize(db);
                 CatalogService.ImportBundled(db);
-                Assert.Equal(581, db.Games.Count());
+                Assert.Equal(582, db.Games.Count());
                 Assert.NotEmpty(db.GameMetadata);
                 Assert.Empty(db.Sessions);
                 Assert.Empty(db.Payouts.IgnoreQueryFilters());
                 Assert.Empty(db.SessionChanges);
                 Assert.Empty(db.PayoutChanges);
-                Assert.Empty(db.GameChanges);
+                var restoredRateAudit = Assert.Single(db.GameChanges);
+                Assert.Equal("Added from bundled roster", restoredRateAudit.ChangeType);
+                Assert.Equal(1.5m, db.Games.Single(game => game.Id == restoredRateAudit.GameId).RatePerHour);
                 Assert.Empty(db.Bookmarks);
                 Assert.Empty(db.GameOwnership);
                 Assert.Equal(db.Database.GetMigrations(), db.Database.GetAppliedMigrations());

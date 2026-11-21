@@ -57,6 +57,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\ReleaseHistory.json" />
     <EmbeddedResource Include="Data\steam-app-mappings.json" />
+    <EmbeddedResource Include="Data\game-order.json" />
     <Resource Include="Resources\Fonts\Inter-VariableFont_opsz,wght.ttf" />
     <None Update="Resources\Fonts\OFL.txt">
       <TargetPath>Licenses\Inter-OFL.txt</TargetPath>

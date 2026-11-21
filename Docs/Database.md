@@ -47,13 +47,41 @@ Startup applies EF Core migrations and initializes bundled game/catalog data bef
 
 New development and scratch profiles initialize from migrations and bundled assets; they do not copy a personal production database. Production startup uses the copy-only transition above. Database migration and recovery must use validated application paths and backups; never treat personal databases as fixtures.
 
-Startup applies the November 2026 bundled game update to existing profiles before importing
-catalog metadata. It adds missing MAVRIX, Predecessor, and Wreckreation entries at $2.00 per hour
-with a 50-hour cap. A single active Predecessor entry with the previous bundled rate and cap
-keeps its game ID and cap-reset date and receives an audited rate change from $1.50 to $2.00 per hour.
-Title matching is case-insensitive. Customized, archived, and ambiguous entries are preserved,
-along with existing session links and stored earnings. The additions and rate audit commit together,
-and restarting does not duplicate them.
+Startup applies the bundled roster additions to existing profiles before importing catalog metadata.
+It adds missing MAVRIX and Wreckreation titles at $2.00 per hour with a 50-hour cap, and ensures
+Predecessor has separate $1.50 and $2.00 versions. Title matching is case-insensitive. An existing
+Predecessor row at either rate, including one with a customized cap or archived status, is retained.
+Only a missing rate is added, with a 50-hour cap and no inherited cap-reset date. Additions and
+their game audit entries commit in one transaction; repeated startup does not duplicate them.
+
+Versions 1.6.0 and 1.6.1 changed a single standard Predecessor row from $1.50 to $2.00 in place.
+The correction preserves that $2.00 row's ID, sessions, cap-reset date, bookmarks, ownership,
+catalog link and existing audits, and adds back $1.50 separately. Older profiles retain their
+$1.50 row and receive a separate $2.00 row. Fresh startup seeds the existing bundled roster and
+adds the missing $1.50 version. No existing rate or session link is rewritten, no stored earnings
+are recalculated, and no past audit is removed. Upgraded profiles can therefore retain mixed
+historical sessions on the $2.00 identity; correcting those links requires a separate reviewed,
+audited edit rather than guessing from the current rate or recording date.
+
+Existing stable catalog links are authoritative. When the published Predecessor catalog identity
+has no link and matches exactly the two standard active rate versions, it links to $2.00, as in
+the v1.6.0 bundled seed. The revised bundle also declares reviewed metadata-only `RateVariant`
+entries for $1.50 and $2.00, each with its own stable catalog ID. A variant links only one unlinked
+game with the exact title, hourly rate and cap. If that game already uses the original catalog ID,
+the original link wins and the redundant variant is skipped. This supports profiles where the
+original ID belongs to either rate, without moving it or copying personal settings. Ambiguous,
+customized and competing links are left unresolved. Both standard rates receive the reviewed
+Predecessor artwork, genres, store evidence and multiplayer metadata.
+
+The metadata/artwork bundle has a new version; no released snapshot is overwritten. Its existing
+offer cutoff and every source price timestamp are retained. An already-active snapshot can finish
+mapping a rate added by startup afterward, while retaining the exact snapshot hash. Catalog
+rollback disables omitted variant metadata but retains its game and stable link for reintroduction.
+This changes catalog metadata only and requires no EF migration. See the
+[metadata rate mapping contract](../Tools/CATALOG.md#metadata-for-existing-rate-versions).
+
+Games' Newest display order is independent of stored IDs and is described in the
+[design system](Design-System.md#compact-games-library-and-details-pro-48). It does not require a schema migration.
 
 Automated persistence tests must pass explicit isolated `DbContextOptions<AppDbContext>` using `TestDatabase` or equivalent. Do not run destructive initialization against the default context.
 

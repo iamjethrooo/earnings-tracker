@@ -263,6 +263,23 @@ temporary browsing choices do not overwrite them. Lowest price retains the exist
 of saved PH offers across editions using saved exchange rates. Outdated purchase prices remain
 visible with checked dates; the prototype's synthetic price assumptions do not replace these rules.
 
+**Newest order:** `Data/game-order.json` is the embedded, reviewed NERVE roster sequence supplied
+on 2026-11-21, excluding Slay the Spire 2. Its 582 entries distinguish name, hourly rate, cap and
+archive status; declared aliases retain local names such as Car Mechanic Simulator 2018. MAVRIX,
+Predecessor ($2.00) and Wreckreation lead the list. Predecessor ($1.50) belongs between The Long
+Drive and ArcheAge (reference position 383), regardless of when its local record was created.
+Saved active/archived groups and archive filtering are retained. A unique name/rate/cap match
+retains its roster position after an archive toggle; repeated active/archived terms require the
+matching archive state. This ordering does not change saved titles or archive flags: Blue Archive
+and Goddess of Victory: Nikke remain active in the existing seed, unlike the supplied reference.
+Those saved-state differences can change absolute row numbers outside the matching reference.
+
+Games outside this reviewed sequence, including future catalog additions, use descending local
+ID ahead of known entries within their active/archived group. Equal roster positions use descending
+local ID for a deterministic tie-break. Other sort modes retain their existing behavior. Maintain
+the order asset when reviewing a new source sequence; do not renumber database records or reorder
+the legacy game seed to change the display. The ordering asset contains public roster fields only.
+
 Details has a pinned Games action and a bounded, recycling session-history viewport. Its finite
 header uses prominent artwork, identity, rate, ownership and bookmark controls. Below it, one earnings
 card groups verified cycle usage/progress, full-cycle potential, stored verified earnings and

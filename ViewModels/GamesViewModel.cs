@@ -360,7 +360,7 @@ namespace EarningsTracker.ViewModels
                 case 3: SortGames(nameof(GameItemViewModel.PriceSortValue), ListSortDirection.Ascending); break;
                 case 4: SortByRating(nameof(GameItemViewModel.GrindingRank)); break;
                 case 5: SortByRating(nameof(GameItemViewModel.ReplayRank)); break;
-                default: SortGames("Game.Id", ListSortDirection.Descending); break;
+                default: SortGames(nameof(GameItemViewModel.NewestOrder), ListSortDirection.Descending); break;
             }
         }
 

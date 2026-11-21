@@ -25,7 +25,10 @@ def immutable_version(value):
 def is_archived(entry):
     """Use the original seed occurrence, preserving separate duplicate records."""
     seed = load(ROOT / "Data/games.json")
-    matches = [g for g in seed if g["Name"].casefold() == entry["Name"].casefold()]
+    variant = entry.get("RateVariant")
+    name = variant["GameName"] if variant else entry["Name"]
+    matches = [g for g in seed if g["Name"].casefold() == name.casefold()
+               and (not variant or (g["RatePerHour"] == variant["RatePerHour"] and g["MinutesCap"] == variant["MinutesCap"]))]
     occurrence = entry.get("NameOccurrence") or 1
     return occurrence <= len(matches) and bool(matches[occurrence - 1].get("IsArchived"))
 
@@ -289,7 +292,7 @@ def validate(catalog):
     from collections import Counter
     title_counts = Counter(name.strip().casefold() for game in catalog["Games"]
                            for name in [game["Name"], *game.get("Aliases", [])])
-    ids, names, roster_rates = set(), set(), set()
+    ids, names, roster_rates, rate_variants = set(), set(), set(), set()
     for game in catalog["Games"]:
         identity = game["CatalogId"]
         if not identity or identity in ids:
@@ -300,6 +303,28 @@ def validate(catalog):
         occurrence = game.get("NameOccurrence")
         if occurrence is not None and (not 1 <= occurrence <= game.get("ExpectedNameCount", 0) or game.get("Aliases")):
             raise ValueError("Invalid duplicate occurrence mapping")
+        if (variant := game.get("RateVariant")) is not None:
+            if (not isinstance(variant, dict)
+                    or set(variant) != {"GameName", "RatePerHour", "MinutesCap", "LegacyCatalogId"}
+                    or not game.get("Reviewed") or game.get("RosterAddition") is not None
+                    or occurrence is not None or game.get("ExpectedNameCount") is not None or game.get("Aliases")
+                    or not valid_roster_title(game["Name"]) or not valid_roster_title(variant["GameName"])
+                    or game["Name"].casefold() == variant["GameName"].casefold()):
+                raise ValueError("Invalid metadata rate variant")
+            rate, cap = variant["RatePerHour"], variant["MinutesCap"]
+            if (type(rate) not in (int, float) or not 0 < rate <= 2147483647
+                    or Decimal(str(rate)) % Decimal("0.01") != 0
+                    or type(cap) is not int or not 0 < cap <= 2147483647
+                    or not any(legacy["CatalogId"] == variant["LegacyCatalogId"]
+                               and legacy["CatalogId"] != game["CatalogId"] and not legacy.get("RateVariant")
+                               and legacy.get("Reviewed") and variant["GameName"].casefold()
+                               in [name.casefold() for name in [legacy["Name"], *legacy.get("Aliases", [])]]
+                               for legacy in catalog["Games"])):
+                raise ValueError("Invalid metadata rate variant")
+            terms = (variant["GameName"].casefold(), rate, cap)
+            if terms in rate_variants:
+                raise ValueError("Duplicate metadata rate variant")
+            rate_variants.add(terms)
         if (addition := game.get("RosterAddition")) is not None:
             name = game["Name"]
             if (schema != 2 or not game.get("Reviewed") or occurrence is not None
@@ -406,7 +431,7 @@ def package(args):
         raise ValueError("Set ReleaseApproved only after reviewing coverage and provider permissions")
     from collections import Counter
     seed_names = Counter(g["Name"] for g in load(ROOT / "Data/games.json"))
-    if catalog["SchemaVersion"] == 1 and seed_names != Counter(g["Name"] for g in catalog["Games"]):
+    if catalog["SchemaVersion"] == 1 and seed_names != Counter(g["Name"] for g in catalog["Games"] if not g.get("RateVariant")):
         raise ValueError("Catalog must account for every seeded game")
     if any(g.get("IgdbId") for g in catalog["Games"]) and not review.get("IgdbRedistributionApproved"):
         raise ValueError("IGDB redistribution permission is not approved")
@@ -481,6 +506,10 @@ def check_order(args):
     for game in previous["Games"]:
         if (terms := game.get("RosterAddition")) is not None and additions.get(game["CatalogId"]) != terms:
             raise ValueError(f'Keep published roster addition and starting terms for {game["CatalogId"]}')
+        if (terms := game.get("RateVariant")) is not None:
+            current = next((entry for entry in incoming["Games"] if entry["CatalogId"] == game["CatalogId"]), None)
+            if current is None or current.get("RateVariant") != terms:
+                raise ValueError(f'Keep published metadata rate variant terms for {game["CatalogId"]}')
 
 
 def prepare(args):

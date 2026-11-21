@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Version": "catalog-20261012T034024414899Z-multiplayer-20261108T103507Z-roster-20261113",
+  "Version": "catalog-20261012T034024414899Z-multiplayer-20261108T103507Z-roster-20261113-rates-artwork-20261121",
   "PublishedAt": "2026-10-12T03:40:24.414892Z",
   "Games": [
     {
@@ -43953,7 +43953,7 @@
       "CatalogId": "d6349f57-99a0-4e72-991a-9fc470a2beaa",
       "Name": "MAVRIX",
       "Reviewed": true,
-      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/2926900/",
+      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/2926900/; official Steam library cover verified 2026-11-21",
       "Genres": [
         "Racing",
         "Simulation",
@@ -43975,13 +43975,15 @@
         }
       ],
       "Subscriptions": [],
-      "VerifiedAt": "2026-11-13T06:21:09Z"
+      "VerifiedAt": "2026-11-13T06:21:09Z",
+      "CoverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2926900/library_600x900_2x.jpg",
+      "CoverSha256": "d04d1ccf2ca20d143d473ad3bacbd48afd07b05ebea01704b05c33ec1764d6a1"
     },
     {
       "CatalogId": "2033983f-9dc2-4dc7-9a32-71bb87d154cf",
       "Name": "Wreckreation",
       "Reviewed": true,
-      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/1594040/",
+      "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/1594040/; official Steam library cover verified 2026-11-21",
       "Genres": [
         "Action",
         "Racing"
@@ -44002,7 +44004,121 @@
         }
       ],
       "Subscriptions": [],
-      "VerifiedAt": "2026-11-13T06:21:09Z"
+      "VerifiedAt": "2026-11-13T06:21:09Z",
+      "CoverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1594040/library_600x900_2x.jpg",
+      "CoverSha256": "d62fec5d7db56fee56eb50cb42953f857b9db3fbf21c564261e5e639966628e8"
+    },
+    {
+      "CatalogId": "a237c695-0adb-432e-b347-1cbeec912c24",
+      "Name": "Predecessor (1.50 USD/hr)",
+      "Reviewed": true,
+      "Provenance": "IGDB; manually reviewed identity; reviewed metadata-only earning-rate mapping; preserve original catalog links",
+      "Genres": [
+        "MOBA",
+        "Shooter",
+        "Strategy"
+      ],
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/961200/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": 0,
+          "SalePrice": null,
+          "Kind": "FreeToPlay",
+          "VerifiedAt": "2026-10-11T18:04:46.884245Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam listing (Philippines): is_free, Windows, game"
+        },
+        {
+          "Source": "Steam",
+          "Url": "https://itad.link/018d9386-b111-71fa-a523-325d6ef1164e/?app=6su030",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": 0,
+          "SalePrice": 0,
+          "Kind": "Purchase",
+          "VerifiedAt": "2026-01-29T21:42:00Z",
+          "ExpiresAt": null,
+          "Provenance": "IsThereAnyDeal"
+        }
+      ],
+      "Subscriptions": [],
+      "Summary": "Inspired by the legacy of Paragon, built with love by the community, and powered by Unreal Engine 5, Predecessor is the ultimate fusion of shooter action and MOBA strategy.\n\nWith more than 30 Heroes to choose from, each with unique and devastating abilities such as shooting through walls, turning invisible and raining down rockets from above, there's more than one way to take down your opponents! Hit your lane and push the enemy objective, taking down towers as you battle to destroy their core all while protecting your own. Predecessor plays like a traditional three lane MOBA, but with genre-redefining elements such as an immersive third-person perspective, high quality graphics and game-changing map verticality.",
+      "VerifiedAt": "2026-10-11T17:47:57.543103Z",
+      "CoverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co84v9.jpg",
+      "CoverSha256": "69a37631c0ffab226b3347db7b14271290a0ac413fdcc643b2de8a190ac0318c",
+      "IgdbId": 115078,
+      "ItadId": "018d937f-3794-727c-be80-85c829754431",
+      "Aliases": [],
+      "SupportsMultiplayer": true,
+      "MultiplayerVerifiedAt": "2026-11-08T10:35:07.865346Z",
+      "MultiplayerProvenance": "IGDB structured game modes: Co-operative, Multiplayer, Single player; https://www.igdb.com/games/predecessor",
+      "RateVariant": {
+        "GameName": "Predecessor",
+        "RatePerHour": 1.5,
+        "MinutesCap": 3000,
+        "LegacyCatalogId": "6cfcc31f-10b6-430d-a828-9a611b75172e"
+      }
+    },
+    {
+      "CatalogId": "0cd5f3d8-20ce-4b91-a45f-1297a09486cf",
+      "Name": "Predecessor (2.00 USD/hr)",
+      "Reviewed": true,
+      "Provenance": "IGDB; manually reviewed identity; reviewed metadata-only earning-rate mapping; preserve original catalog links",
+      "Genres": [
+        "MOBA",
+        "Shooter",
+        "Strategy"
+      ],
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/961200/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": 0,
+          "SalePrice": null,
+          "Kind": "FreeToPlay",
+          "VerifiedAt": "2026-10-11T18:04:46.884245Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam listing (Philippines): is_free, Windows, game"
+        },
+        {
+          "Source": "Steam",
+          "Url": "https://itad.link/018d9386-b111-71fa-a523-325d6ef1164e/?app=6su030",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": 0,
+          "SalePrice": 0,
+          "Kind": "Purchase",
+          "VerifiedAt": "2026-01-29T21:42:00Z",
+          "ExpiresAt": null,
+          "Provenance": "IsThereAnyDeal"
+        }
+      ],
+      "Subscriptions": [],
+      "Summary": "Inspired by the legacy of Paragon, built with love by the community, and powered by Unreal Engine 5, Predecessor is the ultimate fusion of shooter action and MOBA strategy.\n\nWith more than 30 Heroes to choose from, each with unique and devastating abilities such as shooting through walls, turning invisible and raining down rockets from above, there's more than one way to take down your opponents! Hit your lane and push the enemy objective, taking down towers as you battle to destroy their core all while protecting your own. Predecessor plays like a traditional three lane MOBA, but with genre-redefining elements such as an immersive third-person perspective, high quality graphics and game-changing map verticality.",
+      "VerifiedAt": "2026-10-11T17:47:57.543103Z",
+      "CoverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co84v9.jpg",
+      "CoverSha256": "69a37631c0ffab226b3347db7b14271290a0ac413fdcc643b2de8a190ac0318c",
+      "IgdbId": 115078,
+      "ItadId": "018d937f-3794-727c-be80-85c829754431",
+      "Aliases": [],
+      "SupportsMultiplayer": true,
+      "MultiplayerVerifiedAt": "2026-11-08T10:35:07.865346Z",
+      "MultiplayerProvenance": "IGDB structured game modes: Co-operative, Multiplayer, Single player; https://www.igdb.com/games/predecessor",
+      "RateVariant": {
+        "GameName": "Predecessor",
+        "RatePerHour": 2.0,
+        "MinutesCap": 3000,
+        "LegacyCatalogId": "6cfcc31f-10b6-430d-a828-9a611b75172e"
+      }
     }
   ]
 }

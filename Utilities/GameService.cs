@@ -43,25 +43,34 @@ namespace EarningsTracker.Utilities
                 .Where(game => titles.Contains(EF.Functions.Collate(game.Name, "NOCASE")))
                 .ToLookup(game => game.Name, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var title in titles)
+            var additions = new List<Game>();
+            foreach (var title in titles.Where(title => title != "Predecessor"))
             {
                 if (!existing.Contains(title))
-                    db.Games.Add(new Game { Name = title, RatePerHour = 2m, MinutesCap = 3000m });
+                    additions.Add(new Game { Name = title, RatePerHour = 2m, MinutesCap = 3000m });
             }
 
-            // Update the old bundled entry in place only when its identity and terms are unambiguous.
+            // Each rate is an independent earning identity. In particular, the $2 row may already
+            // own sessions written since v1.6.0, so never turn it back into the historical rate.
             var predecessors = existing["Predecessor"].ToList();
-            if (predecessors.Count == 1 && predecessors[0] is { IsArchived: false, RatePerHour: 1.5m, MinutesCap: 3000m } predecessor)
+            foreach (var rate in new[] { 1.5m, 2m })
             {
-                var before = Snapshot(predecessor);
-                predecessor.RatePerHour = 2m;
+                // A customized cap or archived version at this rate is still an existing identity.
+                if (!predecessors.Any(game => game.RatePerHour == rate))
+                    additions.Add(new Game { Name = "Predecessor", RatePerHour = rate, MinutesCap = 3000m });
+            }
+
+            db.Games.AddRange(additions);
+            db.SaveChanges();
+            var changedAt = DateTime.Now;
+            foreach (var game in additions)
+            {
                 db.GameChanges.Add(new GameChange
                 {
-                    GameId = predecessor.Id,
-                    ChangedAt = DateTime.Now,
-                    ChangeType = "Bundled rate changed",
-                    BeforeValuesJson = before,
-                    AfterValuesJson = Snapshot(predecessor)
+                    GameId = game.Id,
+                    ChangedAt = changedAt,
+                    ChangeType = "Added from bundled roster",
+                    AfterValuesJson = Snapshot(game)
                 });
             }
 

@@ -19,6 +19,66 @@ class CatalogToolTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             catalog.validate(self.snapshot)
 
+    def metadata_rate_snapshot(self):
+        snapshot = copy.deepcopy(self.snapshot)
+        snapshot['Games'][0]['Reviewed'] = True
+        snapshot['Games'].append({'CatalogId': 'variant', 'Name': 'Example (2 USD/hr)', 'Reviewed': True,
+                                  'RateVariant': {'GameName': 'Example', 'RatePerHour': 2, 'MinutesCap': 3000,
+                                                  'LegacyCatalogId': 'a'}})
+        return snapshot
+
+    def test_metadata_rate_variants_are_additive_in_both_schemas(self):
+        for schema in (1, 2):
+            snapshot = self.metadata_rate_snapshot()
+            snapshot['SchemaVersion'] = schema
+            if schema == 2:
+                for game in snapshot['Games']:
+                    game['SteamIdentity'] = {'State': 'Unresolved', 'ReviewedAt': None, 'Apps': [], 'Provenance': 'Pending review'}
+            catalog.validate(snapshot)
+
+    def test_metadata_rate_variants_reject_invalid_terms_and_references(self):
+        for field, value in [('RatePerHour', 0), ('RatePerHour', 1.555), ('RatePerHour', True),
+                             ('MinutesCap', 0), ('MinutesCap', True), ('GameName', 'Other game'),
+                             ('LegacyCatalogId', 'missing'), ('LegacyCatalogId', 'variant')]:
+            snapshot = self.metadata_rate_snapshot()
+            snapshot['Games'][1]['RateVariant'][field] = value
+            with self.subTest(field=field, value=value), self.assertRaisesRegex(ValueError, 'metadata rate variant'):
+                catalog.validate(snapshot)
+        for invalid in ({'Reviewed': False}, {'RosterAddition': {'RatePerHour': 2, 'MinutesCap': 3000}},
+                        {'NameOccurrence': 1, 'ExpectedNameCount': 2}):
+            snapshot = self.metadata_rate_snapshot()
+            snapshot['Games'][1].update(invalid)
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, 'metadata rate variant'):
+                catalog.validate(snapshot)
+
+    def test_metadata_rate_variant_is_not_an_extra_seed_or_a_roster_addition(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            catalog.save(path / 'Data/games.json', [{'Name': 'Example', 'RatePerHour': 2, 'MinutesCap': 3000}])
+            snapshot = self.metadata_rate_snapshot()
+            snapshot['Version'] = 'catalog-metadata-rate'
+            catalog.save(path / 'catalog.json', snapshot)
+            catalog.save(path / 'review.json', {'ReleaseApproved': True})
+            args = argparse.Namespace(catalog=path / 'catalog.json', review=path / 'review.json',
+                                      artwork=path / 'artwork', output=path / 'package')
+            with patch.object(catalog, 'ROOT', path), patch.object(catalog, 'request', side_effect=AssertionError('Offline only')):
+                catalog.package(args)
+            self.assertEqual((path / 'package/catalog.json').read_bytes(), (path / 'catalog.json').read_bytes())
+
+    def test_published_metadata_rate_terms_are_preserved(self):
+        previous = self.metadata_rate_snapshot()
+        previous.update(Version='catalog-old', PublishedAt='2026-01-01T00:00:00Z')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            catalog.save(path / 'previous.json', previous)
+            current = copy.deepcopy(previous)
+            current['Version'] = 'catalog-new'
+            current['PublishedAt'] = '2026-01-02T00:00:00Z'
+            current['Games'][1]['RateVariant']['RatePerHour'] = 3
+            catalog.save(path / 'current.json', current)
+            with self.assertRaisesRegex(ValueError, 'Keep published metadata rate variant'):
+                catalog.check_order(argparse.Namespace(catalog=path / 'current.json', previous=path / 'previous.json'))
+
     def test_steam_identity_validation_matches_shared_fixtures(self):
         fixtures = catalog.load(catalog.ROOT / "Tests/EarningsTracker.Tests/Fixtures/steam-identities.json")
         self.snapshot.update(SchemaVersion=2, PublishedAt=fixtures["PublishedAt"])
@@ -191,8 +251,9 @@ class CatalogToolTests(unittest.TestCase):
     def test_bootstrap_report_accounts_for_entire_catalog(self):
         snapshot = catalog.load(catalog.ROOT / "Data/catalog.json")
         catalog.validate(snapshot)
-        self.assertEqual(len(snapshot["Games"]), 581)
-        self.assertEqual(len({g["CatalogId"] for g in snapshot["Games"]}), 581)
+        self.assertEqual(len(snapshot["Games"]), 583)
+        self.assertEqual(len({g["CatalogId"] for g in snapshot["Games"]}), 583)
+        self.assertEqual(sum(not game.get('RateVariant') for game in snapshot['Games']), 581)
 
     def test_cached_enrichment_requires_no_credentials_and_downloads_artwork_once(self):
         with tempfile.TemporaryDirectory() as directory:

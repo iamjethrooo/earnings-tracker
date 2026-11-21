@@ -6801,6 +6801,99 @@
       ],
       "ItadId": "018d937f-50c8-7287-9f9e-d2e1c2b524d2",
       "PriceMatchEvidence": "Exact reviewed Steam app ID 1648390"
+    },
+    "d6349f57-99a0-4e72-991a-9fc470a2beaa": {
+      "Reviewed": true,
+      "OriginalName": "MAVRIX",
+      "ReviewedAt": "2026-11-21T03:00:00Z",
+      "IgdbId": null,
+      "MatchEvidence": "Existing reviewed Steam app 2926900; official Steam library artwork, verified 2026-11-21",
+      "ManualMetadata": {
+        "Genres": [
+          "Racing",
+          "Simulation",
+          "Sports"
+        ],
+        "CoverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2926900/library_600x900_2x.jpg",
+        "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/2926900/; official Steam library cover verified 2026-11-21"
+      },
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/2926900/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": null,
+          "SalePrice": null,
+          "Kind": "Unknown",
+          "VerifiedAt": "2026-11-13T06:21:09Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam store page; Philippine price not verified"
+        }
+      ]
+    },
+    "2033983f-9dc2-4dc7-9a32-71bb87d154cf": {
+      "Reviewed": true,
+      "OriginalName": "Wreckreation",
+      "ReviewedAt": "2026-11-21T03:00:00Z",
+      "IgdbId": null,
+      "MatchEvidence": "Existing reviewed Steam app 1594040; official Steam library artwork, verified 2026-11-21",
+      "ManualMetadata": {
+        "Genres": [
+          "Action",
+          "Racing"
+        ],
+        "CoverUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1594040/library_600x900_2x.jpg",
+        "Provenance": "Medal listing matched to the official Steam store page: https://store.steampowered.com/app/1594040/; official Steam library cover verified 2026-11-21"
+      },
+      "Offers": [
+        {
+          "Source": "Steam",
+          "Url": "https://store.steampowered.com/app/1594040/",
+          "Edition": "Base game",
+          "Region": "PH",
+          "Currency": "PHP",
+          "RegularPrice": null,
+          "SalePrice": null,
+          "Kind": "Unknown",
+          "VerifiedAt": "2026-11-13T06:21:09Z",
+          "ExpiresAt": null,
+          "Provenance": "Official Steam store page; Philippine price not verified"
+        }
+      ]
+    },
+    "a237c695-0adb-432e-b347-1cbeec912c24": {
+      "Reviewed": true,
+      "IgdbId": 115078,
+      "IgdbTitle": "Predecessor",
+      "MatchEvidence": "Same reviewed Predecessor identity and Steam app 961200; exact local hourly rate and 3000-minute cap; no history reassignment",
+      "OriginalName": "Predecessor (1.50 USD/hr)",
+      "ReviewedAt": "2026-11-21T03:00:00Z",
+      "ItadId": "018d937f-3794-727c-be80-85c829754431",
+      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title",
+      "RateVariant": {
+        "GameName": "Predecessor",
+        "RatePerHour": 1.5,
+        "MinutesCap": 3000,
+        "LegacyCatalogId": "6cfcc31f-10b6-430d-a828-9a611b75172e"
+      }
+    },
+    "0cd5f3d8-20ce-4b91-a45f-1297a09486cf": {
+      "Reviewed": true,
+      "IgdbId": 115078,
+      "IgdbTitle": "Predecessor",
+      "MatchEvidence": "Same reviewed Predecessor identity and Steam app 961200; exact local hourly rate and 3000-minute cap; no history reassignment",
+      "OriginalName": "Predecessor (2.00 USD/hr)",
+      "ReviewedAt": "2026-11-21T03:00:00Z",
+      "ItadId": "018d937f-3794-727c-be80-85c829754431",
+      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title",
+      "RateVariant": {
+        "GameName": "Predecessor",
+        "RatePerHour": 2.0,
+        "MinutesCap": 3000,
+        "LegacyCatalogId": "6cfcc31f-10b6-430d-a828-9a611b75172e"
+      }
     }
   }
 }

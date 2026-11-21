@@ -2,7 +2,7 @@
 
 The catalog is independent of earnings. `Data/catalog.json` assigns stable IDs to every seeded title. Do not regenerate these IDs or change earnings data to match providers. The initial catalog deliberately marks all unverified entries unresolved.
 
-The populated bundle contains 566 reviewed identities/genre records, 563 artwork records, 487 offer/source records, and 55 reviewed Philippine PC Game Pass mappings. All 508 active identities are resolved; archived entries require no resolution. MAVRIX, Wreckreation, and OPTCG Simulator use artwork placeholders. Unverified purchase prices stay unknown. `Tools/populate_catalog.py` prepares exact title matches, corroborates conflicting identities using shared Steam IDs, caches ITAD mappings, and verifies permanent free access against official Philippine Steam listings. `Tools/apply_edition_choices.py` and `Tools/review_remaining.py` record reviewed identities and the owner's explicit choices. These are maintainer tools. Desktop users can configure an optional IsThereAnyDeal key in **Settings → Store offers**.
+The populated bundle contains 568 reviewed identities/genre records, 567 artwork records, 489 identities with offer/source records, and 55 reviewed Philippine PC Game Pass mappings. This includes two metadata-only Predecessor rate mappings; one complements the retained original identity in a normal profile. All 510 catalog identities classified active are reviewed; these coverage counts are not local earning-row counts. OPTCG Simulator retains its artwork placeholder. MAVRIX and Wreckreation have checksummed official Steam library covers, and both Predecessor rates reuse its reviewed cover. Unverified purchase prices stay unknown. `Tools/populate_catalog.py` prepares exact title matches, corroborates conflicting identities using shared Steam IDs, caches ITAD mappings, and verifies permanent free access against official Philippine Steam listings. `Tools/apply_edition_choices.py` and `Tools/review_remaining.py` record reviewed identities and the owner's explicit choices. These are maintainer tools. Desktop users can configure an optional IsThereAnyDeal key in **Settings → Store offers**.
 
 Duplicate seed titles have NameOccurrence and ExpectedNameCount. Initial import uses the original ascending game-ID order only when the exact duplicate count matches; otherwise those entries stay unmatched. Once assigned, the persisted stable catalog ID takes precedence. Do not remove duplicate financial records or add aliases to occurrence mappings.
 
@@ -454,6 +454,50 @@ Existing rates, caps, archive status, and session assignments stay intact.
 Keep previously published additions and their starting terms in subsequent
 snapshots so users can skip releases and still install them. The publishing
 workflow checks this against the active channel.
+
+### Metadata for existing rate versions
+
+`RateVariant` is an optional, metadata-only mapping supported in schema 1 and schema 2.
+It never creates a game, changes rates/caps or moves sessions. Give the reviewed variant its own
+stable `CatalogId`, a distinct catalog title and the same reviewed provider metadata as the game:
+
+```json
+"RateVariant": {
+  "GameName": "Predecessor",
+  "RatePerHour": 1.50,
+  "MinutesCap": 3000,
+  "LegacyCatalogId": "6cfcc31f-10b6-430d-a828-9a611b75172e"
+}
+```
+
+The legacy entry must be included, reviewed, and identify that title or an approved alias.
+A variant cannot also declare `RosterAddition`, aliases or occurrence mapping. Rates must be
+positive USD amounts with at most two decimal places; caps must be positive whole minutes.
+Only one variant may declare a given title/rate/cap combination. Initial matching requires one
+exact local title/rate/cap match, independently of local IDs or archive status. Existing stable
+links remain authoritative. When the exact row already belongs to `LegacyCatalogId`, the
+redundant variant is skipped without stealing the link. Any other competing link or multiple
+matching rows remains unresolved. Missing rows stay missing; use the existing approved roster
+addition workflow when creation is intended.
+
+The Predecessor correction includes separate $1.50 and $2.00 variant entries because the original
+catalog ID can belong to either rate on older/upgraded profiles. The other row receives its own
+reviewed variant ID. Thus the 583-entry catalog normally maps 582 startup earning rows. A profile
+containing only the original 581 seed rows can still import its complete original metadata.
+Older clients ignore the optional field and leave the distinct variant titles unmatched; they do
+not create games. Schema-2 Steam identity requirements still apply to every entry.
+
+Reapplying an active snapshot may materialize a newly available unlinked rate; it preserves the
+exact version/hash ledger. Rollback clears omitted enrichment while retaining earning rows and
+stable links. Keep published rate-variant terms and IDs in later snapshots; `check_order` verifies
+this. Schema-1 package seed coverage excludes these metadata-only entries from its title count.
+
+The bundled `-rates-artwork-20261121` revision retains all prior IDs, provider mappings, quotes,
+quote verification dates and the existing offer cutoff. Only MAVRIX/Wreckreation cover fields,
+their artwork provenance and the two explicit Predecessor variants are added. Source/review
+records identify the official Steam apps 2926900 and 1594040; `Data/Artwork/<SHA-256>.img` bundles
+the verified portrait bytes for offline use. Existing Predecessor artwork is reused unchanged.
+No provider/release approval flag is changed and no catalog is published by preparing this bundle.
 
 For roster or metadata edits, stamp and validate a new snapshot offline.
 For updated PH store offers, use `prices` instead of `prepare`. It uses your

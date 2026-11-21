@@ -1,7 +1,34 @@
 [
   {
+    "version": "1.6.2",
+    "publishedAt": "2026-11-21T05:30:42Z",
+    "unreleased": false,
+    "summary": "Keep both Predecessor earning rates and browse games in the reviewed roster order.",
+    "upgradeNotes": [
+      "Keep an independent backup of your application data before upgrading.",
+      "On first launch, the app adds any missing Predecessor rate version. Existing sessions, earnings, rate settings and catalog links stay in place.",
+      "Sessions from before and after the earlier rate change can remain together on an existing $2.00 entry. This update does not automatically relink historical sessions."
+    ],
+    "sections": [
+      {
+        "heading": "Improved",
+        "changes": [
+          "MAVRIX and Wreckreation now show cover artwork.",
+          "The separate Predecessor rate versions can now share reviewed game details, artwork and store links."
+        ]
+      },
+      {
+        "heading": "Fixed",
+        "changes": [
+          "Restores the missing $1.50 per hour Predecessor version as a separate entry. Existing $2.00 entries keep their sessions and settings.",
+          "Newest follows the reviewed Nerve roster order. The $2.00 Predecessor version appears near the top, while $1.50 sits between The Long Drive and ArcheAge."
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.6.1",
-    "publishedAt": "2026-11-18T12:30:00Z",
+    "publishedAt": "2026-11-18T12:42:11Z",
     "unreleased": false,
     "summary": "Imported Nerve sessions now deduct reported AFK breaks from game cap usage.",
     "upgradeNotes": [

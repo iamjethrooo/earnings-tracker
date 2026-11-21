@@ -70,6 +70,24 @@ and relevant `SettingsTests` cover saved defaults, catalog imports/rollback, nav
 history. Fixtures use synthetic isolated databases and do not start the production application.
 Native input, screen readers and monitor-DPI transitions remain unverified.
 
+`DatabaseInitializationTests` checks separate Predecessor rate additions for older, already-upgraded,
+fresh and existing two-rate profiles, retained sessions/settings/catalog links/audits, repeated startup,
+customized terms and transactional rollback. File-backed cases close/reopen connections and check
+unchanged session evidence, SQLite integrity and foreign keys. They do not certify power-loss
+durability or reassign mixed historical sessions.
+`GameRosterOrderTests` checks all 582 reviewed roster positions with shuffled local IDs, both
+Predecessor rates, reopening/filtering, legacy title aliases, future additions, saved archive flags
+and unchanged alternate sorts. Offscreen narrow/wide captures are under `GameRosterOrderVisuals`
+in the test output. This does not certify native keyboard or monitor-DPI behavior.
+
+`CatalogRateVariantTests` covers both legacy-link histories, exact metadata-only rate matching,
+unchanged financial records/settings, same-snapshot completion after a rate is added, ambiguity,
+customized caps, invalid contracts and rollback. `NewGameArtworkTests` verifies the four recent
+earning rows have reviewed/checksummed bundled covers, loads them without requiring downloads,
+and renders narrow/wide library views under `NewGameArtworkVisuals`. Python catalog tests cover
+both schemas, validation, seed accounting and retention of published rate-variant terms. These
+checks use synthetic databases and bundled public artwork; no personal profile is opened.
+
 The Games toolbar cases in `GamesRefinementTests` verify bookmark reset bindings, saved defaults,
 combined multiplayer/access filters, unknown-mode exclusion, popover focus/Escape and narrow/wide
 layout. `CatalogTests` checks dated multiplayer evidence and legacy snapshots; `PersistenceTests`

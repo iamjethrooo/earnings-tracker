@@ -47,7 +47,16 @@ public sealed class CatalogEntry
     public CatalogSteamIdentity? SteamIdentity { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public CatalogRosterAddition? RosterAddition { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public CatalogRateVariant? RateVariant { get; set; }
 }
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record CatalogRateVariant(
+    [property: JsonRequired] string GameName,
+    [property: JsonRequired] decimal RatePerHour,
+    [property: JsonRequired] int MinutesCap,
+    [property: JsonRequired] string LegacyCatalogId);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record CatalogRosterAddition(
@@ -123,6 +132,7 @@ internal static class CatalogService
         var ids = new HashSet<string>(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var rosterRates = new Dictionary<string, HashSet<decimal>>(StringComparer.OrdinalIgnoreCase);
+        var rateVariants = new HashSet<(string Name, decimal Rate, int Cap)>();
         var titleCounts = snapshot.Games.SelectMany(entry => entry.Aliases.Prepend(entry.Name))
             .GroupBy(name => name?.Trim() ?? "", StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
@@ -143,6 +153,21 @@ internal static class CatalogService
             foreach (var alias in entry.Aliases)
                 if (string.IsNullOrWhiteSpace(alias) || !names.Add(alias + "#"))
                     throw new InvalidDataException("Duplicate catalog alias.");
+            if (entry.RateVariant is { } variant)
+            {
+                if (!entry.Reviewed || entry.RosterAddition != null || entry.NameOccurrence.HasValue
+                    || entry.ExpectedNameCount.HasValue || entry.Aliases.Count != 0
+                    || !ValidRosterTitle(entry.Name) || !ValidRosterTitle(variant.GameName)
+                    || string.Equals(entry.Name, variant.GameName, StringComparison.OrdinalIgnoreCase)
+                    || variant.RatePerHour <= 0 || variant.RatePerHour > int.MaxValue
+                    || decimal.Round(variant.RatePerHour, 2) != variant.RatePerHour || variant.MinutesCap <= 0
+                    || !rateVariants.Add((variant.GameName.ToUpperInvariant(), variant.RatePerHour, variant.MinutesCap))
+                    || !snapshot.Games.Any(legacy => legacy.CatalogId == variant.LegacyCatalogId
+                        && legacy.CatalogId != entry.CatalogId && legacy.RateVariant == null && legacy.Reviewed
+                        && (string.Equals(legacy.Name, variant.GameName, StringComparison.OrdinalIgnoreCase)
+                            || legacy.Aliases.Contains(variant.GameName, StringComparer.OrdinalIgnoreCase))))
+                    throw new InvalidDataException($"Invalid metadata rate variant for {entry.CatalogId}.");
+            }
             if (entry.RosterAddition is { } addition)
             {
                 var gameName = addition.GameName ?? entry.Name;
@@ -318,9 +343,9 @@ internal static class CatalogService
 
         var games = db.Games.ToList();
         var metadata = db.GameMetadata.ToList();
-        var variantIds = snapshot.Games.Where(entry => entry.RosterAddition?.GameName != null)
+        var variantIds = snapshot.Games.Where(entry => entry.RosterAddition?.GameName != null || entry.RateVariant != null)
             .Select(entry => entry.CatalogId).ToHashSet(StringComparer.Ordinal);
-        var variantNames = snapshot.Games.Where(entry => variantIds.Contains(entry.CatalogId))
+        var variantNames = snapshot.Games.Where(entry => entry.RosterAddition?.GameName != null)
             .Select(entry => entry.RosterAddition!.GameName!).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var linkedVariantGameIds = metadata.Where(link => variantIds.Contains(link.CatalogId))
             .Select(link => link.GameId).ToHashSet();
@@ -335,7 +360,13 @@ internal static class CatalogService
 
         var additions = approvedRoster?.Additions ?? [];
         // Automatic checks and older clients can activate the same payload before roster approval.
-        if (alreadyActive && additions.Count == 0)
+        // A startup roster repair can add a local rate after this exact snapshot was activated.
+        // Materialize its reviewed metadata without changing the immutable snapshot or any game.
+        var pendingRateMapping = snapshot.Games.Any(entry => entry.RateVariant is { } variant
+            && !metadata.Any(link => link.CatalogId == entry.CatalogId)
+            && FindRateVariantMatches(variant, games) is { Count: 1 } candidates
+            && !metadata.Any(link => link.GameId == candidates[0].Id));
+        if (alreadyActive && additions.Count == 0 && !pendingRateMapping)
         {
             if (checkedRemotely)
             {
@@ -376,7 +407,8 @@ internal static class CatalogService
             db.SubscriptionAvailability.RemoveRange(db.SubscriptionAvailability.Where(x => x.GameId == omitted.GameId));
             RemoveLivePriceMarker(db, omitted.GameId);
         }
-        foreach (var entry in snapshot.Games)
+        // Legacy links are assigned first even if a producer places rate variants first.
+        foreach (var entry in snapshot.Games.OrderBy(entry => entry.RateVariant != null))
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (conflicts.Contains(entry.CatalogId) || (restoreMembers != null && !restoreMembers.Contains(entry.CatalogId)))
@@ -388,16 +420,25 @@ internal static class CatalogService
             var matches = addedGames.TryGetValue(entry.CatalogId, out var added) ? [added]
                 : existing != null ? games.Where(x => x.Id == existing.GameId).ToList()
                 : existingRosterGames.TryGetValue(entry.CatalogId, out var rosterGame) ? [rosterGame]
+                : entry.RateVariant is { } variant ? FindRateVariantMatches(variant, games)
                 : entry.RosterAddition == null ? FindTitleMatches(entry, legacyGames) : [];
             if (existing == null && entry.NameOccurrence.HasValue)
                 matches = matches.Count == entry.ExpectedNameCount
                     ? [matches[entry.NameOccurrence.Value - 1]] : [];
             if (matches.Count != 1) { unresolved.Add(entry.Name); continue; }
-            matched.Add(entry.CatalogId);
             var game = matches[0];
             existing ??= metadata.SingleOrDefault(x => x.GameId == game.Id);
+            if (entry.RateVariant is { } rateVariant && existing != null && existing.CatalogId != entry.CatalogId)
+            {
+                // The original identity may already own either rate, depending on upgrade history.
+                // Keep it; this variant is only needed for the independently unlinked rate.
+                if (existing.CatalogId != rateVariant.LegacyCatalogId)
+                    unresolved.Add(entry.Name);
+                continue;
+            }
             if (existing != null && existing.CatalogId != entry.CatalogId)
                 throw new InvalidDataException($"Conflicting mapping for {entry.Name}.");
+            matched.Add(entry.CatalogId);
             if (existing == null)
             {
                 existing = new GameMetadata { GameId = game.Id, CatalogId = entry.CatalogId };
@@ -443,10 +484,28 @@ internal static class CatalogService
         return new(ActivationStatus.Applied, unresolved, roster, addedGames.Count);
     }
 
-    private static List<Game> FindTitleMatches(CatalogEntry entry, List<Game> games) => games
-        .Where(game => string.Equals(game.Name, entry.Name, StringComparison.OrdinalIgnoreCase)
+    private static List<Game> FindRateVariantMatches(CatalogRateVariant variant, List<Game> games) => games
+        .Where(game => string.Equals(game.Name, variant.GameName, StringComparison.OrdinalIgnoreCase)
+            && game.RatePerHour == variant.RatePerHour && game.MinutesCap == variant.MinutesCap).ToList();
+
+    private static List<Game> FindTitleMatches(CatalogEntry entry, List<Game> games)
+    {
+        var matches = games.Where(game => string.Equals(game.Name, entry.Name, StringComparison.OrdinalIgnoreCase)
             || entry.Aliases.Contains(game.Name, StringComparer.OrdinalIgnoreCase))
-        .OrderBy(game => game.Id).ToList();
+            .OrderBy(game => game.Id).ToList();
+
+        // The published bundled identity was seeded at $2 in v1.6.0. When no stable link exists,
+        // keep that mapping unambiguous after adding back $1.50. Existing stable links win above.
+        // Other duplicate/customized terms continue through the normal ambiguity safeguards.
+        if (entry.CatalogId == "6cfcc31f-10b6-430d-a828-9a611b75172e"
+            && !entry.NameOccurrence.HasValue && matches.Count == 2
+            && matches.All(game => string.Equals(game.Name, "Predecessor", StringComparison.OrdinalIgnoreCase)
+                && !game.IsArchived && game.MinutesCap == 3000m)
+            && matches.Select(game => game.RatePerHour).Order().SequenceEqual(new[] { 1.5m, 2m }))
+            return matches.Where(game => game.RatePerHour == 2m).ToList();
+
+        return matches;
+    }
 
     private static List<StoreOffer> MergeOffers(AppDbContext db, int gameId, List<StoreOffer> incoming,
         bool samePriceMapping, DateTime publishedAt, bool restoring)

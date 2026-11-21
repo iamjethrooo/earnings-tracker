@@ -97,6 +97,22 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
 
+## v1.6.2 candidate preparation — 2026-11-21
+
+Prepare a Production, unsigned, self-contained Windows x64 patch with product/package version
+1.6.2, assembly/file version 1.6.2.0, package identity `EarningsTracker.App` and the existing
+`win-x64-app-stable` channel. Use full packages only. Scope is the separate Predecessor rate
+repair and reviewed metadata mappings, the supplied Newest roster order, and MAVRIX/Wreckreation
+cover artwork. The proposed catalog preparation tool is separate future work.
+
+Startup adds a missing Predecessor rate without changing existing financial records or catalog
+links. Previously mixed historical sessions remain linked as saved; the upgrade notes disclose
+this. No schema migration is added. The new catalog version retains source price dates and the
+existing offer cutoff. Source, package hashes, verification results and remaining native checks
+belong in `.local-docs/` and the candidate's artifact directory. Reconcile the provisional v1.6.2
+publication timestamp after publication; v1.6.1's history date is reconciled to GitHub's actual
+`2026-11-18T12:42:11Z`. Local preparation does not publish the app or advance a catalog channel.
+
 ## v1.4.0 candidate preparation — 2026-11-08
 
 The owner selected v1.4.0 with all current working-tree changes: reviewed multiplayer metadata

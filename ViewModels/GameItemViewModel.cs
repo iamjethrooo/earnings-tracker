@@ -14,6 +14,7 @@ namespace EarningsTracker.ViewModels
     public class GameItemViewModel : INotifyPropertyChanged
     {
         public Game Game { get; }
+        public long NewestOrder => GameRosterOrder.GetNewestOrder(Game);
 
         public GameMetadata? Metadata { get; private set; }
         public List<string> Genres { get; private set; } = [];

@@ -515,7 +515,7 @@ public class CatalogTests
         Assert.Equal(581, db.Games.Count()); Assert.Equal(581, db.GameMetadata.Count());
         Assert.Equal(581, db.GameMetadata.Select(x => x.CatalogId).Distinct().Count());
         var bundled = CatalogService.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Data", "catalog.json")));
-        Assert.Equal(bundled.Games.Count(x => x.Reviewed), db.GameMetadata.Count(x => x.Reviewed));
+        Assert.Equal(bundled.Games.Count(x => x.Reviewed && x.RateVariant == null), db.GameMetadata.Count(x => x.Reviewed));
     }
 
     [Fact]

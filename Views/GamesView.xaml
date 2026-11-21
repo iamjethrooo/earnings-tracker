@@ -62,7 +62,7 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,12,0">
                             <TextBlock Text="Sort" Style="{StaticResource ItemSubtitle}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox x:Name="SortComboBox" Style="{StaticResource FilterDropdown}" Width="178" AutomationProperties.Name="Sort games" SelectionChanged="SortComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Highest hourly rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest added"/><ComboBoxItem Content="Lowest saved price"/>
+                                <ComboBoxItem Content="Highest hourly rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest saved price"/>
                                 <ComboBoxItem Content="My ease of grinding"/><ComboBoxItem Content="My replay appeal"/>
                             </ComboBox>
                         </StackPanel>
