@@ -142,7 +142,7 @@ namespace EarningsTracker.ViewModels
                 if (LoadError != null)
                     return $"Unable to load sessions: {LoadError}";
                 var visibleCount = SessionsView.Cast<SessionItemViewModel>().Count();
-                return visibleCount == Sessions.Count ? $"{Sessions.Count} sessions" : $"{visibleCount} of {Sessions.Count} sessions";
+                return visibleCount == Sessions.Count ? $"{Sessions.Count} {(Sessions.Count == 1 ? "session" : "sessions")}" : $"{visibleCount} of {Sessions.Count} {(Sessions.Count == 1 ? "session" : "sessions")}";
             }
         }
 

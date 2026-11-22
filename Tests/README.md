@@ -56,6 +56,12 @@ are under the test output's `DashboardAnalyticsVisuals` directory, including a 1
 tests remain the focused baseline. Physical input, screen readers and monitor-DPI transitions are
 not certified. See [metric definitions](../Docs/Design-System.md#analytics-dashboard-pro-16).
 
+`UserExperienceTests` checks import review identity/precision, before values and payout selection
+without writing, parser-error input retention and line selection, first-run import actions, and
+backup visibility with optional integrations collapsed. It renders narrow/wide page fixtures under
+`UserExperienceVisuals`. These fixtures supplement native keyboard, scrolling and dialog checks;
+they do not establish screen-reader output or actual monitor-DPI behavior.
+
 ## Games library and subscription evidence
 
 `GamesLibraryTests` checks compact rows, responsive details, independent selection/title entry,

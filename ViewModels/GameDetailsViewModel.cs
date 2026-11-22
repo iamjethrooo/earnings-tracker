@@ -1,4 +1,4 @@
-﻿using EarningsTracker.Enums;
+using EarningsTracker.Enums;
 using EarningsTracker.Models;
 using System;
 using System.Collections.Generic;
@@ -107,7 +107,7 @@ namespace EarningsTracker.ViewModels
         public decimal RemainingEarnings => Math.Max(0, MaximumEarnings - TotalEarnings);
         public decimal TotalMinutes => CurrentCycleVerifiedSessions.Sum(s => (decimal)s.CapEligibleDuration.TotalMinutes);
         public decimal RemainingMinutes => Math.Max(0, Game.MinutesCap - TotalMinutes);
-        public string MinutesDescription => $"{TotalMinutes:0.##} min consumed · {RemainingMinutes:0.##} min remaining";
+        public string MinutesDescription => $"{FormatDuration(TotalMinutes)} used · {FormatDuration(RemainingMinutes)} left to earn";
 
         public string CapText => $"{Game.MinutesCap}m";
         public decimal ProgressPercentage => Game.MinutesCap > 0 ? TotalMinutes / Game.MinutesCap * 100 : 0;
@@ -126,7 +126,7 @@ namespace EarningsTracker.ViewModels
             }
         }
         public string ProgressDescription => Game.CapResetDate.HasValue
-            ? $"of {MaxDurationText} · {ProgressPercentage:0}% · since {Game.CapResetDate.Value:M/d/yyyy}"
+            ? $"of {MaxDurationText} · {ProgressPercentage:0}% · since {Game.CapResetDate.Value:MMM d, yyyy}"
             : $"of {MaxDurationText} · {ProgressPercentage:0}% · all history";
         public string TotalDurationText
         {
@@ -151,12 +151,12 @@ namespace EarningsTracker.ViewModels
             int seconds = totalSeconds % 60;
 
             if (hours > 0)
-                return $"{hours}h {minutes}m {seconds}s";
+                return seconds == 0 ? $"{hours}h {minutes}m" : $"{hours}h {minutes}m {seconds}s";
 
             if (minutes > 0)
-                return $"{minutes}m {seconds}s";
+                return seconds == 0 ? $"{minutes}m" : $"{minutes}m {seconds}s";
 
-            return $"{seconds}s";
+            return seconds == 0 ? "0m" : $"{seconds}s";
         }
     }
 }

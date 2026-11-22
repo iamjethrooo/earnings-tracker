@@ -90,7 +90,7 @@ public class GameDetailsPresentationTests(WpfTestHost host)
         Assert.Equal(125, model.ProgressPercentage);
         Assert.Equal(6.25m, model.TotalEarnings);
         Assert.Equal(0, model.RemainingEarnings);
-        Assert.Contains("75 min consumed", model.MinutesDescription);
+        Assert.Contains("1h 15m used", model.MinutesDescription);
         model.FilterSessions(SessionStatus.Pending);
         Assert.Equal(1, model.FilteredSessionCount);
         Assert.Equal(2, model.StatusFilters.Single(x => x.Status == SessionStatus.Verified).Count);

@@ -47,6 +47,8 @@ namespace EarningsTracker.Views
         public decimal ThisMonthEarnings { get; private set; }
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler? ViewAllSessionsRequested;
+        public event EventHandler? ImportSessionsRequested;
+        public event EventHandler? ImportPayoutsRequested;
         public ObservableCollection<SessionItemViewModel> RecentSessions { get; } = new BatchObservableCollection<SessionItemViewModel>();
         public event EventHandler<Game>? ViewGameRequested;
         private readonly DbContextOptions<AppDbContext>? _databaseOptions;
@@ -70,6 +72,7 @@ namespace EarningsTracker.Views
         public string GameAttributionNotice { get; private set; } = "";
         public string LifetimeSummary => $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}";
         public string BalanceExclusionNotice { get; private set; } = "";
+        public string PaymentBreakdown { get; private set; } = "";
         internal decimal PeriodEarned => Trend.Sum(day => day.Earned);
         internal decimal PeriodPending => Trend.Sum(day => day.Pending);
         private static DateTime RecordedDay(Session session) => (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
@@ -152,13 +155,12 @@ namespace EarningsTracker.Views
                     { SessionStatus.Verified => "VerifiedTextColor", SessionStatus.Pending => "PendingTextColor", SessionStatus.Rejected => "RejectedTextColor", _ => "NotUploadedTextColor" }))).ToList();
             Metrics = [new("Earned", CurrencyDisplay.FormatUsd(PeriodEarned), "Verified + separate adjustments", BrushFor("DefaultTextColor")),
                 new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "", BrushFor("PendingTextColor")),
-                new("Available balance", BalanceDisplay, "All time", BrushFor("VerifiedTextColor")),
-                new("Payouts", CurrencyDisplay.FormatUsd(report.Paid), "Paid + Processing", BrushFor("DefaultTextColor")),
+                new("Paid + processing", CurrencyDisplay.FormatUsd(report.Paid), "Payments in this period", BrushFor("DefaultTextColor")),
                 new("Hours played", $"{report.Hours:N1} h", "Verified + Pending", BrushFor("DefaultTextColor"))];
             RangeLabel = $"{report.Start:MMM d} – {report.End:MMM d, yyyy}";
             if (report.PayoutNotice.Length > 0)
                 RangeLabel += $". {report.PayoutNotice}";
-            SessionCountLabel = $"{report.Sessions.Count:N0} sessions";
+            SessionCountLabel = $"{report.Sessions.Count:N0} {(report.Sessions.Count == 1 ? "session" : "sessions")}";
             VerifiedPercent = report.Sessions.Count == 0 ? 0 : verified * 100d / report.Sessions.Count;
             VerifiedShare = report.Sessions.Count == 0 ? "No sessions" : $"{VerifiedPercent:0}% verified";
             GameAttributionNotice = TopGames.Count == 0 ? "No verified session earnings in this period." : "";
@@ -169,6 +171,9 @@ namespace EarningsTracker.Views
             DashboardViewEmptyState.Visibility = report.Recent.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             TrendChart.Visibility = report.HasEarningsActivity ? Visibility.Visible : Visibility.Collapsed;
             TrendEmptyState.Visibility = report.HasEarningsActivity ? Visibility.Collapsed : Visibility.Visible;
+            var firstRun = TotalSessions == 0 && _payouts.Count == 0;
+            GettingStarted.Visibility = firstRun ? Visibility.Visible : Visibility.Collapsed;
+            AnalysisGrid.Visibility = RecordingsPanel.Visibility = firstRun ? Visibility.Collapsed : Visibility.Visible;
             foreach (var property in new[] { nameof(Metrics), nameof(Trend), nameof(TopGames), nameof(Statuses), nameof(RangeLabel), nameof(SessionCountLabel), nameof(VerifiedPercent), nameof(VerifiedShare), nameof(GameAttributionNotice) })
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
@@ -215,6 +220,9 @@ namespace EarningsTracker.Views
         {
             ViewAllSessionsRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        private void ImportSessions_Click(object sender, RoutedEventArgs e) => ImportSessionsRequested?.Invoke(this, EventArgs.Empty);
+        private void ImportPayouts_Click(object sender, RoutedEventArgs e) => ImportPayoutsRequested?.Invoke(this, EventArgs.Empty);
 
         private async void PayoutDataChanged(object? sender, EventArgs e)
         {
@@ -264,21 +272,26 @@ namespace EarningsTracker.Views
                     TotalPaidOut = totals.TotalPaidOut;
                     Balance = totals.Balance;
                     BalanceExclusionNotice = totals.UndatedVerifiedSessions > 0
-                        ? $"Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates." : "";
+                        ? $"Unpaid verified earnings exclude {totals.UndatedVerifiedSessions:N0} {(totals.UndatedVerifiedSessions == 1 ? "session" : "sessions")} without posted dates." : "";
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LifetimeSummary)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BalanceExclusionNotice)));
                     var cutoff = payouts.Where(PayoutAccounting.IsCountedAsPaidPayment).Select(row => (DateTime?)row.Date.Date).Max();
                     BalanceDescription = $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}. Balance uses unpaid assignments; historical sessions use posted dates {(cutoff.HasValue ? $"after {cutoff:MMM d, yyyy}" : "with no payment cutoff")}. Independent of the selected period."
-                        + (totals.UndatedVerifiedSessions > 0 ? $" Balance excludes {totals.UndatedVerifiedSessions:N0} sessions without posted dates." : "");
+                        + (BalanceExclusionNotice.Length > 0 ? " " + BalanceExclusionNotice : "");
                     TotalSessions = allSessions.Count;
                     TotalHoursPlayed = hours;
                     _sessions = allSessions;
                     _payouts = payouts;
+                    var payments = payouts.Where(p => p.Type.Equals("Payment", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var paid = payments.Where(p => p.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
+                    var processing = payments.Where(p => p.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
+                    PaymentBreakdown = $"Paid: {CurrencyDisplay.FormatUsd(paid)} · Processing: {CurrencyDisplay.FormatUsd(processing)}";
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PaymentBreakdown)));
                     _artwork = artwork;
                     _snapshotDay = today;
                     PublishPeriod(report);
                     _hasLoaded = true;
-                    TotalsPanel.Visibility = RecordingsPanel.Visibility = Visibility.Visible;
+                    TotalsPanel.Visibility = Visibility.Visible;
                     LoadStatusPanel.Visibility = Visibility.Collapsed;
                 }
                 catch (Exception ex)

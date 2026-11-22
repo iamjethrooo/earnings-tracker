@@ -178,10 +178,19 @@ public class UxPolishTests(WpfTestHost host)
                 case StatisticsView statistics: await statistics.LoadStatistics(); break;
             }
             view.UpdateLayout(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-            var text = (TextBlock)view.FindName(view.GetType().Name + "EmptyState");
-            Assert.True(text.IsVisible);
-            Assert.Contains("Import", text.Text, StringComparison.OrdinalIgnoreCase);
-            Assert.True(text.ActualHeight > 0 && text.ActualWidth <= 400);
+            if (view is DashboardView)
+            {
+                var guidance = (Border)view.FindName("GettingStarted");
+                Assert.True(guidance.IsVisible);
+                Assert.True(guidance.ActualHeight > 0 && guidance.ActualWidth <= 800);
+            }
+            else
+            {
+                var text = (TextBlock)view.FindName(view.GetType().Name + "EmptyState");
+                Assert.True(text.IsVisible);
+                Assert.Contains("Import", text.Text, StringComparison.OrdinalIgnoreCase);
+                Assert.True(text.ActualHeight > 0 && text.ActualWidth <= 400);
+            }
             Capture(view, page.ToLowerInvariant() + "-empty");
         }
         finally { window.Close(); }

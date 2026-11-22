@@ -220,7 +220,7 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         await view.LoadDashboardData(asOfDate: Day);
         ((ComboBox)view.FindName("PeriodSelector")).SelectedIndex = 1;
         await Layout(view, width, height);
-        Assert.Equal(5, view.Metrics.Count);
+        Assert.Equal(4, view.Metrics.Count);
         Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
         var scroll = (ScrollViewer)view.FindName("TotalsScroll");
         Assert.Equal(0, scroll.ScrollableWidth);
@@ -228,9 +228,11 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         Assert.True(selector.IsEnabled);
         Assert.True(Bounds(selector, view).Bottom <= height);
         var chart = (DashboardEarningsChart)view.FindName("TrendChart");
-        Assert.Equal(2, chart.Children.OfType<Polyline>().Count());
-        Assert.All(chart.Children.OfType<Polyline>().SelectMany(line => line.Points), point => Assert.InRange(point.Y, 0, chart.ActualHeight));
-        Assert.Contains(chart.Children.OfType<Rectangle>(), target => ((ToolTip)target.ToolTip).Content.ToString()!.Contains("Adjustments"));
+        Assert.Empty(chart.Children.OfType<Polyline>());
+        var bars = chart.Children.OfType<Rectangle>().Where(bar => !bar.IsHitTestVisible).ToList();
+        Assert.NotEmpty(bars);
+        Assert.All(bars, bar => Assert.InRange(Canvas.GetTop(bar) + bar.Height, 0, chart.ActualHeight));
+        Assert.Contains(chart.Children.OfType<Rectangle>(), target => target.ToolTip is ToolTip tip && tip.Content.ToString()!.Contains("Adjustments"));
         Capture(view, $"dashboard-{width}");
         ((Expander)view.FindName("DailyValues")).IsExpanded = true;
         await Layout(view, width, height);

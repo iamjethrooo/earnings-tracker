@@ -16,10 +16,10 @@ public class ReleaseHistoryTests
     [Fact]
     public void BundledHistoryIncludesEveryVersionAndMarksTheCandidateInstalled()
     {
-        var entries = ReleaseHistory.Load("1.6.2");
-        Assert.Equal(new[] { "1.6.2", "1.6.1", "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
+        var entries = ReleaseHistory.Load("1.7.0");
+        Assert.Equal(new[] { "1.7.0", "1.6.2", "1.6.1", "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
         var installed = Assert.Single(entries, entry => entry.IsInstalled);
-        Assert.Equal("1.6.2", installed.Version);
+        Assert.Equal("1.7.0", installed.Version);
         Assert.True(installed.IsExpanded);
         Assert.All(entries.Where(entry => entry != installed), entry => Assert.False(entry.IsExpanded));
         Assert.All(entries.Where(entry => !entry.Unreleased), entry => Assert.Contains("UTC", entry.DateLabel));

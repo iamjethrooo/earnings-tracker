@@ -55,7 +55,7 @@ public class SessionImportScopeTests(WpfTestHost host)
         Assert.Equal(supported ? Visibility.Visible : Visibility.Collapsed,
             ((Grid)summary.FindName("PreviewPanel")).Visibility);
         if (supported)
-            Assert.Equal("1 sessions found", ((TextBlock)summary.FindName("SessionsFoundText")).Text);
+            Assert.Equal("1 session found", ((TextBlock)summary.FindName("SessionsFoundText")).Text);
         else
             Assert.Equal("Import failed", ((TextBlock)summary.FindName("ResultTitle")).Text);
         using var read = database.CreateContext();

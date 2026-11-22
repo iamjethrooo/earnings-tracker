@@ -1,7 +1,63 @@
 [
   {
+    "version": "1.7.0",
+    "publishedAt": "2026-11-22T07:21:35Z",
+    "unreleased": false,
+    "summary": "Review recordings before importing, understand your unpaid earnings, and find the controls you need more easily.",
+    "introduction": "This update makes the main tracking workflows clearer, from your first import to reviewing sessions, comparing earnings, and backing up your data.",
+    "upgradeNotes": [
+      "Create an independent backup of your application data before upgrading. Backup and restore controls are now at the top of Settings.",
+      "This update adds no database migration. Installations upgrading from an older version may still apply migrations from earlier releases."
+    ],
+    "sections": [
+      {
+        "category": "What's New",
+        "heading": "Review Recordings Before You Import",
+        "changes": [
+          "Inspect each recording's game and rate, date, duration, verification status, earnings and payout assignment before saving. Review rows retain the source amount's decimal precision.",
+          "Compare imported updates with the saved values and inspect recordings that will be excluded or skipped.",
+          "Open copying instructions and an example from the import dialog. After a parsing error, choose Fix input to return to your pasted text and select the reported source line when one is available."
+        ]
+      },
+      {
+        "category": "What's New",
+        "heading": "Start Tracking From the Dashboard",
+        "changes": [
+          "New profiles show direct Import sessions and Import payouts actions, with guidance in place of empty analytical panels."
+        ]
+      },
+      {
+        "category": "Improvements",
+        "heading": "Understand Earnings and Payment Status",
+        "changes": [
+          "Dashboard separates the all-time account summary from the selected period. Dashboard and Payments use Unpaid verified earnings for recordings awaiting payment.",
+          "Paid + processing totals show the two statuses separately, helping distinguish processing payments from money already paid.",
+          "Dashboard and Statistics show earnings as bars for each day or period. Today so far and incomplete-period labels make the current period easier to interpret."
+        ]
+      },
+      {
+        "category": "Improvements",
+        "heading": "Find Games, Settings and Session Actions",
+        "changes": [
+          "Games names active secondary filters beside the result count and groups maintenance controls and detailed status under Library tools & status.",
+          "Game details puts cap-reset controls under Manage earning cycle and shows remaining time in readable hours and minutes.",
+          "Settings opens with backup controls and section links. Optional price-refresh and Steam setup can be expanded when needed.",
+          "Sessions explains how to inspect a recording or open its game. Read-only details keep the table easier to see, and the force-verification option explains its effect.",
+          "Payout forms have a visible Cancel action. Destructive actions have clearer styling and explanations, ownership buttons have larger targets, and unchecked boxes have stronger outlines.",
+          "The bundled catalog includes the latest reviewed PC Game Pass availability. Check each game's saved verification date and current availability."
+        ]
+      },
+      {
+        "heading": "Bug Fixes",
+        "changes": [
+          "Corrects singular session counts and makes displayed transaction dates, hourly-rate units and duration labels more consistent."
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.6.2",
-    "publishedAt": "2026-11-21T05:30:42Z",
+    "publishedAt": "2026-11-21T08:51:48Z",
     "unreleased": false,
     "summary": "Keep both Predecessor earning rates and browse games in the reviewed roster order.",
     "upgradeNotes": [

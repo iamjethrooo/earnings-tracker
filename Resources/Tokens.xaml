@@ -13,6 +13,8 @@
     <SolidColorBrush x:Key="InputBackgroundColor">#121215</SolidColorBrush>
     <SolidColorBrush x:Key="ControlBackgroundColor">#26262B</SolidColorBrush>
     <SolidColorBrush x:Key="ControlHoverColor">#303035</SolidColorBrush>
+    <SolidColorBrush x:Key="InputOutlineColor">#777782</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerTextColor">#FF8E88</SolidColorBrush>
     <SolidColorBrush x:Key="ControlBorderColor">#3A3A40</SolidColorBrush>
     <SolidColorBrush x:Key="ControlHoverBorderColor">#4A4A50</SolidColorBrush>
     <SolidColorBrush x:Key="ScrollThumbColor">#3A3A42</SolidColorBrush>

@@ -100,18 +100,21 @@ namespace EarningsTracker.Views
 
                             var history = items.OrderByDescending(item => item.PostedDate ?? item.RecordedDate).ThenByDescending(item => item.SortId).ToList();
                             var unresolvedAdjustments = items.Count(item => item.NeedsReconciliation);
-                            return (history, totals, unresolvedAdjustments);
+                            var paid = payouts.Where(p => p.Type.Equals("Payment", StringComparison.OrdinalIgnoreCase) && p.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
+                            var processing = payouts.Where(p => p.Type.Equals("Payment", StringComparison.OrdinalIgnoreCase) && p.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
+                            return (history, totals, unresolvedAdjustments, paid, processing);
                         });
                         if (_reloadRequested) { _queuedSavedRefresh |= changesSaved; continue; }
                         var unresolvedAdjustments = snapshot.unresolvedAdjustments;
                         TotalEarnedValue.Text = snapshot.totals.TotalEarned.ToString("C2", CultureInfo.GetCultureInfo("en-US"));
                         TotalPaidValue.Text = snapshot.totals.TotalPaidOut.ToString("C2", CultureInfo.GetCultureInfo("en-US"));
+                        PaidBreakdown.Text = $"Paid: {CurrencyDisplay.FormatUsd(snapshot.paid)} · Processing: {CurrencyDisplay.FormatUsd(snapshot.processing)}";
                         AmountOwedValue.Text = snapshot.totals.Balance.ToString("C2", CultureInfo.GetCultureInfo("en-US"));
                         ((BatchObservableCollection<PayoutHistoryItem>)History).ReplaceAll(snapshot.history);
                         ReconciliationNotice.Text = $"{unresolvedAdjustments:N0} {(unresolvedAdjustments == 1 ? "adjustment needs" : "adjustments need")} reconciliation and {(unresolvedAdjustments == 1 ? "is" : "are")} excluded from Total Earned. Select a row and choose Edit selected.";
                         ReconciliationNotice.Visibility = unresolvedAdjustments == 0 ? Visibility.Collapsed : Visibility.Visible;
                         var undated = snapshot.totals.UndatedVerifiedSessions;
-                        UndatedSessionsNotice.Text = $"{undated:N0} verified {(undated == 1 ? "session has" : "sessions have")} no posted date. Included in Total Earned, excluded from Amount Owed.";
+                        UndatedSessionsNotice.Text = $"{undated:N0} verified {(undated == 1 ? "session has" : "sessions have")} no posted date. Included in Total Earned, excluded from Unpaid verified earnings.";
                         UndatedSessionsNotice.Visibility = undated == 0 ? Visibility.Collapsed : Visibility.Visible;
                         _hasLoaded = true;
                         TotalsPanel.Visibility = HistoryPanel.Visibility = Visibility.Visible;
@@ -218,8 +221,8 @@ namespace EarningsTracker.Views
         public DateTime? PostedDate { get; private set; }
         public DateTime RecordedDate { get; private set; }
         public int SortId { get; private set; }
-        public string PostedText => PostedDate?.ToString("M/d/yyyy") ?? "—";
-        public string RecordedText => RecordedDate == default ? "—" : RecordedDate.ToString("M/d/yyyy");
+        public string PostedText => PostedDate?.ToString("MMM d, yyyy") ?? "—";
+        public string RecordedText => RecordedDate == default ? "—" : RecordedDate.ToString("MMM d, yyyy");
         public string Type { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
         public string Status { get; private set; } = string.Empty;

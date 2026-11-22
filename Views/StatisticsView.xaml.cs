@@ -234,7 +234,7 @@ namespace EarningsTracker.Views
             _hasRangeData = false;
             var periodTotals = new Dictionary<DateTime, EarningsPeriodItem>();
             for (var date = GetBucketStart(_rangeStart, _bucket); date <= GetBucketStart(_rangeEnd, _bucket); date = GetNextBucket(date, _bucket))
-                periodTotals[date] = new EarningsPeriodItem(date, _bucket);
+                periodTotals[date] = new EarningsPeriodItem(date, _bucket, today);
 
             foreach (var session in sessions)
             {
@@ -438,20 +438,18 @@ namespace EarningsTracker.Views
                 AddCanvasText(FormatUsd(value), 0, y - 8, chartLabelBrush, left - 10, double.NaN, TextAlignment.Right);
             }
 
-            var points = new PointCollection();
+            var slot = plotWidth / _trendPeriods.Count;
             for (var i = 0; i < _trendPeriods.Count; i++)
             {
-                var x = _trendPeriods.Count == 1
-                    ? left + plotWidth / 2
-                    : left + plotWidth * i / (_trendPeriods.Count - 1);
+                var x = left + (i + 0.5) * slot;
                 var period = _trendPeriods[i];
                 var y = GetY(period.TotalEarnings);
-                points.Add(new Point(x, y));
 
-                var marker = new Ellipse
+
+                var marker = new Rectangle
                 {
-                    Width = 18,
-                    Height = 18,
+                    Width = slot,
+                    Height = plotHeight,
                     Fill = Brushes.Transparent,
                     StrokeThickness = 0,
                     ToolTip = new ToolTip
@@ -468,34 +466,25 @@ namespace EarningsTracker.Views
                 ToolTipService.SetInitialShowDelay(marker, 100);
                 ToolTipService.SetShowDuration(marker, 30000);
                 Canvas.SetLeft(marker, x - marker.Width / 2);
-                Canvas.SetTop(marker, y - marker.Height / 2);
+                Canvas.SetTop(marker, top);
                 EarningsTrendCanvas.Children.Add(marker);
 
-                var visibleDot = new Ellipse
+                var bar = new Rectangle
                 {
-                    Width = 7,
-                    Height = 7,
+                    Width = Math.Min(40, slot * 0.65),
+                    Height = Math.Max(1, Math.Abs(GetY(0) - y)),
                     Fill = chartLineBrush,
                     IsHitTestVisible = false
                 };
-                Canvas.SetLeft(visibleDot, x - visibleDot.Width / 2);
-                Canvas.SetTop(visibleDot, y - visibleDot.Height / 2);
-                EarningsTrendCanvas.Children.Add(visibleDot);
+                Canvas.SetLeft(bar, x - bar.Width / 2);
+                Canvas.SetTop(bar, Math.Min(y, GetY(0)));
+                EarningsTrendCanvas.Children.Add(bar);
             }
-
-            var line = new Polyline
-            {
-                Points = points,
-                Stroke = chartLineBrush,
-                StrokeThickness = 2,
-                IsHitTestVisible = false
-            };
-            EarningsTrendCanvas.Children.Insert(5, line);
 
             var labelInterval = Math.Max(1, (int)Math.Ceiling(_trendPeriods.Count / Math.Max(1, Math.Floor(plotWidth / 76))));
             for (var i = 0; i < _trendPeriods.Count; i += labelInterval)
             {
-                var x = _trendPeriods.Count == 1 ? left + plotWidth / 2 : left + plotWidth * i / (_trendPeriods.Count - 1);
+                var x = left + (i + 0.5) * slot;
                 AddCanvasText(_trendPeriods[i].Label, Math.Clamp(x - 36, left, Math.Max(left, width - 72)), height - bottom + 8, chartLabelBrush, 72, double.NaN, TextAlignment.Center);
             }
         }
@@ -600,23 +589,35 @@ namespace EarningsTracker.Views
         public string HoursText => $"{SessionHours:N2} h";
         public string AccessibleSummary => $"{TooltipDate}. Total earnings: {EarningsText}. Hours: {SessionHours:N2}.";
 
-        internal EarningsPeriodItem(DateTime startDate, StatisticsView.EarningsBucket bucket)
+        internal EarningsPeriodItem(DateTime startDate, StatisticsView.EarningsBucket bucket, DateTime? asOfDate = null)
         {
             StartDate = startDate;
             if (bucket == StatisticsView.EarningsBucket.Day)
             {
-                Label = startDate.ToString("M/d");
+                Label = startDate.ToString("MMM d");
                 TooltipDate = startDate.ToString("MMMM d, yyyy");
             }
             else if (bucket == StatisticsView.EarningsBucket.Week)
             {
-                Label = startDate.ToString("M/d");
+                Label = startDate.ToString("MMM d");
                 TooltipDate = $"Week of {startDate:MMMM d, yyyy}";
             }
             else
             {
                 Label = startDate.ToString("MMM yy");
                 TooltipDate = startDate.ToString("MMMM yyyy");
+            }
+            var today = (asOfDate ?? DateTime.Today).Date;
+            var current = bucket switch
+            {
+                StatisticsView.EarningsBucket.Day => startDate.Date == today,
+                StatisticsView.EarningsBucket.Week => startDate.Date <= today && today < startDate.Date.AddDays(7),
+                _ => startDate.Year == today.Year && startDate.Month == today.Month
+            };
+            if (current)
+            {
+                Label = bucket == StatisticsView.EarningsBucket.Day ? "Today*" : Label + "*";
+                TooltipDate += " · so far (incomplete period)";
             }
         }
     }

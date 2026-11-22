@@ -25,7 +25,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Payments" Style="{StaticResource TabName}"/>
+                <TextBlock Text="Payments" Style="{StaticResource TabName}"/><TextBlock Text="All-time totals · USD" Style="{StaticResource PageDescription}"/>
 
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -49,13 +49,13 @@
                     <Expander Header="How calculated" Margin="0,4,16,0" AutomationProperties.Name="Payment calculation details">
                         <StackPanel Margin="0,8,0,0">
                             <TextBlock Text="Total earned includes verified sessions and eligible separate bonuses/corrections. Separate adjustments count when Verified, Paid, or Processing; included adjustments aren't added again." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
-                            <TextBlock Text="Total paid includes Paid and Processing payments. Amount owed includes verified sessions in Current payout and historical sessions after the latest Paid/Processing payment day. Hidden or inactive payment assignments return to Current payout. Missing posted dates and separate adjustments are excluded from Amount owed." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            <TextBlock Text="Paid + processing includes payments in either status; processing is not confirmation of receipt. Unpaid verified earnings includes verified sessions in Current payout and historical sessions after the latest Paid/Processing payment day. Hidden or inactive payment assignments return to Current payout. Missing posted dates and separate adjustments are excluded from Unpaid verified earnings." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Expander>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="EditButton" Content="Edit selected" Click="EditPayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" IsEnabled="False" Margin="0,0,8,0"/>
-                    <Button x:Name="DeleteButton" Content="Hide manual record" Click="DeletePayoutButton_Click" Style="{StaticResource SecondaryButton}" Padding="12,7" IsEnabled="False"/>
+                    <Button x:Name="DeleteButton" Content="Hide manual record" ToolTip="Excludes this manual record from totals and history; its audit is retained. Payment coverage may return to unpaid earnings." Click="DeletePayoutButton_Click" Style="{StaticResource DangerButton}" Padding="12,7" IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -81,16 +81,16 @@
             </Border>
             <Border Grid.Column="1" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource AccentTextColor}" MinHeight="112">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Total paid" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Paid + processing" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="TotalPaidValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource AccentTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Paid + Processing" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="PaidBreakdown" Text="Paid and processing payments" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="2" Style="{StaticResource DashboardStatPanel}" BorderBrush="{StaticResource PendingTextColor}" MinHeight="112">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Amount owed" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Unpaid verified earnings" Style="{StaticResource DashboardStatLabel}" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="AmountOwedValue" Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource PendingTextColor}" TextAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Unpaid verified sessions" ToolTip="Verified sessions in Current payout, plus historical sessions after the latest Paid or Processing payment day. Sessions assigned to an inactive or hidden payment return to Amount Owed. Unknown posted dates and separate adjustments remain excluded." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
+                    <TextBlock Text="Unpaid verified sessions" ToolTip="Verified sessions in Current payout, plus historical sessions after the latest Paid or Processing payment day. Sessions assigned to an inactive or hidden payment return to Unpaid verified earnings. Unknown posted dates and separate adjustments remain excluded." Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

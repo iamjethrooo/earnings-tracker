@@ -233,7 +233,7 @@ public class UiConsistencyTests(WpfTestHost host)
         details.Measure(new Size(800, 800));
         details.Arrange(new Rect(0, 0, 800, 800));
         await Dispatcher.Yield();
-        Assert.Contains(Descendants<TextBlock>(details), text => text.Text == "$1.50/hr");
+        Assert.Contains(Descendants<TextBlock>(details), text => text.Text == "$1.50/h");
         Assert.Contains(Descendants<TextBlock>(details), text => text.Text == "$1.25");
         var sessionView = new SessionsView(); // Loading is not raised, so no default database is opened.
         var sessions = (ListView)sessionView.FindName("SessionsList");

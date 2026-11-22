@@ -20,8 +20,24 @@
   </DockPanel></Border>
   <ScrollViewer x:Name="TotalsScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
    <StackPanel x:Name="TotalsPanel" Visibility="Collapsed">
+    <Border x:Name="GettingStarted" Style="{StaticResource SurfacePanel}" Margin="0,0,0,16" Visibility="Collapsed">
+     <StackPanel>
+      <TextBlock Text="Start tracking your earnings" Style="{StaticResource SectionHeading}"/>
+      <TextBlock Text="Copy complete recordings from Nerve’s Recordings page, then preview and import them here. Your source values and history are kept." Style="{StaticResource PageDescription}" Margin="0,8,0,12"/>
+      <WrapPanel><Button Content="Import sessions" Click="ImportSessions_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,8,8"/><Button Content="Import payouts" Click="ImportPayouts_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8"/></WrapPanel>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource SurfacePanel}" Margin="0,0,0,16">
+     <StackPanel>
+      <TextBlock Text="All-time account summary" Style="{StaticResource SectionHeading}"/>
+      <WrapPanel Margin="0,8,0,0"><TextBlock Text="Unpaid verified earnings · USD" Style="{StaticResource Caption}" Margin="0,0,12,4"/><TextBlock Text="{Binding BalanceDisplay}" Style="{StaticResource SectionHeading}" Foreground="{StaticResource VerifiedTextColor}"/></WrapPanel>
+      <TextBlock Text="Recorded earnings awaiting payment; not a withdrawal confirmation. Independent of the period below." Style="{StaticResource Caption}" Margin="0,4,0,4"/>
+      <TextBlock Text="{Binding PaymentBreakdown}" Style="{StaticResource Caption}"/>
+     </StackPanel>
+    </Border>
+    <TextBlock Text="Selected period · USD" Style="{StaticResource CompactSectionHeading}" Margin="0,0,0,8"/>
     <ItemsControl x:Name="MetricCards" ItemsSource="{Binding Metrics}" Margin="-4,0,-4,8">
-     <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="5"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+     <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
      <ItemsControl.ItemTemplate><DataTemplate><Border Style="{StaticResource MetricPanel}" Margin="4,0,4,8" Padding="12"><StackPanel>
       <TextBlock Text="{Binding Label}" Style="{StaticResource DashboardStatLabel}" FontSize="12"/>
       <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Height="36" Margin="0,4"><TextBlock Text="{Binding Value}" Style="{StaticResource DashboardStatValue}" Foreground="{Binding ValueBrush}"/></Viewbox>
@@ -43,7 +59,7 @@
      <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
      <Border x:Name="TrendPanel" Style="{StaticResource SurfacePanel}"><StackPanel>
       <TextBlock Text="Earnings over time" Style="{StaticResource SectionHeading}"/>
-      <TextBlock Text="Earned (solid) · Pending (dashed) · USD" Style="{StaticResource Caption}" Margin="0,4,0,8"/>
+      <TextBlock Text="Daily earned (purple) · Pending (amber) · USD · Today is incomplete" Style="{StaticResource Caption}" Margin="0,4,0,8"/>
       <controls:DashboardEarningsChart x:Name="TrendChart" Days="{Binding Trend}" Height="180"/>
       <TextBlock x:Name="TrendEmptyState" Text="No earnings activity in this period." Style="{StaticResource Caption}" Visibility="Collapsed"/>
       <Expander x:Name="DailyValues" Header="Daily values" Margin="0,8,0,0"><ListBox ItemsSource="{Binding Trend}" Height="140" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" AutomationProperties.Name="Daily earnings and adjustments">

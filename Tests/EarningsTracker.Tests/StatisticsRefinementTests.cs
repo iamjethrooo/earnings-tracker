@@ -166,10 +166,11 @@ public class StatisticsRefinementTests(WpfTestHost host)
             Assert.Contains(canvas.Children.OfType<TextBlock>(), label => label.Text.Contains("No verified sessions"));
         else
         {
-            Assert.Single(canvas.Children.OfType<Polyline>());
+            Assert.Empty(canvas.Children.OfType<Polyline>());
+            Assert.Contains(canvas.Children.OfType<Rectangle>(), bar => !bar.IsHitTestVisible && bar.Height > 1);
             Assert.Contains(canvas.Children.OfType<TextBlock>(), label => label.Text.Contains("123,456.78"));
             Assert.Equal(0m, view.TrendPeriods.Sum(p => p.TotalEarnings)); // Net zero still has real activity.
-            Assert.All(canvas.Children.OfType<Ellipse>().Where(e => e.ToolTip != null), marker =>
+            Assert.All(canvas.Children.OfType<Rectangle>().Where(e => e.ToolTip != null), marker =>
                 Assert.NotNull(((ToolTip)marker.ToolTip).Style));
         }
         var children = canvas.Children.Cast<UIElement>().ToArray();

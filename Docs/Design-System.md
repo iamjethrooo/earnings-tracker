@@ -336,12 +336,12 @@ In Games, **My ease of grinding** and **My replay appeal** sort filtered results
 
 ## Analytics Dashboard (PRO-16)
 
-The approved Dashboard has five KPI cards, an earnings trend beside the session mix, and recent
+The Dashboard separates its all-time account summary from four selected-period KPI cards, an earnings chart beside the session mix, and recent
 activity beside top earning games. It uses the shared shell, typography, panels, artwork, status
 variants and buttons. Below 850 DIPs of page-region width the paired panels stack. The page body
 scrolls vertically while the heading and period selector stay available. Recent activity is limited
 to five recordings in a 240-DIP recycling viewport; Daily values has a separate bounded viewport.
-Paired panels retain equal heights. The five KPI cards share the height of their tallest content
+Paired panels retain equal heights. The four KPI cards share the height of their tallest content
 with standard padding, without a fixed minimum height that leaves unused space below the values.
 
 Dashboard and Statistics default to Current payout. The alternative 7/30/90-day ranges include
@@ -361,10 +361,10 @@ expose stale/retry feedback; first-load failures hide unavailable totals.
 
 | Display | Definition and date basis |
 | --- | --- |
-| Earned KPI / purple trend | Verified stored session earnings by recording day, plus qualifying signed separate Bonus/Earnings correction amounts by payout date, using `EarningsPeriods` and `PayoutAccounting.IsSeparateEarnedAdjustment`. Included-in-session, unresolved and ineligible adjustments are excluded. |
-| Pending KPI / dashed trend | Stored Pending session earnings by recording day; separate from earned amounts. |
-| Available balance | Lifetime `PayoutAccounting` balance: verified unpaid assignments with known posted dates, plus historical sessions after the latest Paid/Processing Payment day. Hidden/ineligible assigned payments return their sessions to current. It is independent of period selection and is not total earned minus payouts. Unknown posted dates are excluded and counted in the notice. |
-| Payouts KPI | Existing `PayoutAccounting` Paid/Processing Payment amounts in the selected payment-date range; payment signs retain the shared accounting treatment. Payments can pay earnings recorded in another period. |
+| Earned KPI / purple bars | Verified stored session earnings by recording day, plus qualifying signed separate Bonus/Earnings correction amounts by payout date, using `EarningsPeriods` and `PayoutAccounting.IsSeparateEarnedAdjustment`. Included-in-session, unresolved and ineligible adjustments are excluded. |
+| Pending KPI / amber bars | Stored Pending session earnings by recording day; separate from earned amounts. |
+| Unpaid verified earnings (all time) | Lifetime `PayoutAccounting` balance: verified unpaid assignments with known posted dates, plus historical sessions after the latest Paid/Processing Payment day. Hidden/ineligible assigned payments return their sessions to current. It is independent of period selection and is not total earned minus payouts. Unknown posted dates are excluded and counted in the notice. |
+| Paid + processing KPI | Existing `PayoutAccounting` Paid/Processing Payment amounts in the selected payment-date range; payment signs retain the shared accounting treatment. Payments can pay earnings recorded in another period. |
 | Hours played | Stored duration of Verified + Pending period recordings, summed without modifying duration precision. Rejected/Not Uploaded hours are excluded. Statistics' verified-only hours are a subset. |
 | Session mix | All four stored statuses by period recording date. Verified percentage denominator is **all period sessions**, including Rejected/Not Uploaded; no sessions displays “No sessions.” Status amounts are recorded values, not a claim that Rejected/Not Uploaded earnings were earned. Adjustments do not add sessions. |
 | Top games | Top four saved game identities by verified period session earnings; archived identities remain eligible. Unlinked names remain explicit without invented game links. Bars use the highest game amount as denominator, or zero when all amounts are zero. Adjustments are not attributed to games. |
@@ -372,11 +372,56 @@ expose stale/retry feedback; first-load failures hide unavailable totals.
 | Lifetime notice | Existing total earned and total paid/processing figures remain available. Their all-history rules, including future records, are unchanged; period analytics exclude future recording/payment dates. |
 
 Daily values exposes verified, signed adjustments, earned and pending values alongside the chart.
+Daily earned and pending amounts use separate purple and amber bars rather than connected lines.
+Statistics also uses bars for its selected daily/weekly/monthly buckets. The current bucket is
+marked with an asterisk and described as incomplete in the caption, tooltip and values view;
+Today is labeled Today so far in the calendar summary. Zero amounts remain real zero values,
+and negative adjustments extend below the zero baseline.
 The chart supports negative totals and displays legitimate zero/offsetting activity; absence of
 eligible records has distinct empty guidance. USD formatting rounds display only. Exact persisted
 decimals are retained in reporting rows. Whole-period earned amounts reconcile with Statistics at
 the same recording-date range; session counts/status totals reconcile with Sessions at identical
 date/status filters. Top-game totals exclude adjustments and are limited to four identities.
+
+### Task guidance and review
+
+A profile with no sessions or transactions shows a getting-started panel with direct session
+and payout import actions. Those actions use MainWindow's existing navigation and guarded modal
+coordinator. Empty analytical panels are collapsed for this first-run state; read failures still
+retain the prior snapshot or hide unavailable totals on first load.
+
+Dashboard's all-time summary and Payments use **Unpaid verified earnings** for the existing
+`PayoutAccounting` balance. **Paid + processing** names the combined payment total; an adjacent
+breakdown distinguishes Paid and Processing. These are reporting labels, not a withdrawal
+confirmation. Dashboard's four selected-period cards and Statistics' calendar summaries explicitly
+state their date scope. No calculation, posting-date cutoff or adjustment eligibility changes.
+
+Session importing offers copy instructions and a complete example. A bounded recycling review
+list shows new, updated, conflicting, invalid and repeated records, including the resolved local
+game/rate identity, recording date, duration, source status and unrounded USD amount. Updates
+show the saved values alongside imported values. New-session payout selection updates the review;
+previewing does not write records. Error recovery emphasizes Fix input, preserves pasted text and
+selects the parser's source line when a line number is available, including wrapped input.
+Saved-but-refresh-failed warnings still retire the write and never invite another commit.
+
+The force-verification checkbox explains that the flag and saved posted date survive session
+reimport; Verified status controls earned totals. Manual edits to Verified force-verified sessions
+still use the existing posted-date validation and audit rules. Session rows have a spoken summary
+and visible inspection guidance. Read-only drawers keep the background table legible while
+preserving containment; editing uses the stronger scrim and guarded Save/Cancel footer.
+
+Games keeps its list viewport bounded and virtualized. Secondary active filters are named beside
+the result count. Library tools & status contains maintenance controls and detailed provider/Steam
+status; a concise saved-data/freshness summary remains visible, along with individual offer dates
+and availability warnings. Game details puts cap-reset editing under Manage earning cycle with
+an explanation; rate, remaining hours/earnings and ownership/access remain in the main flow.
+
+Settings begins with section jump links and the existing backup/restore controls. Optional price
+refresh and Steam configuration are disclosed on request, retaining credential and privacy copy.
+Payout forms offer a visible Cancel action. Session deletion and manual-payout hiding use
+DangerButton, keeping their existing confirmations, audit records and soft-deletion behavior.
+Unchecked checkbox outlines use InputOutlineColor; ownership buttons have a 28-DIP minimum
+height and bookmarks retain their 36-DIP target and accessible name.
 
 Verification uses isolated SQLite fixtures and actual WPF resources, including narrow/default/wide
 renders, negative/zero/empty/error/stale states, bounded scrolling, programmatic focus/navigation
@@ -394,7 +439,7 @@ $3 in 30 minutes and $9 in 90 minutes produce $6 per hour across 2 hours.
 
 Statistics reuses `MetricPanel`, Dashboard metric text styles, `SurfacePanel`, `SectionHeading`,
 `MetricProgressBar`, and the shared ComboBox. Today uses accent text; other period values use primary text.
-Chart lines and game bars use `AccentColor`, gridlines use `DefaultBorderColor`, and axes use
+Earnings-period bars and game bars use `AccentColor`, gridlines use `DefaultBorderColor`, and axes use
 `SecondaryTextColor` at `FontSizeSupporting`. `ChartToolTip` in Controls.xaml uses the existing
 surface, text, border, padding, and font tokens; it introduces no palette or type scale.
 
@@ -405,8 +450,9 @@ its chart. The bounded, recycling cap and trend-value viewports remain available
 
 ## In-app copy
 
-Use short headings, explicit action labels and field units. Omit page-description subtitles,
-instructions for obvious controls and repeated success/audit reassurance. Imports use
+Use short headings, explicit action labels and field units. Add concise date-scope captions and
+guidance for choices that affect reporting; avoid instructions for obvious controls and repeated
+success/audit reassurance. Imports use
 **Preview import** before saving; unresolved game links appear under **Unlinked** in Sessions.
 
 Dashboard, Payments and Statistics expose accounting rules through **How calculated**.

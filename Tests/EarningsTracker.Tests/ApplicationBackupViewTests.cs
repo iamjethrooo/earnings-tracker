@@ -21,7 +21,7 @@ public sealed class ApplicationBackupViewTests(WpfTestHost host)
         view.Arrange(new Rect(0, 0, width, 560));
         view.UpdateLayout();
         var scroll = Assert.Single(((Grid)view.Content).Children.OfType<ScrollViewer>());
-        scroll.ScrollToBottom();
+        scroll.ScrollToTop();
         view.UpdateLayout();
         foreach (var name in new[] { "BackupButton", "RestoreButton" })
         {

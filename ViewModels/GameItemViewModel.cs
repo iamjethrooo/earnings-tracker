@@ -194,6 +194,7 @@ namespace EarningsTracker.ViewModels
             null => "Cap unknown",
             0m => "Cap reached",
             < 1m => "<1 min left",
+            >= 60m and var minutes => $"{(int)(minutes / 60)}h {minutes % 60:0.#}m left",
             decimal minutes => $"{minutes:0.#} min left"
         };
 

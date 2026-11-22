@@ -28,11 +28,12 @@
                 </DockPanel>
             </Border>
             <StackPanel x:Name="TotalsPanel" Visibility="Collapsed">
+                <TextBlock Text="Calendar summaries · USD · Independent of the analysis period below" Style="{StaticResource PageDescription}" Margin="0,0,0,8"/>
                 <UniformGrid x:Name="MetricCards" Columns="3" Margin="-4,0,-4,16" SizeChanged="MetricCards_SizeChanged">
 
                     <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
                         <StackPanel>
-                            <TextBlock Text="Today" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="Today so far" Style="{StaticResource DashboardStatLabel}"/>
                             <TextBlock Text="{Binding TodayEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource AccentTextColor}"/>
 
                         </StackPanel>
@@ -84,7 +85,7 @@
                         <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
-                                <TextBlock Text="Earnings over time" Style="{StaticResource SectionHeading}"/>
+                                <TextBlock Text="Earnings by period" Style="{StaticResource SectionHeading}"/><TextBlock Text="Bars show earned amounts in each period. The current period is incomplete." Style="{StaticResource PageDescription}"/>
 
                             </StackPanel>
                             <Canvas Grid.Row="1" x:Name="EarningsTrendCanvas" Height="230" SizeChanged="EarningsTrendCanvas_SizeChanged"/>

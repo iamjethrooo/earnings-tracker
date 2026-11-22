@@ -217,6 +217,27 @@ public class SharedControlTests(WpfTestHost host)
         return Task.CompletedTask;
     });
 
+    [Fact]
+    public Task DestructiveActionLabelsAndUncheckedBoxesRemainPerceivable() => host.RunAsync(() =>
+    {
+        var button = new Button { Content = "Delete", Style = (Style)Application.Current.FindResource("DangerButton") };
+        button.Measure(new Size(160, 60)); button.Arrange(new Rect(0, 0, 160, 60)); button.UpdateLayout();
+        var label = Assert.Single(Descendants<TextBlock>(button));
+        var text = ((SolidColorBrush)label.Foreground).Color;
+        foreach (var key in new[] { "RejectedBackgroundColor", "ControlHoverColor" })
+        {
+            var fill = ((SolidColorBrush)Application.Current.FindResource(key)).Color;
+            Assert.True((Luminance(text) + 0.05) / (Luminance(fill) + 0.05) >= 4.5);
+        }
+        var box = new CheckBox { Content = "Force-verified recording", IsChecked = false };
+        box.ApplyTemplate();
+        var outline = Assert.IsType<Border>(box.Template.FindName("Border", box));
+        var stroke = ((SolidColorBrush)outline.BorderBrush).Color;
+        var surface = ((SolidColorBrush)box.Background).Color;
+        Assert.True((Luminance(stroke) + 0.05) / (Luminance(surface) + 0.05) >= 3);
+        return Task.CompletedTask;
+    });
+
     private static double Luminance(Color color)
     {
         static double Linear(byte value)

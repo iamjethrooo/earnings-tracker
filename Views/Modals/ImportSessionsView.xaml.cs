@@ -28,6 +28,7 @@ namespace EarningsTracker.Views.Modals
         private ImportResult? importResult;
         private readonly SessionImporter importer;
         private bool _importCompleted;
+        private int? _errorLine;
         public ImportSessionsView() : this(null) { }
 
         internal ImportSessionsView(DbContextOptions<AppDbContext>? databaseOptions)
@@ -83,20 +84,24 @@ namespace EarningsTracker.Views.Modals
             try
             {
                 ImportInputPanel.Visibility = Visibility.Collapsed;
-                importResult = await _work.RunAsync("Preparing session preview…", () =>
+                _errorLine = null;
+                var preview = await _work.RunAsync("Preparing session preview…", () =>
                 {
                     using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
                     var games = db.Games.AsNoTracking().ToList();
-                    return importer.PreviewImport(SessionTextParser.Parse(importText, games, null));
+                    return (Result: importer.PreviewImport(SessionTextParser.Parse(importText, games, null)), Games: games);
                 });
                 if (_work.IsDisposed) return;
 
-                ImportResultModal.ShowPreview(importResult);
+                importResult = preview.Result;
+                ImportResultModal.ShowPreview(importResult, preview.Games);
                 ImportResultContainer.Visibility = Visibility.Visible;
             } catch (Exception ex)
             {
                 if (_work.IsDisposed) return;
                 Debug.WriteLine(ex.Message);
+                var line = System.Text.RegularExpressions.Regex.Match(ex.Message, @"\bLine (\d+):");
+                if (line.Success && int.TryParse(line.Groups[1].Value, out var number)) _errorLine = number - 1;
                 ImportResultModal.ShowError($"Unable to parse the imported data: {ex.Message}");
                 ImportResultContainer.Visibility = Visibility.Visible;
             }
@@ -107,6 +112,19 @@ namespace EarningsTracker.Views.Modals
             ImportInputPanel.Visibility = Visibility.Visible;
             ImportResultContainer.Visibility = Visibility.Collapsed;
             ImportTextBox.Focus();
+            if (_errorLine is int line && line >= 0)
+            {
+                // Parser line numbers refer to source lines, not visually wrapped TextBox lines.
+                var lines = System.Text.RegularExpressions.Regex.Matches(ImportTextBox.Text, @"[^\r\n]*(?:\r\n|\r|\n|$)");
+                if (line < lines.Count)
+                {
+                    var sourceLine = lines[line];
+                    ImportTextBox.Select(sourceLine.Index, sourceLine.Value.TrimEnd('\r', '\n').Length);
+                    ImportTextBox.UpdateLayout();
+                    var visualLine = ImportTextBox.GetLineIndexFromCharacterIndex(sourceLine.Index);
+                    if (visualLine >= 0) ImportTextBox.ScrollToLine(visualLine);
+                }
+            }
         }
 
         private void ConfirmImportButton_Click() { if (!_work.IsRunning && !_work.IsDisposed) OperationCompletion = ConfirmImportAsync(); }
@@ -138,7 +156,10 @@ namespace EarningsTracker.Views.Modals
             {
                 FindParentModal()?.SetHeaderVisible(false);
                 if (refreshWarning == null)
-                    ImportResultModal.ShowSuccess($"{importResult!.InsertedCount + importResult.UpdatedCount} sessions imported.");
+                {
+                    var count = importResult!.InsertedCount + importResult.UpdatedCount;
+                    ImportResultModal.ShowSuccess($"{count} {(count == 1 ? "session" : "sessions")} imported.");
+                }
                 else
                     ImportResultModal.ShowSavedWarning(refreshWarning);
                 ImportResultContainer.Visibility = Visibility.Visible;

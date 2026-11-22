@@ -20,6 +20,7 @@ namespace EarningsTracker.Views.Modals
         private PayoutCoveragePreview? _coverage;
         internal Task OperationCompletion { get; private set; } = Task.CompletedTask;
         public event EventHandler? Saved;
+        public event EventHandler? Cancelled;
 
         public PayoutEditView(Payout? existing = null) : this(existing, null) { }
 
@@ -49,6 +50,11 @@ namespace EarningsTracker.Views.Modals
                 var isAdjustment = PayoutType.SelectedItem?.ToString() is "Bonus" or "Earnings correction";
                 AdjustmentOptions.Visibility = isAdjustment ? Visibility.Visible : Visibility.Collapsed;
             };
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_work.IsRunning && !_work.IsDisposed) Cancelled?.Invoke(this, EventArgs.Empty);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

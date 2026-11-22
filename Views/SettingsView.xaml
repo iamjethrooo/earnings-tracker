@@ -14,7 +14,7 @@
  <Grid>
   <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
  <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-  <StackPanel Margin="20" MaxWidth="760" HorizontalAlignment="Stretch">
+  <StackPanel x:Name="SettingsBody" Margin="20" MaxWidth="960" HorizontalAlignment="Left">
    <StackPanel Margin="0,0,0,12">
                 <TextBlock Text="Settings" Style="{StaticResource TabName}"/>
 
@@ -24,6 +24,22 @@
      <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
     </Style></TextBlock.Style>
    </TextBlock>
+   <WrapPanel Margin="0,0,0,8" AutomationProperties.Name="Settings sections">
+    <Button Content="Data &amp; backup" Tag="DataBackupSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
+    <Button Content="Games" Tag="GamesDisplaySection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
+    <Button Content="Accounts &amp; integrations" Tag="StoreOffersSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
+    <Button Content="Updates" Tag="ApplicationUpdatesSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
+    <Button Content="About" Tag="SupportSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8"/>
+   </WrapPanel>
+   <Border x:Name="DataBackupSection" Focusable="True" AutomationProperties.Name="Data and backup" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="Backup &amp; restore" Style="{StaticResource CompactSectionHeading}"/>
+    <TextBlock Text="Includes saved records and settings, Steam account ID and cached library. Excludes API keys and cached artwork." Foreground="{StaticResource SecondaryTextColor}"/>
+    <WrapPanel Margin="0,4,0,0">
+     <Button x:Name="BackupButton" Content="Create backup" Click="Backup_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8" AutomationProperties.Name="Create application data backup"/>
+     <Button x:Name="RestoreButton" Content="Restore backup" Click="Restore_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8" AutomationProperties.Name="Restore application data from backup"/>
+    </WrapPanel>
+    <TextBlock Text="Restore replaces saved data and requires reopening the app." Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+   </StackPanel></Border>
    <Grid>
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -43,13 +59,15 @@
               Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
      </StackPanel></Expander>
     </StackPanel></Border>
-    <Border Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
+    <Border x:Name="StoreOffersSection" Focusable="True" AutomationProperties.Name="Accounts and integrations" Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
      <DockPanel>
       <TextBlock x:Name="KeyStatus" DockPanel.Dock="Right" Foreground="{StaticResource SecondaryTextColor}" Margin="12,0,0,0"/>
       <TextBlock Text="Store offers" Style="{StaticResource CompactSectionHeading}"/>
      </DockPanel>
+     <Expander x:Name="PriceRefreshSetup" Header="Configure optional price refresh"><StackPanel>
      <TextBlock Text="Refresh prices and store links from IsThereAnyDeal for games with a reviewed match."/>
      <Label Target="{Binding ElementName=ApiKey}" Content="IsThereAnyDeal API key" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
+     <TextBlock Text="Leave the key blank to keep an existing saved key. Credentials are stored in Windows Credential Manager, outside the database." Style="{StaticResource PageDescription}"/>
      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <PasswordBox x:Name="ApiKey" Padding="8" MaxLength="1000" Background="{StaticResource DefaultBackgroundColor}" Foreground="{StaticResource DefaultTextColor}" BorderBrush="{StaticResource DefaultBorderColor}" AutomationProperties.Name="Replacement IsThereAnyDeal API key" ToolTip="Optional key for live prices. Enter a replacement or leave blank to keep the saved key."/>
       <Button Grid.Column="1" Content="Save key" Click="SaveKey_Click" Style="{StaticResource PrimaryButton}" Padding="12,7" Margin="8,0,0,0"/>
@@ -58,6 +76,7 @@
      <Button x:Name="RefreshOffers" Content="Set up price refresh…" Click="RefreshOffers_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
      <TextBlock Text="{Binding StoreOffersStatus}" Foreground="{StaticResource SecondaryTextColor}" Margin="0,8,0,0"/>
      <TextBlock x:Name="StoreOffersFeedback" AutomationProperties.LiveSetting="Polite"/>
+     </StackPanel></Expander>
     </StackPanel></Border>
     <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Currency &amp; region" Style="{StaticResource CompactSectionHeading}"/>
@@ -65,7 +84,7 @@
      <TextBlock Text="Prices: PHP · Earnings: USD" Margin="0" ToolTip="Region and currencies are fixed for the supported catalog."/>
      <TextBlock Text="{Binding RateStatus}" Margin="0,8,0,0" Foreground="{StaticResource SecondaryTextColor}"/>
     </StackPanel></Border>
-    <Border Grid.Row="4" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
+    <Border x:Name="SupportSection" Focusable="True" AutomationProperties.Name="About" Grid.Row="4" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
      <TextBlock Text="Support &amp; about" Style="{StaticResource CompactSectionHeading}"/>
      <Button Content="Export diagnostics" Click="Export_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" HorizontalAlignment="Left" ToolTip="Exports version, update timestamps and outcomes. Excludes credentials and financial records."/>
      <StackPanel Margin="0,8,0,0">
@@ -79,7 +98,7 @@
     <TextBlock Text="Link Steam to show library matches alongside manual ownership." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
     <TextBlock Text="{Binding SteamStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
     <TextBlock x:Name="SteamFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
-    <StackPanel x:Name="SteamControls">
+    <Expander x:Name="SteamSetup" Header="Configure optional Steam account"><StackPanel x:Name="SteamControls">
      <Label Target="{Binding ElementName=SteamProfile}" Content="Steam profile URL or ID" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
      <TextBox x:Name="SteamProfile" Style="{StaticResource ModalTextBox}" MaxLength="250" Margin="0,0,0,8" AutomationProperties.Name="Steam profile URL or SteamID64"/>
      <Label Target="{Binding ElementName=SteamKey}" Content="Steam Web API key" Foreground="{StaticResource DefaultTextColor}" Padding="0,0,0,4"/>
@@ -96,7 +115,7 @@
       <TextBlock Text="Use your own API key. If you choose to share your library, review Game details under Steam → Edit Profile → Privacy Settings." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
       <TextBlock Text="Steam library uses the last successful sync. Owned uses manual ownership. Playable now also considers current free offers and selected subscriptions. Unlinking keeps manual ownership and purchase costs." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
      </StackPanel></Expander>
-    </StackPanel>
+    </StackPanel></Expander>
    </StackPanel></Border>
    <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Local installations" Style="{StaticResource CompactSectionHeading}"/>
@@ -114,7 +133,7 @@
      <Button Content="Clear Steam folders" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
     </WrapPanel>
    </StackPanel></Border>
-   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+   <Border x:Name="GamesDisplaySection" Focusable="True" AutomationProperties.Name="Games display" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Games display" Style="{StaticResource CompactSectionHeading}"/>
 
     <TextBlock Text="Default sort" Style="{StaticResource FilterLabel}"/>
@@ -124,16 +143,8 @@
     <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarked games" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
     <CheckBox x:Name="GamesShowArchived" Content="Show archived games" Click="GamesShowArchived_Click" ToolTip="Include archived games in the Games list. Archived game history remains available."/>
    </StackPanel></Border>
-   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Backup &amp; restore" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="Includes saved records and settings, Steam account ID and cached library. Excludes API keys and cached artwork." Foreground="{StaticResource SecondaryTextColor}"/>
-    <WrapPanel Margin="0,4,0,0">
-     <Button x:Name="BackupButton" Content="Create backup" Click="Backup_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8" AutomationProperties.Name="Create application data backup"/>
-     <Button x:Name="RestoreButton" Content="Restore backup" Click="Restore_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8" AutomationProperties.Name="Restore application data from backup"/>
-    </WrapPanel>
-    <TextBlock Text="Restore replaces saved data and requires reopening the app." Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
-   </StackPanel></Border>
-   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
+
+   <Border x:Name="ApplicationUpdatesSection" Focusable="True" AutomationProperties.Name="Application updates" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
     <TextBlock Text="Application updates" Style="{StaticResource CompactSectionHeading}"/>
     <CheckBox x:Name="ApplicationStartup" Content="Check when the application starts" IsChecked="{Binding CheckApplicationOnStartup, Mode=OneWay}" Click="ApplicationStartup_Click" Margin="0,0,0,8"/>
     <StackPanel DataContext="{Binding ApplicationUpdates}">
@@ -154,7 +165,7 @@
    </StackPanel></Border>
   </StackPanel>
  </ScrollViewer>
-  <Border Grid.Row="1" MaxWidth="760" Margin="20,0,20,20" Padding="0,12,0,0"
+  <Border Grid.Row="1" Width="{Binding ActualWidth, ElementName=SettingsBody}" MaxWidth="960" HorizontalAlignment="Left" Margin="20,0,20,20" Padding="0,12,0,0"
           BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,1,0,0">
    <DockPanel>
     <Button Content="Release history" Click="ReleaseHistory_Click" DockPanel.Dock="Right"

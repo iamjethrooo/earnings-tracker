@@ -38,6 +38,7 @@ namespace EarningsTracker.ViewModels
         public Session Session { get; private set; }
         public Game? Game => Session.Game;
         public bool CanNavigate => Game != null;
+        public string AccessibleSummary => $"{Session.GameName}, {Session.RecordedDate:MMM d, yyyy h:mm tt}, {Session.DurationText}, {CurrencyDisplay.FormatUsd(Session.Earnings)}, {StatusText}. Press Enter for session details.";
         public string Identifier => $"Session #{Session.Id}";
         public string SourceId => Session.Payout?.SourceId ?? "Not recorded";
         public string SourceLabel { get; private set; } = "Not recorded";
@@ -127,6 +128,7 @@ namespace EarningsTracker.ViewModels
         {
             Session = session;
             OnPropertyChanged(nameof(Session));
+            OnPropertyChanged(nameof(AccessibleSummary));
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(Game));
             OnPropertyChanged(nameof(CanNavigate));
@@ -255,6 +257,7 @@ namespace EarningsTracker.ViewModels
             EditError = null;
             ClearValidation();
             OnPropertyChanged(nameof(Session));
+            OnPropertyChanged(nameof(AccessibleSummary));
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(Game));
             OnPropertyChanged(nameof(CanNavigate));

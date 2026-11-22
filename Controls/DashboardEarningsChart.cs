@@ -7,7 +7,7 @@ using EarningsTracker.ViewModels;
 
 namespace EarningsTracker.Controls;
 
-// The approved prototype's Canvas/Polyline chart, with signed adjustment support.
+// Daily amounts use separate bars, including signed adjustments; they are not a running balance.
 public sealed class DashboardEarningsChart : Canvas
 {
     public static readonly DependencyProperty DaysProperty = DependencyProperty.Register(nameof(Days),
@@ -44,7 +44,8 @@ public sealed class DashboardEarningsChart : Canvas
         var width = ActualWidth - left - right;
         if (width <= 0) return;
         var height = ActualHeight - top - bottom;
-        double X(int i) => left + i * width / Math.Max(1, days.Count - 1);
+        var slot = width / days.Count;
+        double X(int i) => left + (i + 0.5) * slot;
         double Y(decimal value) => top + (double)((maximum - value) / (maximum - minimum)) * height;
         for (var i = 0; i < ticks.Length; i++)
         {
@@ -52,19 +53,26 @@ public sealed class DashboardEarningsChart : Canvas
             Children.Add(new Line { X1 = left, X2 = ActualWidth - right, Y1 = y, Y2 = y, Stroke = grid });
             Label(tickLabels[i], 0, y - 8, left - 10, TextAlignment.Right);
         }
-        var points = new PointCollection(days.Select((day, i) => new Point(X(i), Y(day.Earned))));
-        Children.Add(new Polygon { Points = new PointCollection(points) { new(X(days.Count - 1), Y(0)), new(X(0), Y(0)) }, Fill = accent, Opacity = 0.10 });
-        Children.Add(new Polyline { Points = points, Stroke = accent, StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round });
-        Children.Add(new Polyline { Points = new PointCollection(days.Select((day, i) => new Point(X(i), Y(day.Pending)))), Stroke = pending, StrokeThickness = 1.5, StrokeDashArray = [3, 3] });
-        var count = Math.Clamp((int)(width / 100), 2, 7);
+        var barWidth = Math.Min(24, slot * 0.34);
+        for (var i = 0; i < days.Count; i++)
+        {
+            AddBar(days[i].Earned, X(i) - barWidth, accent);
+            AddBar(days[i].Pending, X(i), pending);
+        }
+        void AddBar(decimal value, double x, Brush brush)
+        {
+            var bar = new Rectangle { Width = barWidth, Height = Math.Max(1, Math.Abs(Y(value) - Y(0))), Fill = brush, IsHitTestVisible = false };
+            SetLeft(bar, x); SetTop(bar, Math.Min(Y(value), Y(0))); Children.Add(bar);
+        }
+        var count = Math.Min(days.Count, Math.Clamp((int)(width / 100), 2, 7));
         for (var n = 0; n < count; n++)
         {
-            var index = (int)Math.Round(n * (days.Count - 1.0) / (count - 1));
-            Label(days[index].Date.ToString("MMM d", CultureInfo.InvariantCulture), X(index) - 24, ActualHeight - 20, 48);
+            var index = (int)Math.Round(n * (days.Count - 1.0) / Math.Max(1, count - 1));
+            Label(days[index].Date.Date == DateTime.Today ? "Today*" : days[index].Date.ToString("MMM d", CultureInfo.InvariantCulture), X(index) - 24, ActualHeight - 20, 48);
         }
         for (var i = 0; i < days.Count; i++)
         {
-            var target = new Rectangle { Width = Math.Min(width, Math.Max(6, width / days.Count)), Height = height, Fill = Brushes.Transparent,
+            var target = new Rectangle { Width = slot, Height = height, Fill = Brushes.Transparent,
                 ToolTip = new ToolTip { Style = (Style)FindResource("ChartToolTip"), Content = days[i].Description } };
             SetLeft(target, Math.Clamp(X(i) - target.Width / 2, left, Math.Max(left, ActualWidth - right - target.Width)));
             SetTop(target, top); Children.Add(target);

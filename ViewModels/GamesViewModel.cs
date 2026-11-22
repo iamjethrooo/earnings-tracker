@@ -69,6 +69,9 @@ namespace EarningsTracker.ViewModels
         public string MoreFiltersText => SecondaryFilterCount == 0 ? "More filters" : $"More filters ({SecondaryFilterCount})";
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
+        public string LibraryStatusSummary => CatalogStatus.Contains("unavailable", StringComparison.OrdinalIgnoreCase)
+            ? "PH prices · USD earnings · Refresh unavailable; saved data retained. See Library tools & status."
+            : "PH prices · USD earnings · Saved quotes; check price dates and availability.";
         public string SteamStatus { get; private set; } = "";
         internal LocalInstallationSnapshot Installations { get; private set; } = new(false, [], null);
         public bool ShowPriceSortHelp { get; private set; }
@@ -77,7 +80,7 @@ namespace EarningsTracker.ViewModels
         public string PriceSortHelp => "Saved PH prices · may be outdated";
         public string GamePassFilterHelp => "PC Game Pass includes previously verified games. Stale/expired verification does not confirm current availability; Playable now still requires current verification and a selected membership.";
 
-        internal void SetStatus(string text) { CatalogStatus = text; OnPropertyChanged(nameof(CatalogStatus)); }
+        internal void SetStatus(string text) { CatalogStatus = text; OnPropertyChanged(nameof(CatalogStatus)); OnPropertyChanged(nameof(LibraryStatusSummary)); }
 
         private sealed record CatalogSnapshot(Dictionary<int, GameMetadata> Metadata, ILookup<int, GameGenre> Genres,
             ILookup<int, StoreOffer> Offers, ILookup<int, SubscriptionAvailability> Subscriptions,

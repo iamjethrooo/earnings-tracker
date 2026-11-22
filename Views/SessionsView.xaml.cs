@@ -396,6 +396,8 @@ namespace EarningsTracker.Views
             SessionsList.IsEnabled = !HasActiveDraft;
             KeyboardNavigation.SetTabNavigation(DetailsPanel, _drawer ? KeyboardNavigationMode.Cycle : KeyboardNavigationMode.Continue);
             var editing = model.SelectedSession?.IsEditing == true;
+            // Read-only inspection keeps the table legible; editing retains modal emphasis and containment.
+            DrawerLayer.Background = new SolidColorBrush(Color.FromArgb(editing ? (byte)153 : (byte)24, 0, 0, 0));
             ReadActions.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
             EditActions.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
             EditorFeedbackPanel.Visibility = _feedback.Length > 0 && !(_drawer && hasDetails) ? Visibility.Visible : Visibility.Collapsed;

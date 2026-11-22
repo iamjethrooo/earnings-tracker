@@ -26,6 +26,9 @@
             <TextBox AutomationProperties.Name="Change reason (optional)" x:Name="Reason" Style="{StaticResource ModalTextBox}" Margin="0,4,0,14"/>
             <TextBlock x:Name="ValidationMessage" Style="{StaticResource InputValidationText}" Margin="0,0,0,12"/>
             <ContentControl x:Name="CoveragePanel"/>
-            <Button x:Name="SaveButton" Content="Save payout" Click="SaveButton_Click" Style="{StaticResource PrimaryButton}" Padding="20,10" HorizontalAlignment="Center"/>
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                <Button x:Name="SaveButton" Content="Save payout" Click="SaveButton_Click" Style="{StaticResource PrimaryButton}" Padding="20,10"/>
+            </WrapPanel>
         </StackPanel>
 </UserControl>

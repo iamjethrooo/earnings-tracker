@@ -82,7 +82,8 @@ Get-ReleaseNotes -RepositoryPath (Get-Location).Path -Version 1.4.0 -Configurati
 
 Build on Windows with the .NET 10 SDK and Windows Desktop runtime. Catalog maintainer scripts require Python 3.11+ and use the standard library. The solution is `EarningsTracker.slnx`.
 
-`global.json` pins SDK `10.0.403`, with roll-forward disabled and prerelease SDKs excluded.
+`global.json` pins SDK `10.0.404`, with roll-forward disabled and prerelease SDKs excluded.
+The workspace pin was updated for v1.7.0; v1.6.2 used SDK `10.0.403`.
 Historical v1.1.0/v1.2.0 candidates used SDK `10.0.402`; retain their original evidence.
 Record the actual SDK, source SHA, configuration, tools and hashes for each new candidate.
 Do not silently bypass the pin.
@@ -96,6 +97,32 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 ```
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
+
+## v1.7.0 candidate preparation — 2026-11-22
+
+Prepare an unsigned, self-contained Windows x64 minor release with product/package version
+1.7.0, assembly/file version 1.7.0.0, package identity `EarningsTracker.App` and channel
+`win-x64-app-stable`. Use full packages only. Scope is the reviewed UI and workflow improvements:
+first-run import actions, record-level import review and error recovery, financial terminology
+and date scope, amount charts, Games/Settings hierarchy, session inspection and verification
+guidance, destructive/cancel actions, and copy/accessibility refinements. The bundled catalog
+also includes the separately reviewed PC Game Pass snapshot already committed and published
+through the catalog workflow. Application preparation does not republish or change that channel.
+
+There is no new schema migration or accounting/import matching change. Existing source and
+audit preservation rules remain in effect. Reconcile v1.6.2's maintained history timestamp to
+GitHub's actual `2026-11-21T08:51:48Z`; preserve prior package notes and artifacts. The v1.7.0
+history timestamp is an intended publication time until the release is actually published.
+
+Use the current SDK pin, retain exact dirty-source hashes with the candidate, and record fresh
+Debug/Release, Python tool, package/privacy and installed-version history checks under
+`.local-docs/` and `artifacts/`. Earlier rendered UI checks do not establish native input,
+Narrator, monitor-DPI, exact installer/update or clean-Windows verification. Retain all existing
+unsigned, security, data-preservation, licensing and dependency-notice disclosures.
+
+Local preparation does not approve source commits/pushes, tags, uploads or stable/latest
+publication. Obtain approval for the exact reviewed source and artifact hashes before those
+actions; no installed personal profile should be launched or modified as a release check.
 
 ## v1.6.2 candidate preparation — 2026-11-21
 

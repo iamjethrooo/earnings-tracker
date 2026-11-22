@@ -37,6 +37,15 @@ public partial class SettingsView : UserControl
         UpdateLocalInstallationSettings();
         Unloaded += (_, _) => { ApiKey.Clear(); SteamKey.Clear(); steamWork?.Cancel(); };
     }
+    private void JumpToSection_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string name } && FindName(name) is FrameworkElement section)
+        {
+            section.BringIntoView();
+            section.Focus();
+        }
+    }
+
     private void UpdateLocalInstallationSettings()
     {
         try
@@ -283,6 +292,8 @@ public partial class SettingsView : UserControl
     {
         if (!canRefreshStoreOffers)
         {
+            PriceRefreshSetup.IsExpanded = true;
+            ApiKey.BringIntoView();
             ApiKey.Focus();
             return;
         }

@@ -8,7 +8,7 @@ namespace EarningsTracker.ViewModels;
 public sealed record DashboardDay(DateTime Date, decimal Verified, decimal Adjustments, decimal Pending)
 {
     public decimal Earned => Verified + Adjustments;
-    public string Description => $"{Date:MMM d, yyyy} · Verified {CurrencyDisplay.FormatUsd(Verified)} · Adjustments {CurrencyDisplay.FormatUsd(Adjustments)} · Earned {CurrencyDisplay.FormatUsd(Earned)} · Pending {CurrencyDisplay.FormatUsd(Pending)}";
+    public string Description => $"{Date:MMM d, yyyy}{(Date.Date == DateTime.Today ? " · Today so far" : "")} · Verified {CurrencyDisplay.FormatUsd(Verified)} · Adjustments {CurrencyDisplay.FormatUsd(Adjustments)} · Earned {CurrencyDisplay.FormatUsd(Earned)} · Pending {CurrencyDisplay.FormatUsd(Pending)}";
 }
 
 public sealed record DashboardMetric(string Label, string Value, string Detail, Brush ValueBrush);
@@ -24,5 +24,5 @@ public sealed record DashboardGame(Game? Game, string Name, int Sessions, decima
 {
     public bool CanNavigate => Game != null;
     public string Amount => CurrencyDisplay.FormatUsd(Earnings);
-    public string Detail => $"{Sessions:N0} verified sessions{(Game == null ? " · unlinked history" : Game.IsArchived ? " · archived" : "")}";
+    public string Detail => $"{Sessions:N0} verified {(Sessions == 1 ? "session" : "sessions")}{(Game == null ? " · unlinked history" : Game.IsArchived ? " · archived" : "")}";
 }

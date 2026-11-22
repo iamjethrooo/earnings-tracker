@@ -257,6 +257,8 @@ namespace EarningsTracker
             {
                 case NavigationPage.Dashboard:
                     var dashboardView = new Views.DashboardView();
+                    dashboardView.ImportSessionsRequested += (_, _) => OpenSessionImport();
+                    dashboardView.ImportPayoutsRequested += (_, _) => OpenPayoutImport();
 
                     dashboardView.ViewAllSessionsRequested += (sender, e) =>
                     {
@@ -286,6 +288,7 @@ namespace EarningsTracker
                         {
                             var editView = new PayoutEditView();
                             editView.Saved += (s, args) => MainModal.Close();
+                            editView.Cancelled += (s, args) => MainModal.Close();
                             return editView;
                         });
                     };
@@ -295,6 +298,7 @@ namespace EarningsTracker
                         {
                             var editView = new PayoutEditView(payout);
                             editView.Saved += (s, args) => MainModal.Close();
+                            editView.Cancelled += (s, args) => MainModal.Close();
                             return editView;
                         });
                     };
@@ -335,6 +339,32 @@ namespace EarningsTracker
         }
 
         private void OpenSettings() => NavigateTo(NavigationPage.Settings);
+
+        private void OpenSessionImport()
+        {
+            if (!CanChangePage()) return;
+            NavigateTo(NavigationPage.Sessions);
+            if (MainContent.Content is not Views.SessionsView) return;
+            OpenModal("Import Sessions", () =>
+            {
+                var view = new ImportSessionsView();
+                view.ImportCompleted += (_, _) => MainModal.Close();
+                return view;
+            });
+        }
+
+        private void OpenPayoutImport()
+        {
+            if (!CanChangePage()) return;
+            NavigateTo(NavigationPage.Payments);
+            if (MainContent.Content is not Views.PayoutsView) return;
+            OpenModal("Import Payouts", () =>
+            {
+                var view = new ImportPayoutsView();
+                view.ImportCompleted += (_, _) => MainModal.Close();
+                return view;
+            });
+        }
 
         public void OpenGameDetails(Game game)
         {

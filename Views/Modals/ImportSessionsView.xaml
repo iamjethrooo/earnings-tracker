@@ -19,7 +19,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Margin="0,0,0,12" Text="Paste complete recordings from Nerve’s Recordings page." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
+            <StackPanel Grid.Row="0"><TextBlock Margin="0,0,0,12" Text="Paste complete recordings from Nerve’s Recordings page." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
+            <Expander Header="How to copy recordings" Margin="0,0,0,12">
+                <StackPanel><TextBlock Text="On Nerve’s Recordings page, select and copy each complete recording: game name, recording date, duration, earnings and its displayed verification status. Paste the selection below. Keep source values as shown; previewing saves nothing." Style="{StaticResource PageDescription}"/>
+                <TextBlock Text="Example of a complete recording:" Style="{StaticResource PageDescription}" Margin="0,8,0,4"/>
+                <TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True" AcceptsReturn="True" Text="PlateUp!&#10;PlateUp!&#10;PlateUp! · Nov 21, 2026 3:13 AM · 24m · File deleted&#10;+$0.61&#10;Verified" Style="{StaticResource ModalTextBox}" AutomationProperties.Name="Example session recording"/>
+                </StackPanel>
+            </Expander></StackPanel>
             <TextBox Grid.Row="1" AutomationProperties.Name="Session import text" x:Name="ImportTextBox" Style="{StaticResource ImportInputTextBox}">
             </TextBox>
             <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste session text first." Style="{StaticResource InputValidationText}"/>

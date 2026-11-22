@@ -38,7 +38,7 @@
             <WrapPanel HorizontalAlignment="Right">
             <Button x:Name="ResultBackButton" Content="Back to input" Visibility="Collapsed" Margin="0,0,12,0"
                     Style="{StaticResource SecondaryButton}" Click="SummaryBackButton_Click"/>
-            <Button Content="Done"
+            <Button x:Name="ResultDoneButton" Content="Done"
             Style="{StaticResource PrimaryButton}"
             Click="DoneButton_Click"
             HorizontalAlignment="Center"/>
@@ -89,6 +89,25 @@
                    Foreground="{StaticResource SecondaryTextColor}"
                    FontSize="{StaticResource FontSizeBody}"/>
 
+                <TextBlock Text="Review recordings" Style="{StaticResource CompactSectionHeading}" Margin="0,12,0,6"/>
+                <TextBlock Text="Imported fields are shown below. Saved source evidence and fields omitted by this import are retained. Excluded records will not be saved." Style="{StaticResource PageDescription}"/>
+                <ListBox x:Name="ReviewRows" MaxHeight="240" HorizontalContentAlignment="Stretch"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"
+                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                         AutomationProperties.Name="Recordings to import and excluded records">
+                    <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem" BasedOn="{StaticResource ItemButton}">
+                        <Setter Property="FontWeight" Value="Normal"/><Setter Property="FontSize" Value="{StaticResource FontSizeCompactBody}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style></ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="8">
+                        <TextBlock Text="{Binding Change}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Recording}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Assignment}" Style="{StaticResource PageDescription}"/>
+                        <TextBlock Text="{Binding Before}" Style="{StaticResource PageDescription}"/>
+                    </StackPanel></DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
                 <TextBlock x:Name="TotalEarningsText"
                    Margin="0,20,0,0"
                    Style="{StaticResource SectionHeading}"/>

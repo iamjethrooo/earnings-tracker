@@ -94,7 +94,7 @@ namespace EarningsTracker.Tests
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
             var canvas = Assert.IsType<Canvas>(view.FindName("EarningsTrendCanvas"));
-            var tooltips = canvas.Children.OfType<Ellipse>().Where(dot => dot.ToolTip is ToolTip)
+            var tooltips = canvas.Children.OfType<Rectangle>().Where(dot => dot.ToolTip is ToolTip)
                 .Select(dot => Assert.IsType<TextBlock>(Assert.IsType<ToolTip>(dot.ToolTip).Content).Text).ToList();
             Assert.NotEmpty(tooltips);
             Assert.Single(tooltips, text => text.Contains("Total earnings: $8.00"));

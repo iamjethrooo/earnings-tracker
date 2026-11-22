@@ -94,13 +94,13 @@ public class DashboardRefinementTests(WpfTestHost host)
         view.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         view.UpdateLayout();
-        Assert.Equal(5, view.Metrics.Count);
+        Assert.Equal(4, view.Metrics.Count);
         var scroll = (ScrollViewer)view.FindName("TotalsScroll");
         Assert.Equal(0, scroll.ScrollableWidth);
         Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
         scroll.ScrollToBottom(); view.UpdateLayout();
         var list = (ListBox)view.FindName("SessionsList");
-        Assert.Equal(240, list.ActualHeight);
+        Assert.Equal(empty ? 0 : 240, list.ActualHeight);
         Assert.True(Bounds(list, view).Bottom <= height + 1);
         Assert.Equal(empty ? Visibility.Visible : Visibility.Collapsed,
             ((TextBlock)view.FindName("DashboardViewEmptyState")).Visibility);
@@ -120,7 +120,7 @@ public class DashboardRefinementTests(WpfTestHost host)
         }
         var cards = Descendants<Border>((ItemsControl)view.FindName("MetricCards"))
             .Where(border => border.DataContext is EarningsTracker.ViewModels.DashboardMetric).ToList();
-        Assert.Equal(5, cards.Count);
+        Assert.Equal(4, cards.Count);
         var contentHeight = cards.Max(card => card.Child.DesiredSize.Height + card.Padding.Top + card.Padding.Bottom
             + card.BorderThickness.Top + card.BorderThickness.Bottom);
         Assert.All(cards, card => Assert.InRange(card.ActualHeight - contentHeight, -1, 1));
