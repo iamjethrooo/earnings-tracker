@@ -130,5 +130,126 @@ class SubscriptionTests(unittest.TestCase):
             collection["Candidates"][0]["ProviderId"] = "different"; catalog.save(args.collection, collection); s.reverify(args)
             self.assertEqual(catalog.load(args.output)["Games"][0]["Subscriptions"][0]["VerifiedAt"], "2020-01-01T00:00:00Z")
 
+    def sync_files(self, directory, collection):
+        args = self.files(directory, collection, {"Decisions": []})
+        args.review_output = Path(directory) / "review-output.json"
+        args.sync_report = Path(directory) / "sync-report.json"
+        return args
+
+    def previous_membership(self, provenance="Official subscription catalog; id:OLD; reviewed"):
+        self.game["Subscriptions"] = [{"Service": "PC Game Pass", "Included": True, "Platform": "PC", "Region": "PH",
+            "VerifiedAt": "2020-01-01T00:00:00Z", "Url": s.XBOX_PAGE, "Provenance": provenance}]
+
+    def test_sync_adds_previously_unapproved_subscription_and_preserves_inputs(self):
+        collection = self.propose()
+        with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+            args = self.sync_files(directory, collection)
+            original_catalog, original_review = args.catalog.read_bytes(), args.review.read_bytes()
+            s.sync(args)
+            result = catalog.load(args.output)
+            self.assertTrue(result["Games"][0]["Subscriptions"][0]["Included"])
+            self.assertEqual(self.source["FetchedAt"], result["Games"][0]["Subscriptions"][0]["VerifiedAt"])
+            self.assertEqual("Added", catalog.load(args.sync_report)["Changes"][0]["Action"])
+            self.assertTrue(catalog.load(args.review_output)["Mappings"]["game"]["Subscriptions"][0]["Included"])
+            self.assertEqual(original_catalog, args.catalog.read_bytes())
+            self.assertEqual(original_review, args.review.read_bytes())
+
+    def test_sync_marks_departures_unavailable_without_deleting_games(self):
+        for provenance in ("Official subscription catalog; id:OLD; reviewed", "Previously checked official PH listing"):
+            with self.subTest(provenance=provenance):
+                self.previous_membership(provenance)
+                self.source["Products"][0]["Title"] = "Other game"
+                collection = self.propose()
+                with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+                    args = self.sync_files(directory, collection)
+                    s.sync(args)
+                    result = catalog.load(args.output)
+                    self.assertEqual(1, len(result["Games"]))
+                    self.assertEqual("game", result["Games"][0]["CatalogId"])
+                    self.assertFalse(result["Games"][0]["Subscriptions"][0]["Included"])
+                    self.assertEqual("Removed", catalog.load(args.sync_report)["Changes"][0]["Action"])
+                    self.assertFalse(catalog.load(args.review_output)["Mappings"]["game"]["Subscriptions"][0]["Included"])
+
+    def test_sync_does_not_remove_missing_games_from_partial_collection(self):
+        self.previous_membership()
+        self.source["Products"][0]["Title"] = "Other game"
+        self.source["Complete"] = False
+        collection = self.propose()
+        with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+            args = self.sync_files(directory, collection)
+            s.sync(args)
+            self.assertEqual(self.snapshot, catalog.load(args.output))
+            self.assertEqual([], catalog.load(args.sync_report)["Changes"])
+
+    def test_sync_rejects_failed_stale_unverified_and_empty_sources(self):
+        stale = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=8)).isoformat()
+        for source in ({"Failed": True}, dict(self.source, RegionConfirmed=False), dict(self.source, Region="US"),
+                       dict(self.source, Platform="Console"), dict(self.source, FetchedAt=stale), dict(self.source, Products=[])):
+            with self.subTest(source=source), tempfile.TemporaryDirectory() as directory:
+                args = self.sync_files(directory, {"Sources": [source]})
+                with self.assertRaisesRegex(ValueError, "fresh Philippine PC Game Pass"):
+                    s.sync(args)
+                self.assertFalse(args.output.exists())
+                self.assertFalse(args.review_output.exists())
+
+    def test_sync_retains_ambiguous_duplicate_titles_including_potential_removals(self):
+        self.previous_membership()
+        duplicate = copy.deepcopy(self.game)
+        duplicate["CatalogId"] = "other-rate"
+        self.game.update(NameOccurrence=1, ExpectedNameCount=2)
+        duplicate.update(NameOccurrence=2, ExpectedNameCount=2)
+        self.snapshot["Games"].append(duplicate)
+        collection = self.propose()
+        with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+            args = self.sync_files(directory, collection)
+            s.sync(args)
+            self.assertEqual(self.snapshot, catalog.load(args.output))
+            self.assertEqual([], catalog.load(args.sync_report)["Changes"])
+            self.assertEqual(1, len(catalog.load(args.sync_report)["Ambiguous"]))
+
+    def test_sync_retains_competing_editions_and_unreviewed_identities(self):
+        self.source["Products"].append(dict(self.source["Products"][0], Id="OTHER"))
+        for reviewed in (True, False):
+            self.game["Reviewed"] = reviewed
+            collection = self.propose()
+            with self.subTest(reviewed=reviewed), tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+                args = self.sync_files(directory, collection)
+                s.sync(args)
+                self.assertEqual(self.snapshot, catalog.load(args.output))
+                self.assertEqual([], catalog.load(args.sync_report)["Changes"])
+
+    def test_sync_recomputes_candidates_from_evidence(self):
+        collection = self.propose()
+        collection["Candidates"][0]["Action"] = "Removed"
+        with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+            args = self.sync_files(directory, collection)
+            s.sync(args)
+            self.assertTrue(catalog.load(args.output)["Games"][0]["Subscriptions"][0]["Included"])
+
+    def test_sync_can_restore_a_departed_game_and_repeat_without_changes(self):
+        self.previous_membership()
+        self.game["Subscriptions"][0]["Included"] = False
+        collection = self.propose()
+        with tempfile.TemporaryDirectory() as directory, patch.object(catalog, "is_archived", return_value=False):
+            args = self.sync_files(directory, collection)
+            s.sync(args)
+            result = catalog.load(args.output)
+            self.assertTrue(result["Games"][0]["Subscriptions"][0]["Included"])
+            catalog.save(args.catalog, result)
+            catalog.save(args.review, catalog.load(args.review_output))
+            s.sync(args)
+            self.assertEqual(result, catalog.load(args.output))
+            self.assertEqual([], catalog.load(args.sync_report)["Changes"])
+
+    def test_sync_rejects_output_paths_that_overwrite_inputs(self):
+        collection = self.propose()
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.sync_files(directory, collection)
+            original = args.catalog.read_bytes()
+            args.sync_report = args.catalog
+            with self.assertRaisesRegex(ValueError, "separate from all input"):
+                s.sync(args)
+            self.assertEqual(original, args.catalog.read_bytes())
+
 
 if __name__ == "__main__": unittest.main()

@@ -1,4 +1,4 @@
-"""Collect official subscription catalogs, propose changes, and apply reviewed decisions.
+"""Collect official subscription catalogs, synchronize availability, or apply reviewed decisions.
 
 No account or provider keys are required. Collection never modifies the bundled catalog.
 """
@@ -130,7 +130,7 @@ def candidate_id(service, product_id, catalog_id, action):
     return hashlib.sha256(json.dumps([service, product_id, catalog_id, action]).encode()).hexdigest()[:24]
 
 
-def propose(snapshot, mappings, sources):
+def propose(snapshot, mappings, sources, include_manual_removals=False):
     games = [g for g in snapshot["Games"] if g.get("Reviewed") and not catalog.is_archived(g)]
     names = {}
     for game in games:
@@ -160,7 +160,8 @@ def propose(snapshot, mappings, sources):
             provider_ids = {p["Id"] for p in products}
             for game in games:
                 previous = next((s for s in game.get("Subscriptions", []) if s["Service"] == source["Service"]
-                    and s.get("Included") and s.get("Provenance", "").startswith("Official subscription catalog")), None)
+                    and s.get("Included") and (s.get("Provenance", "").startswith("Official subscription catalog")
+                    or include_manual_removals and s.get("Platform") == "PC" and s.get("Region") == "PH")), None)
                 previous_id = re.search(r"(?:^|; )id:([^;]+)", previous.get("Provenance", "")) if previous else None
                 if previous and game["CatalogId"] not in seen and not (previous_id and previous_id[1] in provider_ids):
                     candidates.append({"CandidateId": candidate_id(source["Service"], "removed", game["CatalogId"], "Removed"),
@@ -197,29 +198,98 @@ def report(args):
     if args.decisions and decisions.get("CollectionHash") != collection_hash(collection):
         raise ValueError("Decisions must reference this exact collection")
     approved = {d["CandidateId"] for d in decisions["Decisions"] if d.get("Approved")}
+    synchronization = catalog.load(args.sync_report) if getattr(args, "sync_report", None) else None
+    if synchronization and synchronization.get("CollectionHash") != collection_hash(collection):
+        raise ValueError("Synchronization report must reference this exact collection")
+    automatic = {c["CandidateId"] for c in synchronization["Changes"]} if synchronization else set()
     lines = ["# Subscription catalog review", "", "Collected at " + collection["CollectedAt"] + " (UTC).",
-        "", "Only reviewed Philippine PC availability is included in the app. Pending candidates grant no access.", "",
-        "| Service | Observed products | Complete | PH confirmed | Approved matches | Pending matches |",
-        "| --- | ---: | --- | --- | ---: | ---: |"]
+        "", "Only confirmed Philippine PC availability is included in the app. Pending candidates grant no access.", "",
+        "| Service | Observed products | Complete | PH confirmed | Automatic updates | Reviewed decisions | Pending matches |",
+        "| --- | ---: | --- | --- | ---: | ---: | ---: |"]
     for source in collection["Sources"]:
         if source.get("Failed"):
             lines.extend(["", source["Provider"] + ": provider failed; previous data retained; no removals proposed."])
             continue
         matches = [c for c in collection["Candidates"] if c["Service"] == source["Service"]]
         count = sum(c["CandidateId"] in approved for c in matches)
-        lines.append(f'| {source["Service"]} | {len(source["Products"])} | {source["Complete"]} | {source["RegionConfirmed"]} | {count} | {len(matches)-count} |')
+        synced = sum(change["Service"] == source["Service"] for change in synchronization["Changes"]) if synchronization else 0
+        pending = sum(c["CandidateId"] not in approved | automatic for c in matches)
+        lines.append(f'| {source["Service"]} | {len(source["Products"])} | {source["Complete"]} | {source["RegionConfirmed"]} | {synced} | {count} | {pending} |')
     lines.extend(["", "## Source evidence", ""])
     for source in collection["Sources"]:
         if source.get("Failed"): continue
         lines.append(f'- [{source["Service"]}]({source["SourceUrl"]}): {source["RegionEvidence"]}.')
         if not source["Complete"]: lines.append("  Partial list: missing titles cannot establish removals.")
         for warning in source.get("Warnings", []): lines.append("  " + warning)
+    if synchronization:
+        lines.extend(["", "## Applied automatically", ""])
+        for change in synchronization["Changes"]:
+            lines.append(f'- {change["Name"]} — {change["Action"]}; included: {change["Included"]}; checked: {change["VerifiedAt"]}.')
+        if not automatic:
+            lines.append("No automatic changes; saved availability retained.")
     lines.extend(["", "## Pending identity / regional review", ""])
     for candidate in collection["Candidates"]:
-        if candidate["CandidateId"] not in approved:
+        if candidate["CandidateId"] not in approved | automatic:
             lines.append(f'- {candidate["Name"]} — {candidate["Service"]}; {candidate["Action"]}; provider title: {candidate["ProviderTitle"]}.')
     if collection["Ambiguous"]: lines.append(f'\n{len(collection["Ambiguous"])} ambiguous mappings require manual edition review; see collection JSON.')
     Path(args.output).write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def sync(args):
+    inputs = {Path(path).resolve() for path in (args.catalog, args.review, args.collection)}
+    outputs = [Path(path).resolve() for path in (args.output, args.review_output, args.sync_report)]
+    if len(set(outputs)) != len(outputs) or inputs.intersection(outputs):
+        raise ValueError("Synchronization outputs must be distinct and separate from all input files")
+    collection = catalog.load(args.collection)
+    snapshot = catalog.load(args.catalog)
+    review = catalog.load(args.review)
+    catalog.validate(snapshot)
+    sources = [source for source in collection["Sources"]
+               if not source.get("Failed") and source.get("Service") == "PC Game Pass"
+               and source.get("RegionConfirmed") is True and source.get("Region") == "PH"
+               and source.get("Platform") == "PC" and source.get("Products")
+               and source.get("RegionEvidence") and fresh(source["FetchedAt"])]
+    if len(sources) != 1:
+        raise ValueError("Synchronization requires one fresh Philippine PC Game Pass source; saved availability retained")
+    # Rebuild matches from source evidence and the current catalog. Stored proposals are
+    # review artifacts, not authorization to change a different identity or infer absence.
+    proposals = propose(snapshot, review.get("Mappings", {}), sources, include_manual_removals=True)
+    ambiguous_ids = {catalog_id for match in proposals["Ambiguous"] for catalog_id in match.get("CatalogIds", [])}
+    games = {game["CatalogId"]: game for game in snapshot["Games"]}
+    changes = []
+    for candidate in proposals["Candidates"]:
+        if candidate["CatalogId"] in ambiguous_ids:
+            continue
+        game = games[candidate["CatalogId"]]
+        previous = [row for row in game.get("Subscriptions", []) if row["Service"] == "PC Game Pass"
+                    and row.get("Platform") == "PC" and row.get("Region") == "PH"]
+        row = {"Service": "PC Game Pass", "Platform": "PC", "Region": "PH",
+               "Included": candidate["Action"] != "Removed", "VerifiedAt": candidate["FetchedAt"],
+               "Url": candidate["Url"], "ExpiresAt": candidate.get("ExpiresAt"),
+               "Provenance": f'Official subscription catalog; id:{candidate["ProviderId"]}; '
+                   f'title:{candidate["ProviderTitle"]}; edition:{candidate.get("Edition") or "Exact catalog title"}; '
+                   f'{candidate["SourceUrl"]}; Automatic availability synchronization against reviewed catalog identity; '
+                   f'PH evidence: {candidate["RegionEvidence"]}'}
+        if candidate["Action"] == "Removed" and previous:
+            # Keep the previous provider identity as evidence when recording non-inclusion.
+            row["Provenance"] = previous[0]["Provenance"] + "; Not included in complete official PH PC catalog at " + candidate["FetchedAt"]
+        if previous == [row]:
+            continue
+        game["Subscriptions"] = [old for old in game.get("Subscriptions", []) if old not in previous] + [row]
+        review.setdefault("Mappings", {}).setdefault(game["CatalogId"], {})["Subscriptions"] = game["Subscriptions"]
+        changes.append({"CandidateId": candidate["CandidateId"], "CatalogId": game["CatalogId"], "Name": game["Name"],
+                        "Service": candidate["Service"], "Action": candidate["Action"],
+                        "Included": row["Included"], "VerifiedAt": row["VerifiedAt"]})
+    if changes:
+        catalog.stamp(snapshot)
+    catalog.validate(snapshot)
+    catalog.save(args.output, snapshot)
+    catalog.save(args.review_output, review)
+    catalog.save(args.sync_report, {"CollectionHash": collection_hash(collection), "Changes": changes,
+                                    "Ambiguous": proposals["Ambiguous"], "Unmatched": proposals["Unmatched"]})
+    counts = {action: sum(change["Action"] == action for change in changes) for action in ("Added", "Removed", "Reverify")}
+    print(f'Game Pass synchronized: {counts["Added"]} added, {counts["Removed"]} removed, {counts["Reverify"]} refreshed; '
+          f'{len(proposals["Ambiguous"])} ambiguous matches retained for review')
 
 
 def reverify(args):
@@ -298,15 +368,19 @@ def apply(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["collect", "apply", "reverify", "report"])
+    parser.add_argument("command", choices=["collect", "apply", "sync", "reverify", "report"])
     parser.add_argument("--catalog", default=str(catalog.ROOT / "Data/catalog.json"))
     parser.add_argument("--review", default=str(catalog.ROOT / "Data/catalog-review.json"))
     parser.add_argument("--cache", default=str(catalog.ROOT / "Data/SubscriptionCache"))
     parser.add_argument("--collection")
     parser.add_argument("--decisions")
+    parser.add_argument("--review-output", help="Separate maintainer mapping candidate written by sync")
+    parser.add_argument("--sync-report", help="Automatic change report written by sync or included in report")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
-    try: {"collect": collect, "apply": apply, "reverify": reverify, "report": report}[args.command](args)
+    if args.command == "sync" and not (args.collection and args.review_output and args.sync_report):
+        parser.error("sync requires --collection, --review-output and --sync-report")
+    try: {"collect": collect, "apply": apply, "sync": sync, "reverify": reverify, "report": report}[args.command](args)
     except (ValueError, KeyError, OSError, RuntimeError) as error: parser.exit(1, f"Subscription import failed: {error}\n")
 
 

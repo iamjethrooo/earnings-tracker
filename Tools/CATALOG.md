@@ -415,7 +415,119 @@ python Tools/subscriptions.py reverify --collection subscription-candidates.json
 
 Reverification only refreshes unchanged, previously approved IDs with fresh PH evidence. Additions, removals, region changes, and edition changes remain review tasks. The weekly `.github/workflows/subscriptions.yml` workflow collects, tests, and exports candidates, a report, and this refreshed snapshot as artifacts. It requires no secrets, publishes nothing, and starts only after pushing to the default branch with GitHub Actions enabled. Approved snapshots still use the permission-gated publishing process below. Desktop users select their plans and refresh published snapshots in-app; they never run these maintainer commands.
 
+For automatic availability updates, use the PowerShell helper below. Its `sync`
+operation applies clear additions and departures without requiring prior
+subscription approval; `reverify` and the weekly workflow retain their narrower
+behavior. Game identity review and public-release permissions remain separate
+from automatically synchronizing availability.
+
 ## Publishing
+
+### PowerShell helper
+
+`Tools/Update-Catalog.ps1` prepares review artifacts and can push an approved,
+committed snapshot and dispatch the existing publication workflow. It requires
+Python 3.11+; publishing also requires Git, GitHub CLI (`gh auth login`), and
+permission to push the selected branch and run Actions. Run it from the repository
+root. Start from the latest published snapshot for the selected channel, carrying
+forward its reviewed mappings, offers, roster additions, and rate variants.
+
+For an edited legacy snapshot, prepare and validate a new version offline:
+
+```powershell
+.\Tools\Update-Catalog.ps1 -Catalog .local-docs/catalog-edited.json
+# Or refresh PH store offers using ITAD_API_KEY already configured in this shell:
+.\Tools\Update-Catalog.ps1 -Catalog Data/catalog.json -RefreshPrices
+# Synchronize Philippine PC Game Pass availability (no API key needed):
+.\Tools\Update-Catalog.ps1 -RefreshGamePass
+# Or prepare both availability and store prices in one candidate:
+.\Tools\Update-Catalog.ps1 -RefreshGamePass -RefreshPrices
+```
+
+The script prints the candidate and coverage report paths under
+`.local-docs/catalog-updates/`. Without either refresh switch, it stamps and
+validates the supplied edits without fetching provider data. Price refresh uses
+only existing reviewed ITAD mappings. The helper does not edit either bundled
+snapshot or `Data/catalog-review.json` during preparation.
+
+`-RefreshGamePass` collects the official Philippine PC Game Pass list and calls
+`Tools/subscriptions.py sync` against the supplied catalog. For active entries
+whose game identity is already reviewed, a unique exact normalized title or
+reviewed alias/provider-title match records inclusion automatically, even without
+a prior subscription approval. A clear replacement provider ID for that exact
+identity can also update. Normalization ignores trademarks, punctuation, and a
+trailing PC/Windows label; it preserves editions, remasters, and years. Competing
+editions, duplicate-title ambiguities, and unknown game identities stay unresolved.
+The helper never creates new catalog or earning games from unrelated provider titles.
+
+When a fresh, complete PH/PC list no longer contains a previously included title
+or its recorded provider ID, synchronization records `Included: false`. A title
+ambiguity prevents automatic removal. A still-listed provider ID with a changed
+title retains its prior availability pending identity resolution. Departures do
+not delete games, catalog IDs, rates, or history. Partial collections can add or
+refresh positive matches, but cannot establish removals. Failed, stale, empty, or
+unverified regional collections cannot change saved availability.
+
+The same output folder contains `subscription-candidates.json`, its `.review.json`
+template for unresolved decisions, `subscription-changes.json` with automatic
+actions, and `subscription-report.md` distinguishing applied changes from pending
+matches. It also contains a generated `catalog-review.json` that preserves approval
+flags and updates maintainer subscription mappings. Copy this mapping candidate
+to `Data/catalog-review.json` with the final catalog after inspecting the changes,
+so later enrichment retains the synchronized availability. Preparation writes
+neither input file. If no PH/PC evidence is returned, it stops with the report
+path and does not produce a final candidate.
+
+Resolve ambiguous matches using the subscription collection process above. When
+calling `Tools/subscriptions.py apply`, pass `--catalog` with the helper's printed
+candidate, `--collection` and `--decisions` from that same run, and a new `--output`
+path. This preserves any combined price refresh and applies only your explicit
+decisions. `apply` also updates `Data/catalog-review.json`; review and commit those
+mapping changes with the final snapshot. Recollect if the evidence is over seven
+days old. New identities and roster terms still need their separate review.
+
+Review the candidate and report, copy the exact approved candidate to
+`Data/catalog.json` (or `Data/catalog-v2.json` for schema 2), and record approvals
+in `Data/catalog-review.json` only after coverage and provider permissions have
+been reviewed. Commit the approved snapshot, any required artwork, and review
+changes using explicit paths; inspect the staged diff first. The helper never
+stages files, creates commits, or enables approval flags. Include the helper itself
+in a reviewed commit before using its publication mode. Unrelated uncommitted UI
+work can remain, but catalog/tool inputs must match the commit.
+
+Once `CATALOG_PUBLISH_ENABLED` is already `true`, publish the current committed
+branch (replace the example branch with its actual name):
+
+```powershell
+.\Tools\Update-Catalog.ps1 -Mode Publish -Ref codex/catalog-update
+```
+
+This runs the Python tool tests and local permission/checksum packaging checks,
+pushes the current commit to that branch on `origin`, and queues `catalog.yml`.
+The push includes all commits on that branch; review them before running it.
+It uses a normal push and stops on failure. Check the linked Actions run for final
+success; dispatch alone does not mean the update is live. GitHub must have the
+manual workflow registered on the default branch. The workflow enforces immutable
+versions and channel ordering before advancing the public manifest. If pushing
+succeeds but dispatch fails, the branch remains pushed. If publication fails,
+inspect the immutable release and current channel manifest before retrying;
+do not delete a release or reuse an already staged version.
+
+For schema 2, use `-Channel schema2` during preparation and publication, and supply
+`-MinimumClientVersion` with the actual released compatible `MAJOR.MINOR.PATCH`
+when publishing. This does not convert a legacy snapshot or approve Steam
+identities. Follow the legacy pin/transition requirements above first; legacy
+publication is frozen after the schema-2 channel exists. `-WhatIf` previews the
+helper's action without preparing, pushing, or dispatching; publication preview
+still performs read-only Git/authentication/gate checks.
+
+Existing compatible clients receive the snapshot through their usual daily Games
+check or **Check for game list updates**. This is a pull-based catalog update,
+not an installer release or immediate notification to every running client.
+Users still approve roster additions in the application. Saved financial records
+and manual ownership remain independent of catalog metadata.
+
+### Workflow and client behavior
 
 The workflow runs only on manual dispatch with `CATALOG_PUBLISH_ENABLED` set to `true`. It packages the committed snapshot and stages its immutable release before updating the selected channel. It needs no IGDB or price API secrets and has no scheduled price refresh. Approve reviewed mappings and permission/release flags before enabling it.
 

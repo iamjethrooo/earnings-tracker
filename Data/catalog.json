@@ -1,7 +1,7 @@
 {
   "SchemaVersion": 1,
-  "Version": "catalog-20261012T034024414899Z-multiplayer-20261108T103507Z-roster-20261113-rates-artwork-20261121",
-  "PublishedAt": "2026-10-12T03:40:24.414892Z",
+  "Version": "catalog-20261122T065557920100Z",
+  "PublishedAt": "2026-11-22T06:55:57.920085Z",
   "Games": [
     {
       "CatalogId": "fd27f462-4fa6-43e0-a907-bbafc1d7e266",
@@ -6091,10 +6091,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PC4RWP34M2D",
-          "Provenance": "Official subscription catalog; id:9PC4RWP34M2D; title:Totally Accurate Battle Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PC4RWP34M2D; title:Totally Accurate Battle Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "A physics based medieval battle simulator which lets you pit wacky waving armies against each other. In Totally Accurate Battle Simulator you pit waving arm men against each other and watch them fight it out.",
@@ -7662,11 +7662,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PD0Z90216RJ",
-          "Provenance": "Official subscription catalog; id:9PD0Z90216RJ; title:Football Manager 26; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-01T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9PD0Z90216RJ; title:Football Manager 26; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "Step into the dugout and experience the future of football management.",
@@ -7761,10 +7761,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N9C1TB18R3B",
-          "Provenance": "Official subscription catalog; id:9N9C1TB18R3B; title:Sledding Game; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2027-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N9C1TB18R3B; title:Sledding Game; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Sledding Game is a cozy, online multiplayer game about sledding, relaxing, and hanging out with your friends.",
@@ -8421,10 +8421,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PKJ0532DTCW",
-          "Provenance": "Official subscription catalog; id:9PKJ0532DTCW; title:Tom Clancy's Ghost Recon® Breakpoint; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PKJ0532DTCW; title:Tom Clancy's Ghost Recon® Breakpoint; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Tom Clancy's Ghost Recon Breakpoint is a military shooter set in a diverse and hostile open world entirely playable solo or in up to four-player co-op. Players will discover Auroa, a mysterious island where the most technically advanced facilities meet wild and untamed nature. Home to drone creators, tech giant Skell Technology, Auroa has fallen into the wrong hands and all contact has been lost.",
@@ -8560,10 +8560,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NR0GCBSLDW4",
-          "Provenance": "Official subscription catalog; id:9NR0GCBSLDW4; title:Supermarket Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NR0GCBSLDW4; title:Supermarket Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Supermarket Simulator is a first-person business management game where players run and expand their own grocery store. Gameplay involves stocking shelves, managing a cash register, processing online orders, and designing the store layout. Players set prices based on fluctuating market conditions. A loan mechanic tied to a mafia storyline adds pressure through mandatory nightly repayments, creating consequences for poor financial performance.",
@@ -8766,10 +8766,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJTHRNVH62H",
-          "Provenance": "Official subscription catalog; id:9PJTHRNVH62H; title:Grounded; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJTHRNVH62H; title:Grounded; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "The world is a vast, beautiful and dangerous place – especially when you have been shrunk to the size of an ant. Explore, build and survive together in this first person, multiplayer, survival-adventure. Can you thrive alongside the hordes of giant insects, fighting to survive the perils of the backyard?",
@@ -9086,10 +9086,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P85NL6T3DHP",
-          "Provenance": "Official subscription catalog; id:9P85NL6T3DHP; title:Tom Clancy’s Ghost Recon Wildlands; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P85NL6T3DHP; title:Tom Clancy’s Ghost Recon Wildlands; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Create a team with up to 3 friends in Tom Clancy's Ghost Recon Wildlands and enjoy the ultimate military shooter experience set in a massive, dangerous, and responsive open world.",
@@ -9577,10 +9577,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N7271QN4SGB",
-          "Provenance": "Official subscription catalog; id:9N7271QN4SGB; title:Mortal Kombat™ 1; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-22T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N7271QN4SGB; title:Mortal Kombat™ 1; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "A new era has begun. It's In Our Blood. Discover a reborn Mortal Kombat Universe created by Fire God Liu Kang. Mortal Kombat 1 ushers in a new era of the iconic franchise with a new fighting system, game modes, and Fatalities!",
@@ -9835,10 +9835,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PGB72NFG5JN",
-          "Provenance": "Official subscription catalog; id:9PGB72NFG5JN; title:Overcooked! 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-02T23:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PGB72NFG5JN; title:Overcooked! 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Overcooked 2 is a cooperative cooking simulation game for up to four players. Teams work together to prepare and serve food orders in increasingly chaotic kitchen environments, coordinating tasks like chopping, cooking, plating, and dishwashing under time pressure. Levels feature dynamic obstacles such as moving floors, portals, fires, and shifting layouts that complicate coordination. The sequel to Overcooked introduces a throwing mechanic for tossing ingredients across the kitchen and adds online multiplayer alongside local co-op.",
@@ -10477,10 +10477,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P4NV23Q6QC2",
-          "Provenance": "Official subscription catalog; id:9P4NV23Q6QC2; title:Abiotic Factor; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P4NV23Q6QC2; title:Abiotic Factor; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Abiotic Factor is a survival crafting experience for 1-6 players set in the depths of an underground research facility. Caught between paranormal containment failure, a military crusade, and chaos from a dozen realms, the world’s greatest minds must survive against the universe’s biggest threats.",
@@ -10633,10 +10633,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NP1P1WFS0LB",
-          "Provenance": "Official subscription catalog; id:9NP1P1WFS0LB; title:Halo Infinite; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NP1P1WFS0LB; title:Halo Infinite; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Halo Infinite is a first-person shooter and the sixth mainline entry in the Halo series. The game features a semi-open world campaign set on the Forerunner ringworld Zeta Halo, where players control the supersoldier Master Chief in combat against the Banished, a mercenary faction of aliens and humans. Players traverse the environment on foot and in vehicles, capturing forward operating bases, rescuing Marines, and completing story missions that advance the narrative. Equipment such as the Grappleshot adds traversal and combat options. The multiplayer component is free-to-play and includes various competitive modes in 4v4 and 12v12 formats.",
@@ -10966,10 +10966,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NBFGKQLMV33",
-          "Provenance": "Official subscription catalog; id:9NBFGKQLMV33; title:House Flipper; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-01-01T09:59:59Z"
+          "ExpiresAt": "2027-01-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NBFGKQLMV33; title:House Flipper; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "House Flipper is a unique chance to become the one-man renovating crew. You've got to earn it around here before you purchase your first property. No worries though! Luckily, there's plenty of work at your fingertips! Take job offers from nearby residents to clean up, paint walls, install heaters, showers, and air conditioners, or even furnish their whole property! Once the grateful clients pay you for your solid work, it's time to get your own house.",
@@ -11130,10 +11130,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJ6FV3130QZ",
-          "Provenance": "Official subscription catalog; id:9PJ6FV3130QZ; title:Dune: Awakening; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-22T11:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJ6FV3130QZ; title:Dune: Awakening; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Dune: Awakening is an open-world survival game set on the desert planet Arrakis. Players create a custom character and must manage thirst, maintain stillsuits, and contend with environmental hazards like sandstorms, extreme heat, and roaming sandworms. The game involves scavenging resources, crafting equipment, building shelters, and competing with other players to harvest and transport spice. As players progress, they advance through phases from basic survival to leading a guild, eventually participating in faction warfare between House Atreides and House Harkonnen. The game features single-player, and multiplayer which can be fully played in PvE with dedicated PvP zones.",
@@ -11614,10 +11614,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N0WDPMXNHWN",
-          "Provenance": "Official subscription catalog; id:9N0WDPMXNHWN; title:Shift At Midnight; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N0WDPMXNHWN; title:Shift At Midnight; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "An online co-op horror for 1–3 players. Be wary: some of your customers are only pretending to be human. Question them. Check their paperwork. Don’t let them trick you; make one mistake, and you’d better board up, set traps, and hide.",
@@ -12544,11 +12544,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/BX03760D0QGN",
-          "Provenance": "Official subscription catalog; id:BX03760D0QGN; title:DRAGON BALL XENOVERSE 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-01T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:BX03760D0QGN; title:DRAGON BALL XENOVERSE 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "DRAGON BALL XENOVERSE 2 builds upon the highly popular DRAGON BALL XENOVERSE with enhanced graphics that will further immerse players into the largest and most detailed Dragon Ball world ever developed.\n\nDRAGON BALL XENOVERSE 2 will deliver a new hub city and the most character customization choices to date among a multitude of new features and special upgrades.",
@@ -12607,10 +12607,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P9GX5D8H9DW",
-          "Provenance": "Official subscription catalog; id:9P9GX5D8H9DW; title:TCG Card Shop Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-01T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P9GX5D8H9DW; title:TCG Card Shop Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Open your own local game store. Stock shelves with the latest booster packs, or crack them and collect the cards for yourself. Set your own prices, hire staff, host events, and expand your card shop.\n\nTCG Card Shop Simulator is a trading card shop simulation where you sell card booster packs to earn money and build your card shop business.",
@@ -12841,10 +12841,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NKHKBQJSSC3",
-          "Provenance": "Official subscription catalog; id:9NKHKBQJSSC3; title:Clone Drone in the Danger Zone; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-12-01T09:59:59Z"
+          "ExpiresAt": "2026-12-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NKHKBQJSSC3; title:Clone Drone in the Danger Zone; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Clone Drone in the Danger Zone is a third person sword fighter where any part of your body can be sliced off. With your mind downloaded into a robot gladiator, you must survive the sinister trials of the arena.",
@@ -13977,10 +13977,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N92LSHFZ935",
-          "Provenance": "Official subscription catalog; id:9N92LSHFZ935; title:Dead Island 2 (Windows); edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-11-01T09:59:59Z"
+          "ExpiresAt": "2028-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N92LSHFZ935; title:Dead Island 2 (Windows); edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Dead Island 2 is a survival horror first-person shooter set in a zombie apocalypse in Los Angeles. Players explore an open world, gathering resources, interacting with survivors, and battling swarms of zombies in fast-paced combat. Set fifteen years after the events of Dead Island: Riptide, the game features a new cast of characters and narrative, while maintaining the series’ signature blend of brutal melee action and immersive environments.",
@@ -15005,10 +15005,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8V7HR160B4",
-          "Provenance": "Official subscription catalog; id:9P8V7HR160B4; title:CloverPit; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2027-11-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8V7HR160B4; title:CloverPit; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "You wake up in a rusty, narrow cell, standing over a dangerously unstable grate.\n\nSomeone has kidnapped you, demanding payment, and your only way out is to play the Slot Machine and pay off your debt.\n\nDon’t let yourself fall —literally— into ruin!",
@@ -15450,10 +15450,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/C37XBX7DCBZ0",
-          "Provenance": "Official subscription catalog; id:C37XBX7DCBZ0; title:Descenders; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-07-16T09:59:59Z"
+          "ExpiresAt": "2027-07-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:C37XBX7DCBZ0; title:Descenders; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "\"Descenders is extreme downhill freeriding for the modern era, with procedurally generated worlds, and where mistakes have real consequences. Will you lead your team to glory and become the next legendary Descender?\"",
@@ -17195,10 +17195,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/BSLX1RNXR6H7",
-          "Provenance": "Official subscription catalog; id:BSLX1RNXR6H7; title:Batman™: Arkham Knight; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-01T09:59:59Z"
+          "ExpiresAt": "2027-06-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:BSLX1RNXR6H7; title:Batman™: Arkham Knight; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Batman: Arkham Knight is an action-adventure game developed by Rocksteady Studios, released in 2015. It is the final installment in the Arkham series. Players control Batman as he faces Scarecrow, who unites Gotham's criminals to destroy the Dark Knight. The mysterious Arkham Knight, a new adversary, aids Scarecrow in his plan.\n\nThe game features open-world exploration, stealth, combat, and puzzle-solving. A key addition is the Batmobile, used for traversal and combat. The story explores Batman’s psychological struggles and the collapse of his alliances as Gotham spirals into chaos.",
@@ -18631,10 +18631,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NBLGGH43KZB",
-          "Provenance": "Official subscription catalog; id:9NBLGGH43KZB; title:ASTRONEER; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2027-06-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NBLGGH43KZB; title:ASTRONEER; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Interact with strange new worlds in a unique and tactile way, molding the environment itself as if it were clay in your hands. Build your base, master resource management, automate your production lines, and more as you unravel the mysteries of the universe, alone or with friends.",
@@ -18770,10 +18770,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P9446P7D9TZ",
-          "Provenance": "Official subscription catalog; id:9P9446P7D9TZ; title:Quarantine Zone: The Last Check; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T23:59:59Z"
+          "ExpiresAt": "2027-04-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P9446P7D9TZ; title:Quarantine Zone: The Last Check; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "\"Papers, Please\" meets zombie apocalypse. Command the last blockade, inspect survivors, and decide their fate: trust, quarantine, or liquidate. Expand your base, upgrade defenses, and fend off hordes. Every step shapes humanity’s survival. Your choice matters and every mistake costs a life...",
@@ -20372,10 +20372,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P2HHT3VS7MP",
-          "Provenance": "Official subscription catalog; id:9P2HHT3VS7MP; title:PlateUp!; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-08-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P2HHT3VS7MP; title:PlateUp!; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Hectic single-player and co-op restaurant management: cook and serve your dishes, upgrade and customise your restaurants, and expand your culinary kingdom with each procedurally-generated location. Work together to cook food, deal with customers, and serve drinks - or do it all yourself!",
@@ -21006,10 +21006,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NP6CV98V8M7",
-          "Provenance": "Official subscription catalog; id:9NP6CV98V8M7; title:The Crew® 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NP6CV98V8M7; title:The Crew® 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "The newest iteration in the revolutionary franchise, The Crew 2 captures the thrill of the American motorsports spirit in one of the most exhilarating open worlds ever created. Welcome to Motornation, a huge, varied, action-packed, and beautiful playground built for motorsports throughout the entire US of A. Enjoy unrestrained exploration on ground, sea, and sky. From coast to coast, street and pro racers, off-road explorers, and freestylers gather and compete in all kinds of disciplines. Join them in high-octane contests and share every glorious moment with the world.",
@@ -21079,10 +21079,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N16RZ0S50V2",
-          "Provenance": "Official subscription catalog; id:9N16RZ0S50V2; title:Frog Sqwad; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N16RZ0S50V2; title:Frog Sqwad; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Storm The Sewers for the glory of the Swamp King! Swing, jump, catapult your friends, and eat eat EAT until you grow into a humongous Megafrog. A co-op extraction puzzle-platformer for up to 8 players. Squad up with your frog friends for a friendslop party in this slapstick physics adventure!",
@@ -21791,10 +21791,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N72SFQ24KW8",
-          "Provenance": "Official subscription catalog; id:9N72SFQ24KW8; title:Call of Duty®: Black Ops Cold War (Windows); edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "9998-12-30T00:00:00Z",
+          "Provenance": "Official subscription catalog; id:9N72SFQ24KW8; title:Call of Duty®: Black Ops Cold War (Windows); edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "The iconic Black Ops series is back with Call of Duty: Black Ops Cold War - the direct sequel to the original and fan-favorite Call of Duty: Black Ops. Black Ops Cold War will drop fans into the depths of the Cold War’s volatile geopolitical battle of the early 1980s. Nothing is ever as it seems in a gripping single-player Campaign, where players will come face-to-face with historical figures and hard truths, as they battle around the globe through iconic locales like East Berlin, Vietnam, Turkey, Soviet KGB headquarters and more.\n\nBeyond the Campaign, players will bring a Cold War arsenal of weapons and equipment into the next generation of Multiplayer and Zombies experiences. Welcome to the brink. Welcome to Call of Duty: Black Ops Cold War.",
@@ -23066,10 +23066,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJ45NJCHSFS",
-          "Provenance": "Official subscription catalog; id:9PJ45NJCHSFS; title:Far Cry® 6; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJ45NJCHSFS; title:Far Cry® 6; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Dive into the gritty world of a modern-day guerrilla revolution to liberate a nation from its oppressive dictators. Welcome to Yara, a tropical paradise frozen in time. Far Cry 6 thrusts players into a modern-day guerrilla revolution. As dictator of Yara, Anton Castillo is intent on restoring his nation back to its former glory by any means, with his son, Diego, following in his bloody footsteps. Become a guerrilla fighter and liberate Yara.",
@@ -24117,10 +24117,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PCR3Z2MSM4T",
-          "Provenance": "Official subscription catalog; id:9PCR3Z2MSM4T; title:Hades II; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-04-16T09:59:59Z"
+          "ExpiresAt": "2027-04-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PCR3Z2MSM4T; title:Hades II; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Battle beyond the Underworld using dark sorcery to take on the Titan of Time in this bewitching sequel to the award-winning rogue-like dungeon crawler.",
@@ -24301,10 +24301,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NF6XPSBTTGB",
-          "Provenance": "Official subscription catalog; id:9NF6XPSBTTGB; title:High On Life 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NF6XPSBTTGB; title:High On Life 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "An intergalactic conspiracy threatens the fate of humanity! Team up with a wide cast of talking alien guns as you shoot, stab, and skate your way through the exotic locales to take down the bad guys and save your favorite species (humans)!",
@@ -26567,10 +26567,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NS86BQ33SPX",
-          "Provenance": "Official subscription catalog; id:9NS86BQ33SPX; title:Wobbly Life; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NS86BQ33SPX; title:Wobbly Life; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Wobbly Life is a lively open world physics based sandbox. Play with your friends in Online and local co-op, discover a variety of minigames and objectives to earn cash to spend in the world!",
@@ -26878,10 +26878,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P45GGDTFNSM",
-          "Provenance": "Official subscription catalog; id:9P45GGDTFNSM; title:PowerWash Simulator 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2027-10-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P45GGDTFNSM; title:PowerWash Simulator 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "PowerWash Simulator is back, bubbling with fresh locations, soap-erior equipment and splashy features. Effortlessly transform soiled surroundings into clean, serene scenes, solo or with pals. Satisfaction is a spray away!",
@@ -27012,11 +27012,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NGZ1M3N98P2",
-          "Provenance": "Official subscription catalog; id:9NGZ1M3N98P2; title:Crime Scene Cleaner; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9NGZ1M3N98P2; title:Crime Scene Cleaner; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "Once you get tangled with the mob, you will forever be a part of the mob. At least they pay a decent salary and all you have to do is clean up after their dirty work, but you know what you’re doing. So clean crime scenes, outsmart the police and get ready for the next mission.",
@@ -27480,11 +27480,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NG06CSMM97P",
-          "Provenance": "Official subscription catalog; id:9NG06CSMM97P; title:Wreckfest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9NG06CSMM97P; title:Wreckfest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "Wreckfest is a racing and vehicular combat game centered on demolition derbies and banger racing, with a focus on realistic physics and location-based vehicle damage that changes how cars handle as they take hits. Before an event, players pick a car, adjust assists such as transmission type and braking aids, and can buy, customise, and upgrade vehicles. Races reward a balance of defensive driving and aggressive tactics like ramming and shunting rivals into barriers. The game offers career, multiplayer, and custom event play, and is regarded as a spiritual successor to the FlatOut series.",
@@ -27568,10 +27568,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NH019ZFFHTV",
-          "Provenance": "Official subscription catalog; id:9NH019ZFFHTV; title:Car Mechanic Simulator 2021; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NH019ZFFHTV; title:Car Mechanic Simulator 2021; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Work your way to service empire. Get your hands dirty in highly realistic simulation game with great attention to details. Pay a visit to a new Auction house and buy cars in various condition. Expand your range of services by investing in new work space and equipment.",
@@ -28218,10 +28218,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PDNF24PP2V2",
-          "Provenance": "Official subscription catalog; id:9PDNF24PP2V2; title:Assassin's Creed® Odyssey; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PDNF24PP2V2; title:Assassin's Creed® Odyssey; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Write your own epic odyssey and become a legendary Spartan hero in Assassin's Creed Odyssey, an inspiring adventure where you must forge your destiny and define your own path in a world on the brink of tearing itself apart. Influence how history unfolds as you experience a rich and ever-changing world shaped by your decisions.",
@@ -28280,10 +28280,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8DL6W0JBB8",
-          "Provenance": "Official subscription catalog; id:9P8DL6W0JBB8; title:Hades; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-09-16T09:59:59Z"
+          "ExpiresAt": "2028-09-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8DL6W0JBB8; title:Hades; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "A rogue-lite hack and slash dungeon crawler in which Zagreus, son of Hades the Greek god of the dead, attempts to escape his home and his oppressive father by fighting the souls of the dead through the various layers of the ever-shifting underworld, while getting to know and forging relationships with its inhabitants.",
@@ -29269,10 +29269,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N072VV7MFK7",
-          "Provenance": "Official subscription catalog; id:9N072VV7MFK7; title:The Planet Crafter; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed survival terraforming game, corroborated by IGDB 143574 / Steam app 1284190; full Windows PH PC Game Pass entitlement; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-01-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N072VV7MFK7; title:The Planet Crafter; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "You are sent on an hostile planet with one mission: Make it habitable for Humans. You'll have to survive, collect ressources, build your base and machines in order to heat the planet, create an atmosphere with oxygen and eventually geo-engineer an entire planet.",
@@ -29959,10 +29959,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NLFZVMSQ7CC",
-          "Provenance": "Official subscription catalog; id:9NLFZVMSQ7CC; title:Construction Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-12-16T09:59:59Z"
+          "ExpiresAt": "2027-12-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NLFZVMSQ7CC; title:Construction Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Construction Simulator is back - bigger and better than ever! Get back to work and help yourself to a huge fleet of vehicles that will blow your mind. In addition to the brands already familiar from other games in the Construction Simulator series, such as Caterpillar, CASE and BELL, you can now take the wheel of new licensed construction machines from partners such as DAF and Doosan and choose from a total of over 70 construction machines!",
@@ -30616,10 +30616,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NL4714VTLRS",
-          "Provenance": "Official subscription catalog; id:9NL4714VTLRS; title:High On Life; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NL4714VTLRS; title:High On Life; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "From the mind of Justin Roiland (Rick and Morty, Solar Opposites) comes High On Life. Humanity is being threatened by an alien cartel who wants to use them as drugs. It’s up to you to rescue and partner with charismatic, talking guns, take down Garmantuous and his gang, and save the world!",
@@ -31072,11 +31072,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P0NPLQ9P1DB",
-          "Provenance": "Official subscription catalog; id:9P0NPLQ9P1DB; title:Police Simulator: Patrol Officers; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-16T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9P0NPLQ9P1DB; title:Police Simulator: Patrol Officers; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "Welcome to Brighton! Join the police force of this fictitious American city and experience the day to day life of a Police Officer. Start with citing violations and giving out parking tickets, then work your way towards shouldering more responsibilities. Be part of the community of Brighton, get to know your neighborhood and handle daily police work to fight crime during your shift. Always be tough, but fair: respect the law and gain more experience to unlock more neighborhoods, districts and duties.",
@@ -31952,10 +31952,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P2RT7TNT37T",
-          "Provenance": "Official subscription catalog; id:9P2RT7TNT37T; title:STEEP; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "9998-12-30T00:00:00Z",
+          "Provenance": "Official subscription catalog; id:9P2RT7TNT37T; title:STEEP; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Ride a massive open world of the Alps and Alaska, where the powder is always fresh and the run never ends.Defy and master the world’s most epic mountains on skis, wingsuit, snowboard, and in paraglide. Go solo or drop in side by side with other players. Record and share the most insane stunts ever captured, then challenge the world to beat your best tricks, ride your custom lines, and relive your most epic wipeouts.",
@@ -32694,10 +32694,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PK0DZ68LGC0",
-          "Provenance": "Official subscription catalog; id:9PK0DZ68LGC0; title:Shape of Dreams; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-09-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PK0DZ68LGC0; title:Shape of Dreams; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Shape of Dreams is an action rogue-lite infused with MOBA-esque elements. Venture into a vivid dream world, and create your own champion by freely swapping skills with whatever you like. Play solo against all odds, or with friends in a 4-player co-op game.",
@@ -33491,10 +33491,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P402RWR63H4",
-          "Provenance": "Official subscription catalog; id:9P402RWR63H4; title:RuneScape: Dragonwilds; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-09-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P402RWR63H4; title:RuneScape: Dragonwilds; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "On RuneScape’s forgotten continent of Ashenfall, dragons have awoken. Gather, build, skill and craft to survive in this co-operative (1-4) survival crafting game. Only by mastering survival and uncovering ancient secrets can they hope to slay the Dragon Queen—alone or with allies.",
@@ -33711,7 +33711,18 @@
           "Provenance": "IsThereAnyDeal"
         }
       ],
-      "Subscriptions": [],
+      "Subscriptions": [
+        {
+          "Service": "PC Game Pass",
+          "Platform": "PC",
+          "Region": "PH",
+          "Included": true,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
+          "Url": "https://www.xbox.com/en-PH/games/store/-/9MTGCZ84M503",
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MTGCZ84M503; title:John Carpenter's Toxic Commando; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
+        }
+      ],
       "Summary": "Take control of one of the commandos, team up with your friends and send the Sludge God and its horde of things-that-should-never-be back to the underworld. Choose the class that matches your playstyle, pile into your favorite ride, and unload an array of gunfire, grenades, special abilities, and freaking katanas as you save the planet.",
       "VerifiedAt": "2026-10-11T17:51:40.195682Z",
       "CoverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/cob0lw.jpg",
@@ -34538,10 +34549,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NFKN56ZBMR0",
-          "Provenance": "Official subscription catalog; id:9NFKN56ZBMR0; title:The Long Dark; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-04-01T09:59:59Z"
+          "ExpiresAt": "2027-04-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NFKN56ZBMR0; title:The Long Dark; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Welcome to The Long Dark, the innovative exploration-survival experience Wired magazine calls \"the pinnacle of an entire genre\". The game is a thoughtful, exploration-survival experience that challenges solo players to think for themselves as they explore an expansive frozen wilderness in the aftermath of a geomagnetic disaster. There are no zombies but only you, the cold, and all the threats Mother Nature can muster.",
@@ -34737,10 +34748,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PDDP6ML6XHF",
-          "Provenance": "Official subscription catalog; id:9PDDP6ML6XHF; title:Medieval Dynasty; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2029-01-16T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PDDP6ML6XHF; title:Medieval Dynasty; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Hunt, survive, build and lead in the harsh Middle Ages: Create your own Medieval Dynasty and ensure its long-lasting prosperity or die trying! Play alone or team up with friends to enjoy the ultimate medieval experience.",
@@ -34926,7 +34937,18 @@
           "Provenance": "IsThereAnyDeal"
         }
       ],
-      "Subscriptions": [],
+      "Subscriptions": [
+        {
+          "Service": "PC Game Pass",
+          "Platform": "PC",
+          "Region": "PH",
+          "Included": true,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
+          "Url": "https://www.xbox.com/en-PH/games/store/-/9MW4MFG0192L",
+          "ExpiresAt": "2027-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MW4MFG0192L; title:PIT OF GOBLIN; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
+        }
+      ],
       "Summary": "In this online horror co-op, you play as a scrappy goblin, scavenging dungeons, dodging traps, and fleeing monsters to feed the Goblin King. Team up with goblin pals, or go rogue, as you dive deep and cause chaos! Fail to feed him, and you might be the next meal!",
       "VerifiedAt": "2026-10-11T17:51:57.184604Z",
       "CoverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co9111.jpg",
@@ -35384,10 +35406,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NCDMPCPDTQF",
-          "Provenance": "Official subscription catalog; id:9NCDMPCPDTQF; title:Trepang2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-05-01T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NCDMPCPDTQF; title:Trepang2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Become the ultimate badass in Trepang2: A gory, action-packed FPS set in the near future. Unleash all hell on your enemies, dodge bullets and leave a trail of destruction in this hardcore and frenetic shooter.",
@@ -36486,10 +36508,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9MVV32Z0JPCL",
-          "Provenance": "Official subscription catalog; id:9MVV32Z0JPCL; title:FAR CRY 4; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MVV32Z0JPCL; title:FAR CRY 4; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Discover the most diverse Far Cry world ever created. With terrain spanning from lush forests to the snowcapped Himalayas, the entire world is alive… and deadly. From leopards, rhinos, black eagles, and vicious honey badgers, Kyrat is home to abundant wildlife. As you embark on your hunt for resources, know that something may be hunting you...\n\nScout enemy territory from above in the all-new gyrocopter and then plummet back to earth in your wing suit. Climb aboard the back of a six-ton elephant and unleash its raw power on your enemies. Choose the right weapon for the job, no matter how insane or unpredictable that job might be. With a diverse arsenal, you’ll be prepared for anything.",
@@ -36545,10 +36567,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8PS6993LSL",
-          "Provenance": "Official subscription catalog; id:9P8PS6993LSL; title:Gears of War: Reloaded; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8PS6993LSL; title:Gears of War: Reloaded; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "The original Gears of War returns, faithfully remastered and natively optimized for more platforms than ever before as Gears of War: Reloaded. Experience the origins of one of gaming’s most acclaimed franchises like never before. Featuring 4K resolution, up to 120 FPS support, and the ultimate multiplayer experience with cross-progression and cross-play, across all platforms, this is the definitive way to experience the game that started it all.",
@@ -37062,10 +37084,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N3LGKGF3CC2",
-          "Provenance": "Official subscription catalog; id:9N3LGKGF3CC2; title:Nine Sols; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-01T09:59:59Z"
+          "ExpiresAt": "2027-03-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N3LGKGF3CC2; title:Nine Sols; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Nine Sols is a hand-drawn 2D action-platformer set in a science fiction world influenced by Asian fantasy and Taoist imagery. The game follows a vengeful protagonist on a quest to defeat the nine Sols, the rulers of a ruined realm once inhabited by an ancient alien civilization. Gameplay focuses on exploration, story progression, and combat built around timed deflection mechanics.",
@@ -38302,10 +38324,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PPKR9N31BW6",
-          "Provenance": "Official subscription catalog; id:9PPKR9N31BW6; title:SpeedRunners 2: King of Speed; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-12-02T16:59:59Z"
+          "ExpiresAt": "2026-12-02T16:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PPKR9N31BW6; title:SpeedRunners 2: King of Speed; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "The ultimate competitive platformer is back! Outrun, outjump, and outsmart your rivals in cutthroat online/local races, now up to 8 players. Master the movement, learn meticulously designed maps, use powerful pick-ups, swing around with a grappling hook, and don't get knocked off-screen!",
@@ -38778,10 +38800,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PH9X0760B0T",
-          "Provenance": "Official subscription catalog; id:9PH9X0760B0T; title:DOOM: The Dark Ages; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2049-12-30T23:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PH9X0760B0T; title:DOOM: The Dark Ages; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "A single-player first-person shooter and prequel to Doom (2016). Set in the dark medieval world of Argent D'Nur, players control the Doom Slayer in a grounded, weighty combat style that emphasizes strategic engagements over the acrobatic mobility of previous entries. The game introduces a Shield Saw for blocking and parrying, new melee weapons, and drivable vehicles including a cybernetic dragon and a massive mech. The narrative focuses on the Slayer's origin story with expanded cutscenes and character development.",
@@ -38841,10 +38863,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NMPVJ7TCFD0",
-          "Provenance": "Official subscription catalog; id:9NMPVJ7TCFD0; title:Vampire Crawlers: The Turbo Wildcard from Vampire Survivors; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NMPVJ7TCFD0; title:Vampire Crawlers: The Turbo Wildcard from Vampire Survivors; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Deal world-ending combos and blitz through infested dungeons! Vampire Crawlers: The Turbo Wildcard from Vampire Survivors is a casual, turnbased deckbuilder with roguelite elements. Master the Turboturn with your own hand of cards!",
@@ -39358,10 +39380,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P47S7NJGWZL",
-          "Provenance": "Official subscription catalog; id:9P47S7NJGWZL; title:Roboquest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-08-01T09:59:59Z"
+          "ExpiresAt": "2027-08-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P47S7NJGWZL; title:Roboquest; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ],
       "Summary": "Roboquest is a fast FPS Roguelite in a scorched futureworld. You're a rebooted Guardian, ready to kick some metal ass! Fight with your buddy or by yourself and annihilate hordes of deadly bots in ever-changing environments.",
@@ -42701,11 +42723,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PNKG0WBL61W",
-          "Provenance": "Official subscription catalog; id:9PNKG0WBL61W; title:Pacific Drive; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-16T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9PNKG0WBL61W; title:Pacific Drive; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ],
       "Summary": "Pacific Drive is a first-person driving survival game with your car as your only companion.\nNavigate a surreal reimagining of the Pacific Northwest, and face supernatural dangers as you venture into the Olympic Exclusion Zone. Each excursion into the wilderness brings unique and strange challenges as you restore and upgrade your car from an abandoned garage that acts as your home base. Gather precious resources and investigate what’s been left behind in the Zone; unravel a long-forgotten mystery while learning exactly what it takes to survive in this unpredictable, hostile environment.",

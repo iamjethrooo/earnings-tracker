@@ -1,7 +1,7 @@
 {
-  "IgdbRedistributionApproved": false,
-  "PriceRedistributionApproved": false,
-  "ReleaseApproved": false,
+  "IgdbRedistributionApproved": true,
+  "PriceRedistributionApproved": true,
+  "ReleaseApproved": true,
   "Mappings": {
     "fd27f462-4fa6-43e0-a907-bbafc1d7e266": {
       "Reviewed": true,
@@ -717,11 +717,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PD0Z90216RJ",
-          "Provenance": "Official subscription catalog; id:9PD0Z90216RJ; title:Football Manager 26; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-01T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9PD0Z90216RJ; title:Football Manager 26; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -750,10 +750,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N9C1TB18R3B",
-          "Provenance": "Official subscription catalog; id:9N9C1TB18R3B; title:Sledding Game; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2027-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N9C1TB18R3B; title:Sledding Game; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -872,10 +872,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJTHRNVH62H",
-          "Provenance": "Official subscription catalog; id:9PJTHRNVH62H; title:Grounded; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJTHRNVH62H; title:Grounded; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -904,10 +904,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P85NL6T3DHP",
-          "Provenance": "Official subscription catalog; id:9P85NL6T3DHP; title:Tom Clancy’s Ghost Recon Wildlands; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P85NL6T3DHP; title:Tom Clancy’s Ghost Recon Wildlands; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -956,10 +956,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N7271QN4SGB",
-          "Provenance": "Official subscription catalog; id:9N7271QN4SGB; title:Mortal Kombat™ 1; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-22T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N7271QN4SGB; title:Mortal Kombat™ 1; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -978,10 +978,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PGB72NFG5JN",
-          "Provenance": "Official subscription catalog; id:9PGB72NFG5JN; title:Overcooked! 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-02T23:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PGB72NFG5JN; title:Overcooked! 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1040,10 +1040,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P4NV23Q6QC2",
-          "Provenance": "Official subscription catalog; id:9P4NV23Q6QC2; title:Abiotic Factor; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P4NV23Q6QC2; title:Abiotic Factor; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1082,10 +1082,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NP1P1WFS0LB",
-          "Provenance": "Official subscription catalog; id:9NP1P1WFS0LB; title:Halo Infinite; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NP1P1WFS0LB; title:Halo Infinite; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1134,10 +1134,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NBFGKQLMV33",
-          "Provenance": "Official subscription catalog; id:9NBFGKQLMV33; title:House Flipper; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-01-01T09:59:59Z"
+          "ExpiresAt": "2027-01-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NBFGKQLMV33; title:House Flipper; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1156,10 +1156,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJ6FV3130QZ",
-          "Provenance": "Official subscription catalog; id:9PJ6FV3130QZ; title:Dune: Awakening; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-22T11:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJ6FV3130QZ; title:Dune: Awakening; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1258,10 +1258,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N0WDPMXNHWN",
-          "Provenance": "Official subscription catalog; id:9N0WDPMXNHWN; title:Shift At Midnight; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N0WDPMXNHWN; title:Shift At Midnight; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1359,11 +1359,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/BX03760D0QGN",
-          "Provenance": "Official subscription catalog; id:BX03760D0QGN; title:DRAGON BALL XENOVERSE 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-01T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:BX03760D0QGN; title:DRAGON BALL XENOVERSE 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -1392,10 +1392,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P9GX5D8H9DW",
-          "Provenance": "Official subscription catalog; id:9P9GX5D8H9DW; title:TCG Card Shop Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-01T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P9GX5D8H9DW; title:TCG Card Shop Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1444,10 +1444,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NKHKBQJSSC3",
-          "Provenance": "Official subscription catalog; id:9NKHKBQJSSC3; title:Clone Drone in the Danger Zone; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-12-01T09:59:59Z"
+          "ExpiresAt": "2026-12-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NKHKBQJSSC3; title:Clone Drone in the Danger Zone; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1616,10 +1616,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N92LSHFZ935",
-          "Provenance": "Official subscription catalog; id:9N92LSHFZ935; title:Dead Island 2 (Windows); edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-11-01T09:59:59Z"
+          "ExpiresAt": "2028-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N92LSHFZ935; title:Dead Island 2 (Windows); edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1758,10 +1758,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8V7HR160B4",
-          "Provenance": "Official subscription catalog; id:9P8V7HR160B4; title:CloverPit; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2027-11-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8V7HR160B4; title:CloverPit; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -1810,10 +1810,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/C37XBX7DCBZ0",
-          "Provenance": "Official subscription catalog; id:C37XBX7DCBZ0; title:Descenders; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-07-16T09:59:59Z"
+          "ExpiresAt": "2027-07-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:C37XBX7DCBZ0; title:Descenders; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2294,10 +2294,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NBLGGH43KZB",
-          "Provenance": "Official subscription catalog; id:9NBLGGH43KZB; title:ASTRONEER; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2027-06-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NBLGGH43KZB; title:ASTRONEER; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2316,10 +2316,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P9446P7D9TZ",
-          "Provenance": "Official subscription catalog; id:9P9446P7D9TZ; title:Quarantine Zone: The Last Check; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T23:59:59Z"
+          "ExpiresAt": "2027-04-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P9446P7D9TZ; title:Quarantine Zone: The Last Check; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2488,10 +2488,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P2HHT3VS7MP",
-          "Provenance": "Official subscription catalog; id:9P2HHT3VS7MP; title:PlateUp!; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-08-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P2HHT3VS7MP; title:PlateUp!; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2540,10 +2540,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NP6CV98V8M7",
-          "Provenance": "Official subscription catalog; id:9NP6CV98V8M7; title:The Crew® 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NP6CV98V8M7; title:The Crew® 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2562,10 +2562,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N16RZ0S50V2",
-          "Provenance": "Official subscription catalog; id:9N16RZ0S50V2; title:Frog Sqwad; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N16RZ0S50V2; title:Frog Sqwad; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2662,10 +2662,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N72SFQ24KW8",
-          "Provenance": "Official subscription catalog; id:9N72SFQ24KW8; title:Call of Duty®: Black Ops Cold War (Windows); edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "9998-12-30T00:00:00Z",
+          "Provenance": "Official subscription catalog; id:9N72SFQ24KW8; title:Call of Duty®: Black Ops Cold War (Windows); edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2794,10 +2794,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PJ45NJCHSFS",
-          "Provenance": "Official subscription catalog; id:9PJ45NJCHSFS; title:Far Cry® 6; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PJ45NJCHSFS; title:Far Cry® 6; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2894,10 +2894,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PCR3Z2MSM4T",
-          "Provenance": "Official subscription catalog; id:9PCR3Z2MSM4T; title:Hades II; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-04-16T09:59:59Z"
+          "ExpiresAt": "2027-04-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PCR3Z2MSM4T; title:Hades II; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -2936,10 +2936,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NF6XPSBTTGB",
-          "Provenance": "Official subscription catalog; id:9NF6XPSBTTGB; title:High On Life 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NF6XPSBTTGB; title:High On Life 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3176,10 +3176,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NS86BQ33SPX",
-          "Provenance": "Official subscription catalog; id:9NS86BQ33SPX; title:Wobbly Life; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NS86BQ33SPX; title:Wobbly Life; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3238,10 +3238,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P45GGDTFNSM",
-          "Provenance": "Official subscription catalog; id:9P45GGDTFNSM; title:PowerWash Simulator 2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2027-10-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P45GGDTFNSM; title:PowerWash Simulator 2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3307,11 +3307,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NG06CSMM97P",
-          "Provenance": "Official subscription catalog; id:9NG06CSMM97P; title:Wreckfest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9NG06CSMM97P; title:Wreckfest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -3330,10 +3330,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NH019ZFFHTV",
-          "Provenance": "Official subscription catalog; id:9NH019ZFFHTV; title:Car Mechanic Simulator 2021; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NH019ZFFHTV; title:Car Mechanic Simulator 2021; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3382,10 +3382,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PDNF24PP2V2",
-          "Provenance": "Official subscription catalog; id:9PDNF24PP2V2; title:Assassin's Creed® Odyssey; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PDNF24PP2V2; title:Assassin's Creed® Odyssey; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3594,10 +3594,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NL4714VTLRS",
-          "Provenance": "Official subscription catalog; id:9NL4714VTLRS; title:High On Life; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NL4714VTLRS; title:High On Life; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3635,11 +3635,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P0NPLQ9P1DB",
-          "Provenance": "Official subscription catalog; id:9P0NPLQ9P1DB; title:Police Simulator: Patrol Officers; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-11-16T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9P0NPLQ9P1DB; title:Police Simulator: Patrol Officers; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -3738,10 +3738,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P2RT7TNT37T",
-          "Provenance": "Official subscription catalog; id:9P2RT7TNT37T; title:STEEP; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "9998-12-30T00:00:00Z",
+          "Provenance": "Official subscription catalog; id:9P2RT7TNT37T; title:STEEP; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3848,10 +3848,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PK0DZ68LGC0",
-          "Provenance": "Official subscription catalog; id:9PK0DZ68LGC0; title:Shape of Dreams; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-09-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PK0DZ68LGC0; title:Shape of Dreams; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3958,10 +3958,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P402RWR63H4",
-          "Provenance": "Official subscription catalog; id:9P402RWR63H4; title:RuneScape: Dragonwilds; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-09-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P402RWR63H4; title:RuneScape: Dragonwilds; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -3983,7 +3983,19 @@
       "OriginalName": "John Carpenter's Toxic Commando",
       "ReviewedAt": "2026-10-11T18:27:29.225112Z",
       "ItadId": "018d9591-5091-71ce-a5b6-cf13a40fe594",
-      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title"
+      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title",
+      "Subscriptions": [
+        {
+          "Service": "PC Game Pass",
+          "Platform": "PC",
+          "Region": "PH",
+          "Included": true,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
+          "Url": "https://www.xbox.com/en-PH/games/store/-/9MTGCZ84M503",
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MTGCZ84M503; title:John Carpenter's Toxic Commando; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
+        }
+      ]
     },
     "4174e2a8-87d0-4c63-9631-5978b261a8bd": {
       "Reviewed": true,
@@ -4110,10 +4122,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NFKN56ZBMR0",
-          "Provenance": "Official subscription catalog; id:9NFKN56ZBMR0; title:The Long Dark; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-04-01T09:59:59Z"
+          "ExpiresAt": "2027-04-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NFKN56ZBMR0; title:The Long Dark; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4152,10 +4164,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PDDP6ML6XHF",
-          "Provenance": "Official subscription catalog; id:9PDDP6ML6XHF; title:Medieval Dynasty; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2029-01-16T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PDDP6ML6XHF; title:Medieval Dynasty; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4197,7 +4209,19 @@
       "OriginalName": "Pit of Goblin",
       "ReviewedAt": "2026-10-11T18:27:29.239119Z",
       "ItadId": "0192c4bd-255b-73fe-9ce5-e438644f1eca",
-      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title"
+      "PriceMatchEvidence": "IsThereAnyDeal precise-title lookup of reviewed IGDB title",
+      "Subscriptions": [
+        {
+          "Service": "PC Game Pass",
+          "Platform": "PC",
+          "Region": "PH",
+          "Included": true,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
+          "Url": "https://www.xbox.com/en-PH/games/store/-/9MW4MFG0192L",
+          "ExpiresAt": "2027-11-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MW4MFG0192L; title:PIT OF GOBLIN; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
+        }
+      ]
     },
     "dc15ede5-8e85-4b50-ad8b-bc86b01ae7d6": {
       "Reviewed": true,
@@ -4254,10 +4278,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NCDMPCPDTQF",
-          "Provenance": "Official subscription catalog; id:9NCDMPCPDTQF; title:Trepang2; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-05-01T09:59:59Z"
+          "ExpiresAt": "2026-12-16T19:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NCDMPCPDTQF; title:Trepang2; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4396,10 +4420,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9MVV32Z0JPCL",
-          "Provenance": "Official subscription catalog; id:9MVV32Z0JPCL; title:FAR CRY 4; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9MVV32Z0JPCL; title:FAR CRY 4; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4418,10 +4442,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8PS6993LSL",
-          "Provenance": "Official subscription catalog; id:9P8PS6993LSL; title:Gears of War: Reloaded; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8PS6993LSL; title:Gears of War: Reloaded; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4490,10 +4514,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N3LGKGF3CC2",
-          "Provenance": "Official subscription catalog; id:9N3LGKGF3CC2; title:Nine Sols; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-03-01T09:59:59Z"
+          "ExpiresAt": "2027-03-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N3LGKGF3CC2; title:Nine Sols; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4620,10 +4644,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PPKR9N31BW6",
-          "Provenance": "Official subscription catalog; id:9PPKR9N31BW6; title:SpeedRunners 2: King of Speed; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-12-02T16:59:59Z"
+          "ExpiresAt": "2026-12-02T16:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PPKR9N31BW6; title:SpeedRunners 2: King of Speed; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -4672,10 +4696,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PH9X0760B0T",
-          "Provenance": "Official subscription catalog; id:9PH9X0760B0T; title:DOOM: The Dark Ages; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2049-12-30T23:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PH9X0760B0T; title:DOOM: The Dark Ages; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5023,11 +5047,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PNKG0WBL61W",
-          "Provenance": "Official subscription catalog; id:9PNKG0WBL61W; title:Pacific Drive; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-16T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9PNKG0WBL61W; title:Pacific Drive; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -5194,10 +5218,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PC4RWP34M2D",
-          "Provenance": "Official subscription catalog; id:9PC4RWP34M2D; title:Totally Accurate Battle Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PC4RWP34M2D; title:Totally Accurate Battle Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5226,10 +5250,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9PKJ0532DTCW",
-          "Provenance": "Official subscription catalog; id:9PKJ0532DTCW; title:Tom Clancy's Ghost Recon® Breakpoint; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "9998-12-30T00:00:00Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9PKJ0532DTCW; title:Tom Clancy's Ghost Recon® Breakpoint; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5308,10 +5332,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/BSLX1RNXR6H7",
-          "Provenance": "Official subscription catalog; id:BSLX1RNXR6H7; title:Batman™: Arkham Knight; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-06-01T09:59:59Z"
+          "ExpiresAt": "2027-06-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:BSLX1RNXR6H7; title:Batman™: Arkham Knight; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5390,10 +5414,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NLFZVMSQ7CC",
-          "Provenance": "Official subscription catalog; id:9NLFZVMSQ7CC; title:Construction Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-12-16T09:59:59Z"
+          "ExpiresAt": "2027-12-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NLFZVMSQ7CC; title:Construction Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5532,10 +5556,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NR0GCBSLDW4",
-          "Provenance": "Official subscription catalog; id:9NR0GCBSLDW4; title:Supermarket Simulator; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NR0GCBSLDW4; title:Supermarket Simulator; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5796,10 +5820,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P8DL6W0JBB8",
-          "Provenance": "Official subscription catalog; id:9P8DL6W0JBB8; title:Hades; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-09-16T09:59:59Z"
+          "ExpiresAt": "2028-09-16T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P8DL6W0JBB8; title:Hades; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5864,10 +5888,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9P47S7NJGWZL",
-          "Provenance": "Official subscription catalog; id:9P47S7NJGWZL; title:Roboquest; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2027-08-01T09:59:59Z"
+          "ExpiresAt": "2027-08-01T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9P47S7NJGWZL; title:Roboquest; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -5999,11 +6023,11 @@
           "Service": "PC Game Pass",
           "Platform": "PC",
           "Region": "PH",
-          "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "Included": false,
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NGZ1M3N98P2",
-          "Provenance": "Official subscription catalog; id:9NGZ1M3N98P2; title:Crime Scene Cleaner; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-15T09:59:59Z"
+          "ExpiresAt": null,
+          "Provenance": "Official subscription catalog; id:9NGZ1M3N98P2; title:Crime Scene Cleaner; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks; Not included in complete official PH PC catalog at 2026-11-22T06:55:56.250604Z"
         }
       ]
     },
@@ -6070,10 +6094,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9NMPVJ7TCFD0",
-          "Provenance": "Official subscription catalog; id:9NMPVJ7TCFD0; title:Vampire Crawlers: The Turbo Wildcard from Vampire Survivors; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed exact title and full Windows PC Game Pass PH entitlement; previously reviewed provider ID; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2026-10-14T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9NMPVJ7TCFD0; title:Vampire Crawlers: The Turbo Wildcard from Vampire Survivors; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
@@ -6630,10 +6654,10 @@
           "Platform": "PC",
           "Region": "PH",
           "Included": true,
-          "VerifiedAt": "2026-10-11T19:01:36.875604Z",
+          "VerifiedAt": "2026-11-22T06:55:56.250604Z",
           "Url": "https://www.xbox.com/en-PH/games/store/-/9N072VV7MFK7",
-          "Provenance": "Official subscription catalog; id:9N072VV7MFK7; title:The Planet Crafter; edition:Reviewed base game; https://www.xbox.com/en-PH/xbox-game-pass/games; Reviewed survival terraforming game, corroborated by IGDB 143574 / Steam app 1284190; full Windows PH PC Game Pass entitlement; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks",
-          "ExpiresAt": "2028-01-16T09:59:59Z"
+          "ExpiresAt": "2026-12-03T09:59:59Z",
+          "Provenance": "Official subscription catalog; id:9N072VV7MFK7; title:The Planet Crafter; edition:Exact catalog title; https://www.xbox.com/en-PH/xbox-game-pass/games; Automatic availability synchronization against reviewed catalog identity; PH evidence: Official PC collection and full-game PC Game Pass entitlement requested with market=PH; active Windows.Desktop SKU, no trials/preorders/free perks"
         }
       ]
     },
