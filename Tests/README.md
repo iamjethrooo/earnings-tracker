@@ -44,6 +44,50 @@ Automated coverage includes accounting and reconciliation, import parsing and id
 
 For UI or release changes, add the relevant manual keyboard, DPI, scrolling, dialog, package lifecycle, and isolated-storage checks. Do not launch the default application just to verify a build.
 
+## Modal presentation and guards
+
+`ModalOverviewTests` renders all eight approved modal states using the actual shell or
+owned utility-window controls. It exports 1488×1058, minimum-window and 144-DPI fixtures
+under `ModalOverviewVisuals`, including saved-but-refresh-failed feedback. Inputs and
+editors keep their footer actions inside the viewport; review rows stack at narrow widths,
+retain exact source decimals and preserve bounded recycling. Tests also exercise explicit
+ambiguous-payout skipping, conflict blocking, Cancel during a busy modal and native radio
+selection without writing fixture records.
+
+Run alongside `ImportResourceLifetimeTests`, `SessionsPresentationTests`,
+`PayoutAssignmentUiTests`, `LocalInstallationsUiTests`, `ReleaseHistoryWindowTests`,
+`SharedControlTests`, `ResponsiveLayoutTests`, `UiConsistencyTests`, `CatalogUiTests`,
+`SessionImportScopeTests`, `ModalCalendarRenderingTests` and `UserExperienceTests`.
+Existing importer/accounting tests remain the authority for persistence and financial
+behavior. Physical input, screen readers, live monitor transitions and installed-window
+chrome require manual verification in an isolated profile; offscreen captures do not
+certify those interactions.
+
+## Compact navigation rail
+
+`SidebarRailTests` renders the compact and expanded native shell at 1488×1058, the 1000×600 minimum
+and 1000×720 DIPs with a 144-DPI export under `SidebarRailVisuals`. It checks visible unclipped
+captions, icon placement, all six stable route IDs, bottom Settings placement, expand/collapse
+accessible names and retaining the active page without a new factory call. Isolated session cases
+check that a draft survives expansion across the inspector/drawer breakpoint, blocked navigation
+keeps selection, and a modal disables the toggle. `NavigationAppearanceTests` retains scrollbar
+and rail-label bounds checks; existing navigation/editor/shell cases remain the regression baseline.
+No default app startup or personal database is used. Native input, screen readers and physical
+monitor-DPI transitions remain manual checks.
+
+## Settings categories
+
+`SettingsOverviewTests` renders Data & backup, Games, Accounts & integrations and Updates in the
+native shell at 1488×1058 and 1000×720 DIPs, including a 144-DPI bitmap export, under
+`SettingsOverviewVisuals`. It checks selected-category visibility, both backup file-picker entry
+points through scrolling, persisted defaults, retained unsubmitted integration drafts, password
+clearing after unload and the pinned build footer. It does not invoke backup/restore file pickers,
+credential writes, live sync or update actions. Settings fixtures inject saved-key configuration
+status instead of reading Windows Credential Manager; Steam interaction tests retain their fake
+credential store and synthetic HTTP responses. Existing backup, application-update, preference,
+catalog, Steam and installation cases remain the behavior baseline. Physical keyboard/mouse,
+screen readers and real monitor-DPI transitions still require an isolated manual environment.
+
 ## Dashboard analytics
 
 `DashboardAnalyticsTests` verifies period boundaries, recording-date fallback, signed/offsetting
@@ -53,7 +97,11 @@ It checks empty versus real zero, retained snapshots/retry, first-load failure, 
 panel layout, bounded recent/daily-value scrolling, navigation events and offscreen focus. Renders
 are under the test output's `DashboardAnalyticsVisuals` directory, including a 144-DPI export.
 `DashboardRefinementTests`, reporting/accounting, database-error, dispatcher-refresh and navigation
-tests remain the focused baseline. Physical input, screen readers and monitor-DPI transitions are
+tests remain the focused baseline. `DashboardOverviewTests` uses synthetic account and period data
+with bundled artwork to check the separate Paid/Processing displays, period-independent balance,
+visible exclusions, import/navigation actions and bounded recent rows. It renders the complete
+shell at 1488×1058 and 1000×720 DIPs, including a 144-DPI export, under `DashboardOverviewVisuals`.
+Physical input, screen readers and monitor-DPI transitions are
 not certified. See [metric definitions](../Docs/Design-System.md#analytics-dashboard-pro-16).
 
 `UserExperienceTests` checks import review identity/precision, before values and payout selection
@@ -62,7 +110,34 @@ backup visibility with optional integrations collapsed. It renders narrow/wide p
 `UserExperienceVisuals`. These fixtures supplement native keyboard, scrolling and dialog checks;
 they do not establish screen-reader output or actual monitor-DPI behavior.
 
+## Statistics overview
+
+`StatisticsOverviewTests` renders the native shell at 1488×1058 and 1000×720 DIPs, including a
+144-DPI bitmap export, under `StatisticsOverviewVisuals`. Its isolated fixture checks separate
+calendar/analysis/cycle scopes, current-payout defaults, negative adjustments, the first/final chart
+labels, hourly ranking, exact-value disclosure and virtualization. `StatisticsRefinementTests`
+retains cap-table width, signed/empty chart, snapshot filtering and historical hourly-rate coverage.
+Dashboard analytics, payout-assignment and database-error cases cover reporting agreement and
+retained stale snapshots. No personal profile or provider request is needed. Physical input,
+screen readers and actual monitor-DPI transitions remain manual checks.
+
 ## Games library and subscription evidence
+
+`FourScreenOverviewTests` renders Sessions, Games, Payments and Game Details in the actual shell
+at 1488×1058 and 1000×720 DIPs, including a 144-DPI bitmap export, under `FourScreenOverviewVisuals`.
+Its synthetic SQLite fixture combines bundled public artwork, current and historical sessions,
+unknown acquisition, stale subscription evidence, signed adjustments and imported/manual payments.
+It checks session-to-game navigation, history entry, relocated filter bindings/counts, payout totals,
+record-action guards and retained virtualization. Context menus are opened and dismissed; no final
+delete/hide action runs. No personal database, credentials or provider requests are used. Bitmap
+exports and programmatic focus checks do not certify native input, screen readers or monitor changes.
+
+The in-process runner can be used directly after a successful build of the same configuration:
+
+```powershell
+dotnet build Tests/EarningsTracker.Tests/EarningsTracker.Tests.csproj --no-restore
+dotnet Tests/EarningsTracker.Tests/bin/Debug/net10.0-windows/EarningsTracker.Tests.dll -class "*FourScreenOverviewTests" -maxThreads 1
+```
 
 `GamesLibraryTests` checks compact rows, responsive details, independent selection/title entry,
 keyboard focus return, bookmark/ownership changes, price/edition/source evidence, read-only rate

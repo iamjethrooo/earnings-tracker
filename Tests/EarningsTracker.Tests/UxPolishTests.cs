@@ -200,7 +200,7 @@ public class UxPolishTests(WpfTestHost host)
     public Task SettingsUsesSemanticFeedbackAndDoesNotPresentAssemblyDefaultAsRelease() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
-        var view = new SettingsView(database.Options);
+        var view = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
         var feedback = (TextBlock)view.FindName("Feedback");
         foreach (var pair in new[] {
             (FeedbackTone.Success, "VerifiedTextColor"),
@@ -225,7 +225,7 @@ public class UxPolishTests(WpfTestHost host)
     public Task GamesPreferencesHaveAccessibleSettingsControls() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
-        var view = new SettingsView(database.Options);
+        var view = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
         var sort = (ComboBox)view.FindName("GamesDefaultSort");
         var bookmarks = (CheckBox)view.FindName("GamesBookmarksOnly");
         var archived = (CheckBox)view.FindName("GamesShowArchived");
@@ -238,7 +238,7 @@ public class UxPolishTests(WpfTestHost host)
         sort.SelectedIndex = 1;
         bookmarks.IsChecked = true; bookmarks.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         archived.IsChecked = false; archived.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        var reopened = new SettingsView(database.Options);
+        var reopened = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
         Assert.Equal(1, ((ComboBox)reopened.FindName("GamesDefaultSort")).SelectedIndex);
         Assert.True(((CheckBox)reopened.FindName("GamesBookmarksOnly")).IsChecked);
         Assert.False(((CheckBox)reopened.FindName("GamesShowArchived")).IsChecked);
@@ -249,7 +249,7 @@ public class UxPolishTests(WpfTestHost host)
     public Task SettingsSaveFailureRetainsPreferenceAndShowsError() => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
-        var view = new SettingsView(database.Options);
+        var view = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
         var automatic = (CheckBox)view.FindName("Automatic");
         automatic.IsChecked = false;
         automatic.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

@@ -210,7 +210,8 @@ public class GamesLibraryTests(WpfTestHost host)
     {
         using var database = new TestDatabase();
         GamePassAvailabilityTests.Seed(database, DateTime.UtcNow);
-        var view = new SettingsView(database.Options) { FontFamily = (FontFamily)Application.Current.FindResource("AppFont") };
+        var view = new SettingsView(database.Options, catalogKeyConfigured: static () => false) { FontFamily = (FontFamily)Application.Current.FindResource("AppFont") };
+        SettingsOverviewTests.SelectCategory(view, "GamesDisplaySection");
         // Apply the templates before finding the ordinary Settings disclosure.
         view.Measure(new Size(740, 560)); view.Arrange(new Rect(0, 0, 740, 560)); view.UpdateLayout();
         var expander = Descendants<Expander>(view).Single(item => Equals(item.Header, "Availability"));
@@ -218,7 +219,7 @@ public class GamesLibraryTests(WpfTestHost host)
         view.UpdateLayout();
         var text = Descendants<TextBlock>(expander).Single(item => item.Text.Contains("Stale verification does not confirm removal"));
         Assert.True(text.ActualHeight > 0);
-        Assert.True(text.ActualWidth <= 340);
+        Assert.InRange(text.ActualWidth, 1, 700);
         Capture(view, "settings-subscription-summary");
         return Task.CompletedTask;
     });

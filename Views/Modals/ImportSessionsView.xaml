@@ -3,34 +3,46 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:modal="clr-namespace:EarningsTracker.Controls"
+             modal:Modal.OwnsScrolling="True" modal:Modal.ContentMaxWidth="920"
              xmlns:local="clr-namespace:EarningsTracker.Views.Modals"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
              x:Name="ImportView"
              xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf">
-    <Grid MaxWidth="700">
-        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <TextBlock x:Name="BusyStatus" Grid.Row="0"
                    Style="{StaticResource DialogBusyText}"/>
         <Grid x:Name="ImportInputPanel" Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0"><TextBlock Margin="0,0,0,12" Text="Paste complete recordings from Nerve’s Recordings page." Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap"/>
-            <Expander Header="How to copy recordings" Margin="0,0,0,12">
-                <StackPanel><TextBlock Text="On Nerve’s Recordings page, select and copy each complete recording: game name, recording date, duration, earnings and its displayed verification status. Paste the selection below. Keep source values as shown; previewing saves nothing." Style="{StaticResource PageDescription}"/>
-                <TextBlock Text="Example of a complete recording:" Style="{StaticResource PageDescription}" Margin="0,8,0,4"/>
-                <TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True" AcceptsReturn="True" Text="PlateUp!&#10;PlateUp!&#10;PlateUp! · Nov 21, 2026 3:13 AM · 24m · File deleted&#10;+$0.61&#10;Verified" Style="{StaticResource ModalTextBox}" AutomationProperties.Name="Example session recording"/>
+            <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <ScrollViewer x:Name="InputScroll" Style="{StaticResource DialogBodyScroll}">
+                <StackPanel>
+                    <TextBlock Text="Paste complete recordings from Nerve’s Recordings page." Style="{StaticResource PageDescription}" FontSize="16" Margin="0,0,0,20"/>
+                    <WrapPanel Margin="0,0,0,20">
+                        <Border Style="{StaticResource ActiveDialogStep}"><TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource AccentTextColor}" FontWeight="SemiBold"/></Border><TextBlock Text="Paste recordings" FontSize="14" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource DefaultTextColor}" FontWeight="SemiBold"/>
+                        <fluent:SymbolIcon Symbol="ArrowRight" Width="18" Height="18" Margin="20,0" Foreground="{StaticResource SecondaryTextColor}" Focusable="False"/>
+                        <Border Style="{StaticResource DialogStep}"><TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><TextBlock Text="Review import" Style="{StaticResource ItemSubtitle}" FontSize="14" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </WrapPanel>
+                    <Expander Header="How to copy recordings" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="On Nerve’s Recordings page, copy each complete recording: game name, recording date, duration, earnings and displayed verification status. Keep source values as shown." Style="{StaticResource PageDescription}"/>
+                            <TextBlock Text="Example of a complete recording:" Style="{StaticResource PageDescription}" Margin="0,12,0,6"/>
+                            <TextBox IsReadOnly="True" IsReadOnlyCaretVisible="True" AcceptsReturn="True" Text="PlateUp!&#10;PlateUp! · Nov 21, 2026 3:13 AM · 24m · File deleted&#10;+$0.61&#10;Verified" Style="{StaticResource ModalTextBox}" AutomationProperties.Name="Example session recording"/>
+                        </StackPanel>
+                    </Expander>
+                    <TextBlock Text="Recordings" Style="{StaticResource DialogLabel}"/>
+                    <TextBox x:Name="ImportTextBox" AutomationProperties.Name="Session import text" Style="{StaticResource ImportInputTextBox}" Height="240"/>
+                    <TextBlock x:Name="InputValidationMessage" Text="Paste session text first." Style="{StaticResource InputValidationText}"/>
+                    <TextBlock Text="Previewing saves nothing." Style="{StaticResource PageDescription}" Margin="0,10,0,0"/>
                 </StackPanel>
-            </Expander></StackPanel>
-            <TextBox Grid.Row="1" AutomationProperties.Name="Session import text" x:Name="ImportTextBox" Style="{StaticResource ImportInputTextBox}">
-            </TextBox>
-            <TextBlock Grid.Row="2" x:Name="InputValidationMessage" Text="Paste session text first." Style="{StaticResource InputValidationText}"/>
-
-            <Button Grid.Row="3" Content="Preview import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}" Margin="0 20 0 0" HorizontalAlignment="Right"/>
+            </ScrollViewer>
+            <Border Grid.Row="1" Style="{StaticResource DialogFooter}">
+                <WrapPanel HorizontalAlignment="Right">
+                    <Button Content="Cancel" Click="CancelImport_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,12,0"/>
+                    <Button x:Name="ParseImportButton" Content="Preview import" Click="ParseImportButton_Click" Style="{StaticResource PrimaryButton}"/>
+                </WrapPanel>
+            </Border>
         </Grid>
         <Grid Grid.Row="1" x:Name="ImportResultContainer" Visibility="Collapsed">
             <local:ImportResultModal x:Name="ImportResultModal" />

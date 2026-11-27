@@ -248,7 +248,7 @@ public class SessionsExplorerTests(WpfTestHost host)
         Assert.Equal(10000, list.Items.Count);
         var firstCount = Descendants<ListViewItem>(list).Count();
         Assert.InRange(firstCount, 1, 150);
-        Assert.All(Descendants<ListViewItem>(list), row => Assert.Equal(44, row.ActualHeight));
+        Assert.All(Descendants<ListViewItem>(list), row => Assert.Equal(64, row.ActualHeight));
         var scroll = Descendants<ScrollViewer>(list).First();
         scroll.ScrollToEnd();
         await Layout(view, 1212, 900);
@@ -267,7 +267,7 @@ public class SessionsExplorerTests(WpfTestHost host)
         timer.Stop();
         Capture(view, "large-history-end");
         File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "SessionsExplorerVisuals", "workload.txt"),
-            $"10,000 persisted synthetic sessions; 1212x900 page; 44-DIP rows; load/layout/filter/sort/end-scroll {timer.ElapsedMilliseconds} ms; first {firstCount}, end {lastCount} realized rows. Not a production latency guarantee.");
+            $"10,000 persisted synthetic sessions; 1212x900 page; 64-DIP rows; load/layout/filter/sort/end-scroll {timer.ElapsedMilliseconds} ms; first {firstCount}, end {lastCount} realized rows. Not a production latency guarantee.");
     });
 
     [Fact]

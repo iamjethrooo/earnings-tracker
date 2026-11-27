@@ -94,7 +94,7 @@ public class UiConsistencyTests(WpfTestHost host)
             result.NewSessions.Add(session);
             var modal = new ImportResultModal();
             modal.ShowPreview(result);
-            Assert.Equal("Session earnings (USD): $1,234.50", ((TextBlock)modal.FindName("TotalEarningsText")).Text);
+            Assert.Equal("Imported recorded amounts (USD): $1,234.50", ((TextBlock)modal.FindName("TotalEarningsText")).Text);
         }
         finally { CultureInfo.CurrentCulture = previous; }
         return Task.CompletedTask;
@@ -129,7 +129,7 @@ public class UiConsistencyTests(WpfTestHost host)
             section.Measure(new Size(1000, 1000));
             section.Arrange(new Rect(0, 0, 1000, 1000));
             section.UpdateLayout();
-            var text = string.Join(Environment.NewLine, Assert.IsType<ListBox>(section.Content).Items.Cast<string>());
+            var text = string.Join(Environment.NewLine, Assert.IsType<ListBox>(section.Content).Items.Cast<object>().Select(item => item.ToString()));
             Assert.Contains(expected, text);
             Assert.DoesNotContain("€", text);
             view.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));

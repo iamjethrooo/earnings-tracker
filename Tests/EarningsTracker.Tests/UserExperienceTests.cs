@@ -94,12 +94,13 @@ public class UserExperienceTests(WpfTestHost host)
         var sessions = 0; var payouts = 0;
         dashboard.ImportSessionsRequested += (_, _) => sessions++;
         dashboard.ImportPayoutsRequested += (_, _) => payouts++;
+        ((Button)dashboard.FindName("ImportSessionsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         foreach (var button in Descendants<Button>((Border)dashboard.FindName("GettingStarted")))
             button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.Equal(1, sessions); Assert.Equal(1, payouts);
         Capture(dashboard, $"dashboard-start-{width}");
 
-        var settings = new SettingsView(database.Options);
+        var settings = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
         await Layout(settings, width, height);
         var backup = (Button)settings.FindName("BackupButton");
         var bounds = backup.TransformToAncestor(settings).TransformBounds(new Rect(backup.RenderSize));

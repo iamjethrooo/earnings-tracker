@@ -6,17 +6,17 @@
     SizeChanged="View_SizeChanged" PreviewKeyDown="View_PreviewKeyDown">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="Show"/>
-        <Style x:Key="SessionFieldLabel" TargetType="TextBlock" BasedOn="{StaticResource FilterLabel}">
+        <Style x:Key="SessionFieldLabel" TargetType="TextBlock" BasedOn="{StaticResource ItemSubtitle}">
             <Setter Property="Margin" Value="0,12,0,6"/>
         </Style>
         <Style x:Key="SessionGameLink" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{StaticResource AccentTextColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Padding" Value="0,3"/>
             <Setter Property="ContentTemplate"><Setter.Value><DataTemplate>
-                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" Foreground="{StaticResource AccentTextColor}"/>
+                <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
             </DataTemplate></Setter.Value></Setter>
         </Style>
         <DataTemplate x:Key="SessionEditorTemplate">
@@ -78,29 +78,31 @@
                     <TextBlock Text="{Binding StatusText}" Style="{StaticResource SessionHistoryStatusText}"/>
                 </Border>
                 <TextBlock Text="Force-verified" Foreground="{StaticResource VerifiedTextColor}" Margin="0,8,0,0" Visibility="{Binding Session.IsForceVerified, Converter={StaticResource Show}}"/>
+                <Button Content="Open game details →" Style="{StaticResource SessionGameLink}" Foreground="{StaticResource AccentTextColor}"
+                        Click="GameLink_Click" IsEnabled="{Binding CanNavigate}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                <TextBlock Text="Earnings · USD" Style="{StaticResource SessionFieldLabel}"/>
+                <TextBlock Text="{Binding Session.Earnings, StringFormat={}{0:C2}, ConverterCulture=en-US}"
+                           Style="{StaticResource DashboardStatValue}" Foreground="{StaticResource DefaultTextColor}" Margin="0,0,0,12"/>
                 <TextBlock Text="Recorded" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding Session.RecordedDate, StringFormat={}{0:MMM d, yyyy h:mm:ss tt}}" TextWrapping="Wrap"/>
                 <TextBlock Text="Duration" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding Session.DurationText}"/>
-                <TextBlock Text="Earnings · USD" Style="{StaticResource SessionFieldLabel}"/>
-                <TextBlock Text="{Binding Session.Earnings, StringFormat={}{0:C2}, ConverterCulture=en-US}" Style="{StaticResource SectionHeading}"/>
                 <TextBlock Text="Posted" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding PostedText}" TextWrapping="Wrap"/>
                 <TextBlock Text="Payout assignment" Style="{StaticResource SessionFieldLabel}"/>
                 <TextBlock Text="{Binding PayoutAssignmentText}" TextWrapping="Wrap"/>
-                <TextBlock Text="Source" Style="{StaticResource SessionFieldLabel}"/>
-                <TextBlock Text="{Binding SourceLabel}" TextWrapping="Wrap"/>
-                <TextBlock Text="Payout source ID" Style="{StaticResource SessionFieldLabel}"/>
-                <TextBlock Text="{Binding SourceId}" TextWrapping="Wrap"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
     <Grid x:Name="ExplorerRoot" Style="{StaticResource TabMainGrid}">
         <Grid x:Name="BrowseContent">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-            <Grid Margin="0,0,0,12">
+            <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Sessions" Style="{StaticResource TabName}"/></StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Sessions" Style="{StaticResource PageTitle}"/>
+                    <TextBlock Text="Review recordings and verified earnings." Style="{StaticResource PageDescription}"/>
+                </StackPanel>
                 <Button Grid.Column="1" Content="Import sessions" Style="{StaticResource PrimaryButton}" Click="ImportSessionsButton_Click" VerticalAlignment="Center"/>
             </Grid>
             <Border x:Name="SessionFilters" Grid.Row="1" Margin="0,0,0,4">
@@ -151,12 +153,21 @@
                             Background="Transparent" BorderThickness="0" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.CacheLength="1"
                             AutomationProperties.Name="Sessions table" AutomationProperties.HelpText="Select a row or press Enter to inspect it. The game title opens Game Details independently.">
-                            <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TableRow}"><Setter Property="AutomationProperties.Name" Value="{Binding AccessibleSummary}"/><Setter Property="Height" Value="44"/><Setter Property="Padding" Value="8,4"/><Setter Property="FontSize" Value="{StaticResource FontSizeCompactBody}"/></Style></ListView.ItemContainerStyle>
+                            <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TableRow}"><Setter Property="AutomationProperties.Name" Value="{Binding AccessibleSummary}"/><Setter Property="Height" Value="64"/><Setter Property="Padding" Value="8"/><Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/></Style></ListView.ItemContainerStyle>
                             <ListView.View><GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource TableColumnHeader}">
                                 <GridViewColumn x:Name="GameColumn" Header="GAME" Width="190"><GridViewColumn.CellTemplate><DataTemplate>
-                                    <Button Content="{Binding Session.GameName}" ToolTip="{Binding Session.GameName}" Style="{StaticResource SessionGameLink}" IsEnabled="{Binding CanNavigate}" Click="GameLink_Click" AutomationProperties.Name="{Binding Session.GameName, StringFormat=Open Game Details for {0}}"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <ContentControl Content="{Binding Cover}" Style="{StaticResource ArtworkPresenter}" Width="32" Height="44"/>
+                                        <Button Grid.Column="1" Content="{Binding Session.GameName}" ToolTip="{Binding Session.GameName}" Margin="8,0,0,0"
+                                                Style="{StaticResource SessionGameLink}" IsEnabled="{Binding CanNavigate}" Click="GameLink_Click"
+                                                AutomationProperties.Name="{Binding Session.GameName, StringFormat=Open Game Details for {0}}"/>
+                                    </Grid>
                                 </DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
-                                <GridViewColumn Header="RECORDED" Width="154" DisplayMemberBinding="{Binding Session.RecordedDate, StringFormat={}{0:MMM d, yyyy h:mm tt}}"/>
+                                <GridViewColumn Header="RECORDED" Width="154"><GridViewColumn.CellTemplate><DataTemplate><StackPanel>
+                                    <TextBlock Text="{Binding Session.RecordedDate, StringFormat={}{0:MMM d, yyyy}}"/>
+                                    <TextBlock Text="{Binding Session.RecordedDate, StringFormat={}{0:h:mm tt}}" Style="{StaticResource ItemSubtitle}" Margin="0,4,0,0"/>
+                                </StackPanel></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
                                 <GridViewColumn Header="DURATION" Width="92" DisplayMemberBinding="{Binding Session.DurationText}"/>
                                 <GridViewColumn Header="USD" Width="96"><GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Session.Earnings, StringFormat={}{0:C2}, ConverterCulture=en-US}" Width="80" TextAlignment="Right" FontWeight="SemiBold"/></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
                                 <GridViewColumn Header="VERIFICATION" Width="140"><GridViewColumn.CellTemplate><DataTemplate><Border Width="116" Style="{StaticResource SessionHistoryStatusBadge}"><TextBlock Text="{Binding StatusText}" Style="{StaticResource SessionHistoryStatusText}"/></Border></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
@@ -174,11 +185,11 @@
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <Border Padding="16" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,0,0,1"><DockPanel>
                             <Button x:Name="CloseDetailsButton" DockPanel.Dock="Right" Content="×" Style="{StaticResource SecondaryButton}" Click="CloseDetails_Click" Padding="9,3" AutomationProperties.Name="Close session details"/>
-                            <StackPanel><TextBlock Text="Session details" Style="{StaticResource SectionHeading}"/><TextBlock Text="{Binding Identifier}" Style="{StaticResource ItemSubtitle}" Margin="0,4,0,0"/></StackPanel>
+                            <StackPanel><TextBlock Text="Session details" Style="{StaticResource ContentHeading}"/><TextBlock Text="{Binding Identifier}" Style="{StaticResource ItemSubtitle}" Margin="0,4,0,0"/></StackPanel>
                         </DockPanel></Border>
                         <ScrollViewer x:Name="DetailsScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="16">
-                                <Button Content="{Binding Session.GameName}" Style="{StaticResource SessionGameLink}" Click="GameLink_Click" IsEnabled="{Binding CanNavigate}" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock Text="{Binding Session.GameName}" Style="{StaticResource ContentHeading}" TextWrapping="Wrap" Margin="0,0,0,12"/>
                                 <StackPanel Visibility="{Binding Visibility, ElementName=SessionsLoadPanel}" Margin="0,8,0,12">
                                     <TextBlock Text="{Binding Text, ElementName=SessionsLoadStatus}" TextWrapping="Wrap" Foreground="{StaticResource PendingTextColor}"/>
                                     <Button Content="Retry snapshot" Click="RetrySessions_Click" Style="{StaticResource SecondaryButton}" Margin="0,8,0,0"/>
@@ -193,7 +204,10 @@
                                 </Style></ContentControl.Style></ContentControl>
                                 <Expander Header="Source &amp; history" Margin="0,16,0,0">
                                     <StackPanel>
-
+                                        <TextBlock Text="Source" Style="{StaticResource SessionFieldLabel}"/>
+                                        <TextBlock Text="{Binding SourceLabel}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Payout source ID" Style="{StaticResource SessionFieldLabel}"/>
+                                        <TextBlock Text="{Binding SourceId}" TextWrapping="Wrap"/>
                                         <Expander Header="Linked payout source values" Margin="0,8">
                                             <StackPanel>
                                                 <TextBlock Text="Payout source" Style="{StaticResource SessionFieldLabel}"/>
@@ -221,7 +235,16 @@
                         <Border Grid.Row="2" Padding="16" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,1,0,0">
                             <Grid>
                                 <StackPanel x:Name="ReadActions" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Content="Delete" ToolTip="Deletes this session and retains a deletion audit. Earnings totals will change." Style="{StaticResource DangerButton}" Click="DeleteSessionButton_Click" Margin="0,0,8,0"/>
+                                    <Button x:Name="SessionActionsButton" Content="More actions" AutomationProperties.Name="More session actions"
+                                            Style="{StaticResource SecondaryButton}" Click="SessionActions_Click" Margin="0,0,8,0">
+                                        <Button.ContextMenu>
+                                            <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                                         Background="{StaticResource DialogBackgroundColor}" Foreground="{StaticResource DefaultTextColor}">
+                                                <MenuItem Header="Delete session…" Click="DeleteSessionButton_Click"
+                                                          ToolTip="Deletes this session and retains a deletion audit. Earnings totals will change."/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
                                     <Button x:Name="EditSessionButton" Content="Edit session" Style="{StaticResource PrimaryButton}" Click="EditSessionButton_Click"/>
                                 </StackPanel>
                                 <StackPanel x:Name="EditActions" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">

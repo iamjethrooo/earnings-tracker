@@ -11,7 +11,8 @@
              xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf">
     <Grid>
         <Border Background="Black" Opacity="0.75"/>
-        <Border x:Name="DialogPanel" Style="{StaticResource DialogPanel}">
+        <Border x:Name="DialogPanel" Style="{StaticResource DialogPanel}"
+                MaxWidth="{Binding ModalContent.(local:Modal.ContentMaxWidth), RelativeSource={RelativeSource AncestorType=UserControl}, TargetNullValue=860, FallbackValue=860}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -19,7 +20,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" x:Name="ModalHeader" Margin="0,0,0,2">
-                    <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource DefaultTextColor}" VerticalAlignment="Center" Margin="0,0,42,0" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource DialogTitle}" VerticalAlignment="Center" Margin="0,0,42,0"/>
                     <Button HorizontalAlignment="Right" Click="CloseButton_Click" Background="Transparent" Width="30" Height="30" VerticalAlignment="Center" AutomationProperties.Name="Close dialog" ToolTip="Close">
                         <fluent:SymbolIcon Symbol="Dismiss" Foreground="{StaticResource DefaultTextColor}"/>
                         <Button.Style>
@@ -66,7 +67,14 @@
                     </Button>
                 </Grid>
 
-                <ScrollViewer x:Name="DialogScroll" Grid.Row="1" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                <ScrollViewer x:Name="DialogScroll" Grid.Row="1" Margin="0,16,0,0" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                    <ScrollViewer.Style><Style TargetType="ScrollViewer">
+                        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding ModalContent.(local:Modal.OwnsScrolling), RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                        </DataTrigger></Style.Triggers>
+                    </Style></ScrollViewer.Style>
                     <ContentPresenter x:Name="ModalContentPresenter" Content="{Binding ModalContent, RelativeSource={RelativeSource AncestorType={x:Type local:Modal}}}"/>
                 </ScrollViewer>
             </Grid>

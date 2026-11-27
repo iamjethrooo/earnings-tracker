@@ -501,8 +501,8 @@ public class GamesRefinementTests(WpfTestHost host)
             Assert.True(popup.IsOpen);
             Assert.True(model.InstalledOnly);
             Assert.True(model.TimeLeftOnly);
-            Assert.Equal(4, model.SecondaryFilterCount);
-            Assert.Equal("More filters (4)", model.MoreFiltersText);
+            Assert.Equal(5, model.SecondaryFilterCount);
+            Assert.Equal("Filters (5)", model.MoreFiltersText);
             Assert.True(model.CanClearFilters);
             var panel = (StackPanel)view.FindName("MoreFiltersPanel");
             Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(panel));

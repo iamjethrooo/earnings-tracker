@@ -108,6 +108,9 @@ namespace EarningsTracker.ViewModels
         public decimal TotalMinutes => CurrentCycleVerifiedSessions.Sum(s => (decimal)s.CapEligibleDuration.TotalMinutes);
         public decimal RemainingMinutes => Math.Max(0, Game.MinutesCap - TotalMinutes);
         public string MinutesDescription => $"{FormatDuration(TotalMinutes)} used · {FormatDuration(RemainingMinutes)} left to earn";
+        public string CycleUsageText => $"{TotalDurationText} / {MaxDurationText}";
+        public string RemainingDurationText => Game.IsArchived ? "History only" : Game.MinutesCap <= 0
+            ? "Unknown cap" : $"{FormatDuration(RemainingMinutes)} left to earn";
 
         public string CapText => $"{Game.MinutesCap}m";
         public decimal ProgressPercentage => Game.MinutesCap > 0 ? TotalMinutes / Game.MinutesCap * 100 : 0;

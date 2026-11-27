@@ -22,8 +22,8 @@ public class CatalogUiTests(WpfTestHost host)
         var preview = (ListBox)window.FindName("Preview");
         var apply = (Button)window.FindName("Apply");
         var cancel = (Button)window.FindName("ClosePreview");
-        Assert.Contains("$2.50/hr", Assert.IsType<string>(preview.Items[0]));
-        Assert.Contains("Duplicate title", Assert.IsType<string>(preview.Items[1]));
+        Assert.Contains("$2.50/hr", Assert.IsType<EarningsTracker.Views.Modals.CatalogRosterWindow.RosterReviewRow>(preview.Items[0]).Terms);
+        Assert.Contains("Duplicate title", Assert.IsType<EarningsTracker.Views.Modals.CatalogRosterWindow.RosterReviewRow>(preview.Items[1]).Name);
         Assert.False(apply.IsDefault);
         Assert.True(cancel.IsCancel);
         var content = (FrameworkElement)window.Content;
@@ -74,7 +74,8 @@ public class CatalogUiTests(WpfTestHost host)
         Assert.True(reviewed > 0);
         model.SaveSubscriptions(["PC Game Pass"]); model.PlayableOnly = true;
         Assert.True(model.AvailableGamesCount >= reviewed);
-        var settings = new SettingsView(database.Options);
+        var settings = new SettingsView(database.Options, catalogKeyConfigured: static () => false);
+        SettingsOverviewTests.SelectCategory(settings, "GamesDisplaySection");
         Assert.True(((CheckBox)settings.FindName("GamePass")).IsChecked);
         foreach (var width in new[] { 740, 960 })
         {
@@ -197,6 +198,10 @@ public class CatalogUiTests(WpfTestHost host)
         view.OpenGameDetails(game);
         view.Measure(new Size(740, 560)); view.Arrange(new Rect(0, 0, 740, 560)); view.UpdateLayout();
         await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        var about = Descendants<Expander>(view).Single(expander => Equals(expander.Header, "About this game"));
+        Assert.False(about.IsExpanded);
+        about.IsExpanded = true;
+        view.UpdateLayout();
         var scroll = view.DetailsScroll!;
         var metadata = Descendants<TextBlock>(view).Single(text => text.Text.StartsWith("A lengthy description"));
         var sessions = (ListBox)view.FindName("GameSessionsList");

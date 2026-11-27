@@ -1,7 +1,45 @@
 [
   {
+    "version": "1.8.0",
+    "publishedAt": "2026-11-27T05:00:00Z",
+    "unreleased": false,
+    "summary": "A cleaner workspace for reviewing sessions, exploring games, and keeping track of your earnings.",
+    "introduction": "This update refreshes the main screens and dialogs with clearer layouts, a compact navigation rail, and consistent dark controls.",
+    "upgradeNotes": [
+      "Create an independent backup in Settings → Data & backup before upgrading.",
+      "This update adds no database migration. Installations upgrading from an older version may still apply migrations from earlier releases."
+    ],
+    "sections": [
+      {
+        "category": "What's New",
+        "heading": "A More Focused Workspace",
+        "changes": [
+          "Use the compact sidebar to switch between Dashboard, Sessions, Games, Payments, Statistics and Settings. Expand it when you want more navigation detail.",
+          "Dashboard brings account totals, period earnings, charts and recent activity into a clearer overview.",
+          "Settings groups controls into Data & backup, Games, Accounts & integrations, and Updates."
+        ]
+      },
+      {
+        "category": "Improvements",
+        "heading": "Clearer Screens and Dialogs",
+        "changes": [
+          "Sessions and Payments use more readable record lists and detail panels. Games and Game Details give artwork, earning information and access options more room.",
+          "Statistics organizes earnings charts and game comparisons into clearer sections.",
+          "Import, review, payment-editing, installed-app and release-history dialogs share a more consistent layout. Import review rows adapt to narrower windows and keep saved values and exclusions visible."
+        ]
+      },
+      {
+        "heading": "Bug Fixes",
+        "changes": [
+          "Action menus and their separators now use the dark theme instead of showing white Windows menu surfaces.",
+          "Hover explanations wrap within compact dark tooltips so longer text stays readable."
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.7.0",
-    "publishedAt": "2026-11-22T07:21:35Z",
+    "publishedAt": "2026-11-22T07:43:34Z",
     "unreleased": false,
     "summary": "Review recordings before importing, understand your unpaid earnings, and find the controls you need more easily.",
     "introduction": "This update makes the main tracking workflows clearer, from your first import to reviewing sessions, comparing earnings, and backing up your data.",

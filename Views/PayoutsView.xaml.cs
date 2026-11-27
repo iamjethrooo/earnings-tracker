@@ -175,13 +175,23 @@ namespace EarningsTracker.Views
                 ? Visibility.Visible : Visibility.Collapsed;
             if (PayoutList.SelectedItem is not PayoutHistoryItem item || item.Payout is null)
             {
-                EditButton.IsEnabled = DeleteButton.IsEnabled = false;
+                EditButton.IsEnabled = DeleteButton.IsEnabled = PayoutActionsButton.IsEnabled = false;
                 return;
             }
 
             EditButton.IsEnabled = true;
             var payout = item.Payout;
             DeleteButton.IsEnabled = payout.Status != "Legacy" && payout.ImportedAt == null && payout.SourceRow == null && payout.SourceValuesJson == null;
+            PayoutActionsButton.IsEnabled = DeleteButton.IsEnabled;
+        }
+
+        private void PayoutActions_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { ContextMenu: { } menu } button)
+            {
+                menu.PlacementTarget = button;
+                menu.IsOpen = true;
+            }
         }
 
         private void ImportPayoutsButton_Click(object sender, RoutedEventArgs e) => ImportPayoutsRequested?.Invoke(this, EventArgs.Empty);

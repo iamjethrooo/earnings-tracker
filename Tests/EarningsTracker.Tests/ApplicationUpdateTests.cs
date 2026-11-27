@@ -228,9 +228,10 @@ public class ApplicationUpdateTests(WpfTestHost host)
     public Task SettingsRecreationSharesUpdaterAndKeepsCatalogPreferenceIndependent() => host.RunAsync(async () =>
     {
         using var database = new TestDatabase(); using var service = Service(new Manager());
-        var first = new SettingsView(database.Options, service);
+        var first = new SettingsView(database.Options, service, catalogKeyConfigured: static () => false);
         await service.CheckAsync();
-        var second = new SettingsView(database.Options, service);
+        var second = new SettingsView(database.Options, service, catalogKeyConfigured: static () => false);
+        SettingsOverviewTests.SelectCategory(second, "ApplicationUpdatesSection");
         second.Measure(new System.Windows.Size(900, 900)); second.Arrange(new System.Windows.Rect(0, 0, 900, 900)); second.UpdateLayout();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         var progress = FindProgress(second);

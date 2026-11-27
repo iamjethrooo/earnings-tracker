@@ -45,6 +45,8 @@ namespace EarningsTracker.Views
         public string TodayEarningsDisplay => FormatUsd(TodayEarnings);
         public string ThisWeekEarningsDisplay => FormatUsd(ThisWeekEarnings);
         public string ThisMonthEarningsDisplay => FormatUsd(ThisMonthEarnings);
+        public string CalendarWeekDescription => $"{_snapshotDay.AddDays(-(((int)_snapshotDay.DayOfWeek + 6) % 7)):MMM d} – {_snapshotDay:MMM d}";
+        public string CalendarMonthDescription => $"{new DateTime(_snapshotDay.Year, _snapshotDay.Month, 1):MMM d} – {_snapshotDay:MMM d}";
         public ObservableCollection<GameCapItem> GameCapRows { get; } = new BatchObservableCollection<GameCapItem>();
         public ObservableCollection<GameEarningsItem> GameEarnings { get; } = new BatchObservableCollection<GameEarningsItem>();
 
@@ -311,7 +313,7 @@ namespace EarningsTracker.Views
                 VerifiedHours = byHour ? total.Hours : null,
                 Share = maximum > 0m ? (double)(Math.Max(0m, total.Value) / maximum) * 100d : 0d
             }));
-            GameEarningsPanel.MinHeight = GameEarnings.Count > 0 ? 300 : 180;
+            GameEarningsPanel.MinHeight = ChartsGrid.ActualWidth < 820 ? 0 : GameEarnings.Count > 0 ? 300 : 180;
         }
 
         private void GameCapList_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -332,8 +334,10 @@ namespace EarningsTracker.Views
             ChartsGrid.ColumnDefinitions[1].Width = stacked ? new GridLength(0) : new GridLength(0.85, GridUnitType.Star);
             Grid.SetColumn(GameEarningsPanel, stacked ? 0 : 1);
             Grid.SetRow(GameEarningsPanel, stacked ? 1 : 0);
-            TrendPanel.Margin = stacked ? new Thickness(0, 0, 0, 14) : new Thickness(0, 0, 7, 0);
-            GameEarningsPanel.Margin = stacked ? new Thickness(0) : new Thickness(7, 0, 0, 0);
+            TrendPanel.Margin = stacked ? new Thickness(0, 0, 0, 24) : new Thickness(0, 0, 24, 0);
+            GameEarningsPanel.BorderThickness = stacked ? new Thickness(0, 1, 0, 0) : new Thickness(1, 0, 0, 0);
+            GameEarningsPanel.Padding = stacked ? new Thickness(0, 16, 0, 0) : new Thickness(24, 0, 0, 0);
+            GameEarningsPanel.MinHeight = stacked ? 0 : GameEarnings.Count > 0 ? 300 : 180;
         }
 
         private void GameCapList_ColumnHeaderClick(object sender, RoutedEventArgs e)
@@ -459,7 +463,8 @@ namespace EarningsTracker.Views
                         {
                             Text = $"{period.TooltipDate}\nTotal earnings: {period.EarningsText}\nSessions: {FormatUsd(period.SessionEarnings)}\nSeparate adjustments: {FormatUsd(period.AdjustmentEarnings)}\nHours: {period.SessionHours:N2}",
                             Foreground = (Brush)FindResource("DefaultTextColor"),
-                            FontSize = (double)FindResource("FontSizeSupporting")
+                            FontSize = (double)FindResource("FontSizeCompactBody"),
+                            TextWrapping = TextWrapping.Wrap
                         }
                     }
                 };
@@ -481,8 +486,18 @@ namespace EarningsTracker.Views
                 EarningsTrendCanvas.Children.Add(bar);
             }
 
-            var labelInterval = Math.Max(1, (int)Math.Ceiling(_trendPeriods.Count / Math.Max(1, Math.Floor(plotWidth / 76))));
-            for (var i = 0; i < _trendPeriods.Count; i += labelInterval)
+            var labelCount = Math.Max(2, (int)Math.Floor(plotWidth / 90));
+            var labelInterval = Math.Max(1, (int)Math.Ceiling((_trendPeriods.Count - 1d) / (labelCount - 1)));
+            var labelIndices = Enumerable.Range(0, _trendPeriods.Count).Where(index => index % labelInterval == 0).ToList();
+            var lastIndex = _trendPeriods.Count - 1;
+            if (labelIndices[^1] != lastIndex)
+            {
+                // Leave room for the final period rather than displaying a nearby date twice.
+                if (labelIndices.Count > 1 && lastIndex - labelIndices[^1] < labelInterval)
+                    labelIndices.RemoveAt(labelIndices.Count - 1);
+                labelIndices.Add(lastIndex);
+            }
+            foreach (var i in labelIndices)
             {
                 var x = left + (i + 0.5) * slot;
                 AddCanvasText(_trendPeriods[i].Label, Math.Clamp(x - 36, left, Math.Max(left, width - 72)), height - bottom + 8, chartLabelBrush, 72, double.NaN, TextAlignment.Center);
@@ -531,7 +546,7 @@ namespace EarningsTracker.Views
         {
             foreach (var property in new[] { nameof(TodayEarningsDisplay), nameof(ThisWeekEarningsDisplay),
                 nameof(ThisMonthEarningsDisplay), nameof(GameAssociationNotice), nameof(UnlinkedSessionCount),
-                nameof(TrendPeriods), nameof(RangeDescription) })
+                nameof(TrendPeriods), nameof(RangeDescription), nameof(CalendarWeekDescription), nameof(CalendarMonthDescription) })
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
     }

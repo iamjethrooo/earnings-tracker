@@ -21,6 +21,15 @@ namespace EarningsTracker.Controls
     {
 
         public event EventHandler? CloseRequested;
+        // Opt-in layout contract: these views bound their own body viewport and keep actions outside it.
+        public static readonly DependencyProperty OwnsScrollingProperty = DependencyProperty.RegisterAttached(
+            "OwnsScrolling", typeof(bool), typeof(Modal), new PropertyMetadata(false));
+        public static bool GetOwnsScrolling(DependencyObject element) => (bool)element.GetValue(OwnsScrollingProperty);
+        public static void SetOwnsScrolling(DependencyObject element, bool value) => element.SetValue(OwnsScrollingProperty, value);
+        public static readonly DependencyProperty ContentMaxWidthProperty = DependencyProperty.RegisterAttached(
+            "ContentMaxWidth", typeof(double), typeof(Modal), new PropertyMetadata(860d));
+        public static double GetContentMaxWidth(DependencyObject element) => (double)element.GetValue(ContentMaxWidthProperty);
+        public static void SetContentMaxWidth(DependencyObject element, double value) => element.SetValue(ContentMaxWidthProperty, value);
         private IInputElement? _returnFocus;
         public bool IsBusy { get => (bool)GetValue(IsBusyProperty); set => SetValue(IsBusyProperty, value); }
         public static readonly DependencyProperty IsBusyProperty = DependencyProperty.Register(

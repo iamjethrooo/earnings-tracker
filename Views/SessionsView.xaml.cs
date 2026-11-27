@@ -275,10 +275,19 @@ namespace EarningsTracker.Views
                 ShowFeedback("Sessions refreshed.");
         }
 
+        private void SessionActions_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { ContextMenu: { } menu } button)
+            {
+                menu.PlacementTarget = button;
+                menu.IsOpen = true;
+            }
+        }
+
         private void DeleteSessionButton_Click(object sender, RoutedEventArgs e)
         {
             if (!CanLeave()) return;
-            if (sender is not Button { DataContext: SessionItemViewModel item })
+            if (sender is not FrameworkElement { DataContext: SessionItemViewModel item })
                 return;
 
             var result = MessageBox.Show(
@@ -385,9 +394,9 @@ namespace EarningsTracker.Views
                 moved = true;
             }
             Grid.SetColumn(DetailsPanel, _drawer ? 0 : 2);
-            DetailsColumn.Width = new GridLength(!_drawer && hasDetails ? 336 : 0);
-            DetailsGap.Width = new GridLength(!_drawer && hasDetails ? 16 : 0);
-            DetailsPanel.Width = _drawer ? Math.Min(360, Math.Max(280, ActualWidth - 72)) : double.NaN;
+            DetailsColumn.Width = new GridLength(!_drawer && hasDetails ? 390 : 0);
+            DetailsGap.Width = new GridLength(!_drawer && hasDetails ? 24 : 0);
+            DetailsPanel.Width = _drawer ? Math.Min(390, Math.Max(280, ActualWidth - 72)) : double.NaN;
             DetailsPanel.HorizontalAlignment = _drawer ? HorizontalAlignment.Right : HorizontalAlignment.Stretch;
             DetailsPanel.Visibility = hasDetails ? Visibility.Visible : Visibility.Collapsed;
             DrawerLayer.Visibility = _drawer && hasDetails ? Visibility.Visible : Visibility.Collapsed;

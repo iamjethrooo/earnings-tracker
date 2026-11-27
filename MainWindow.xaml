@@ -124,12 +124,12 @@
                 </Style>
             </Grid.Style>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="188" />
+                <ColumnDefinition x:Name="NavigationColumn" Width="116" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!--Sidebar-->
-            <Grid Grid.Column="0" Background="{StaticResource SidebarBackgroundColor}">
+            <Grid x:Name="NavigationSidebar" Grid.Column="0" Background="{StaticResource SidebarBackgroundColor}">
                 <Border BorderThickness="0 0 1 0" BorderBrush="{StaticResource DefaultBorderColor}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -138,25 +138,50 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <StackPanel Margin="16,20,16,0">
-                            <DockPanel LastChildFill="True">
-                                <Border Width="32" Height="32" CornerRadius="{StaticResource CardCornerRadius}" Background="{StaticResource AccentBackgroundColor}" Margin="0,0,10,0">
+                            <Grid>
+                                <Grid.Style><Style TargetType="Grid">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding IsNavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                        <Setter Property="HorizontalAlignment" Value="Left"/><Setter Property="Margin" Value="8,0,0,0"/>
+                                    </DataTrigger></Style.Triggers>
+                                </Style></Grid.Style>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <Border Width="32" Height="32" CornerRadius="{StaticResource CardCornerRadius}" Background="{StaticResource AccentBackgroundColor}">
                                     <Path Data="M 0,20 L 0,0 16,0 M 0,9 L 12,9 M 0,20 L 16,20" Stroke="{StaticResource AccentColor}" StrokeThickness="3" Stretch="Uniform" Width="16" Height="20"/>
                                 </Border>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="EARNINGS" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold"/>
-                                    <TextBlock Text="TRACKER" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" FontWeight="SemiBold"/>
+                                <StackPanel x:Name="NavigationWordmark" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IsNavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                    </Style></StackPanel.Style>
+                                    <TextBlock Text="Earnings" Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Tracker" Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}"/>
                                 </StackPanel>
-                            </DockPanel>
-                            <Border Height="1" Background="{StaticResource DefaultBorderColor}" Margin="0,18,0,0"/>
+                            </Grid>
+                            <Button x:Name="ToggleNavigationButton" Click="ToggleNavigation_Click">
+                                <Button.Style><Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                    <Setter Property="Width" Value="36"/><Setter Property="Height" Value="32"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/><Setter Property="Margin" Value="0,8,0,0"/>
+                                    <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="8"/>
+                                    <Setter Property="ToolTip" Value="Expand navigation"/><Setter Property="AutomationProperties.Name" Value="Expand navigation"/>
+                                    <Style.Triggers><DataTrigger Binding="{Binding IsNavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                        <Setter Property="ToolTip" Value="Collapse navigation"/><Setter Property="AutomationProperties.Name" Value="Collapse navigation"/>
+                                    </DataTrigger></Style.Triggers>
+                                </Style></Button.Style>
+                                <fluent:SymbolIcon Width="16" Height="16" Focusable="False" IsHitTestVisible="False">
+                                    <fluent:SymbolIcon.Style><Style TargetType="fluent:SymbolIcon"><Setter Property="Symbol" Value="ChevronRight"/>
+                                        <Style.Triggers><DataTrigger Binding="{Binding IsNavigationExpanded, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Symbol" Value="ChevronLeft"/></DataTrigger></Style.Triggers>
+                                    </Style></fluent:SymbolIcon.Style>
+                                </fluent:SymbolIcon>
+                            </Button>
                         </StackPanel>
-                        <ListBox Grid.Row="1" x:Name="NavBar" SelectionChanged="NavBar_SelectionChanged" Margin="12,18,12,0" Background="Transparent" BorderThickness="0px" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox Grid.Row="1" x:Name="NavBar" SelectionChanged="NavBar_SelectionChanged" Margin="8,18,8,0" Background="Transparent" BorderThickness="0px" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListBoxItem Content="Dashboard" Tag="{x:Static enums:NavigationPage.Dashboard}" Style="{StaticResource NavButton}" />
                             <ListBoxItem Content="Sessions" Tag="{x:Static enums:NavigationPage.Sessions}" Style="{StaticResource NavButton}" />
                             <ListBoxItem Content="Games" Tag="{x:Static enums:NavigationPage.Games}" Style="{StaticResource NavButton}" />
                             <ListBoxItem Content="Payments" Tag="{x:Static enums:NavigationPage.Payments}" Style="{StaticResource NavButton}" />
                             <ListBoxItem Content="Statistics" Tag="{x:Static enums:NavigationPage.Statistics}" Style="{StaticResource NavButton}" />
                         </ListBox>
-                        <ListBox Grid.Row="2" x:Name="SettingsNav" SelectionChanged="SettingsNav_SelectionChanged" Margin="12,12,12,16" Background="Transparent" BorderThickness="0">
+                        <ListBox Grid.Row="2" x:Name="SettingsNav" SelectionChanged="SettingsNav_SelectionChanged" Margin="8,12,8,16" Background="Transparent" BorderThickness="0">
                             <ListBoxItem Content="Settings" Tag="{x:Static enums:NavigationPage.Settings}" Style="{StaticResource NavButton}" />
                         </ListBox>
                     </Grid>

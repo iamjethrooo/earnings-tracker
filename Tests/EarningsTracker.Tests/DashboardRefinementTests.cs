@@ -97,7 +97,7 @@ public class DashboardRefinementTests(WpfTestHost host)
         Assert.Equal(4, view.Metrics.Count);
         var scroll = (ScrollViewer)view.FindName("TotalsScroll");
         Assert.Equal(0, scroll.ScrollableWidth);
-        Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
+        Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("GamesPanel")));
         scroll.ScrollToBottom(); view.UpdateLayout();
         var list = (ListBox)view.FindName("SessionsList");
         Assert.Equal(empty ? 0 : 240, list.ActualHeight);
@@ -111,12 +111,13 @@ public class DashboardRefinementTests(WpfTestHost host)
             var last = Assert.IsType<ListBoxItem>(list.ItemContainerGenerator.ContainerFromIndex(list.Items.Count - 1));
             Assert.True(Bounds(last, list).Bottom <= list.ActualHeight + 1, $"Last row: {Bounds(last, list)}, viewport: {list.ActualHeight}");
         }
-        if (width >= 890)
+        if (width >= 890 && !empty)
         {
-            Assert.Equal(((Border)view.FindName("TrendPanel")).ActualHeight,
-                ((Border)view.FindName("DistributionPanel")).ActualHeight);
-            Assert.Equal(((Border)view.FindName("ActivityPanel")).ActualHeight,
+            ((Expander)view.FindName("MoreInsights")).IsExpanded = true;
+            view.UpdateLayout();
+            Assert.Equal(((Border)view.FindName("DistributionPanel")).ActualHeight,
                 ((Border)view.FindName("GamesPanel")).ActualHeight);
+            ((Expander)view.FindName("MoreInsights")).IsExpanded = false;
         }
         var cards = Descendants<Border>((ItemsControl)view.FindName("MetricCards"))
             .Where(border => border.DataContext is EarningsTracker.ViewModels.DashboardMetric).ToList();

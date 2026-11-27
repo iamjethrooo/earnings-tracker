@@ -341,6 +341,76 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Action menus are separate popup trees; their native templates otherwise keep white gutters. -->
+    <Style TargetType="ContextMenu">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource DialogBackgroundColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="{DynamicResource AppFont}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="MinWidth" Value="200"/><Setter Property="MaxWidth" Value="480"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu">
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="4">
+                <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                </ScrollViewer>
+            </Border>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="MenuItem">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="10,8"/><Setter Property="MinHeight" Value="34"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem">
+            <Grid>
+                <Border x:Name="MenuItemSurface" Background="{TemplateBinding Background}" BorderBrush="Transparent"
+                        BorderThickness="1" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="16"/></Grid.ColumnDefinitions>
+                        <ContentPresenter x:Name="MenuIcon" ContentSource="Icon" VerticalAlignment="Center"/>
+                        <fluent:SymbolIcon x:Name="MenuCheck" Symbol="Checkmark" Width="16" Height="16" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" Visibility="Collapsed" Focusable="False"/>
+                        <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center">
+                            <ContentPresenter.Resources>
+                                <DataTemplate DataType="{x:Type sys:String}">
+                                    <AccessText Text="{Binding}" TextWrapping="Wrap" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"/>
+                                </DataTemplate>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                        <TextBlock x:Name="GestureText" Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="{DynamicResource SecondaryTextColor}" Margin="24,0,8,0" VerticalAlignment="Center"/>
+                        <fluent:SymbolIcon x:Name="SubmenuArrow" Grid.Column="3" Symbol="ChevronRight" Width="12" Height="12" FontSize="12" Foreground="{TemplateBinding Foreground}" Visibility="Hidden" Focusable="False" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="2" IsOpen="{TemplateBinding IsSubmenuOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="None">
+                    <Border Background="{DynamicResource DialogBackgroundColor}" BorderBrush="{DynamicResource ControlBorderColor}" BorderThickness="1" CornerRadius="8" Padding="4">
+                        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="MenuItemSurface" Property="Background" Value="{DynamicResource AccentBackgroundColor}"/></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="MenuItemSurface" Property="BorderBrush" Value="{DynamicResource AccentTextColor}"/></Trigger>
+                <Trigger Property="IsSubmenuOpen" Value="True"><Setter TargetName="MenuItemSurface" Property="Background" Value="{DynamicResource AccentBackgroundColor}"/></Trigger>
+                <Trigger Property="HasItems" Value="True"><Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible"/></Trigger>
+                <Trigger Property="InputGestureText" Value=""><Setter TargetName="GestureText" Property="Visibility" Value="Collapsed"/></Trigger>
+                <Trigger Property="IsChecked" Value="True"><Setter TargetName="MenuIcon" Property="Visibility" Value="Collapsed"/><Setter TargetName="MenuCheck" Property="Visibility" Value="Visible"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Separator">
+            <Border Height="1" Background="{DynamicResource DefaultBorderColor}" Margin="8,5"/>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+
     <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -826,20 +896,38 @@
         </Setter>
     </Style>
     <Style TargetType="ToolTip">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToolTip}}"/>
+            </Style>
+        </Style.Resources>
         <Setter Property="Background" Value="{DynamicResource DialogBackgroundColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource DefaultTextColor}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource DefaultBorderColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="{DynamicResource CompactPanelPadding}"/>
         <Setter Property="FontFamily" Value="{DynamicResource AppFont}"/>
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeSupporting}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCompactBody}"/>
+        <Setter Property="MaxWidth" Value="360"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"
                             CornerRadius="{DynamicResource ControlCornerRadius}">
-                        <ContentPresenter ContentSource="Content"/>
+                        <ContentPresenter ContentSource="Content">
+                            <ContentPresenter.Resources>
+                                <!-- The default string renderer bypasses TextBlock styles.
+                                     Keep this in the template so derived tooltip styles share it. -->
+                                <DataTemplate DataType="{x:Type sys:String}">
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

@@ -18,12 +18,15 @@ public partial class SettingsView : UserControl
     private bool canRefreshStoreOffers;
     private CancellationTokenSource? steamWork;
     private readonly SteamLibrary steamLibrary;
+    private readonly Func<bool> catalogKeyConfigured;
+    private bool settingsReady;
     public SettingsView() : this(null) { }
     internal SettingsView(DbContextOptions<AppDbContext>? databaseOptions, ApplicationUpdates? applicationUpdates = null,
-        SteamLibrary? steamLibrary = null)
+        SteamLibrary? steamLibrary = null, Func<bool>? catalogKeyConfigured = null)
     {
         options = databaseOptions;
         this.steamLibrary = steamLibrary ?? new SteamLibrary(options);
+        this.catalogKeyConfigured = catalogKeyConfigured ?? (() => !string.IsNullOrWhiteSpace(CatalogCredentials.Get()));
         InitializeComponent(); model = new(options, applicationUpdates); DataContext = model;
         GamePass.IsChecked = model.GamePass; Automatic.IsChecked = model.AutomaticUpdates;
         GamesDefaultSort.SelectedIndex = model.GamesDefaultSort;
@@ -35,15 +38,49 @@ public partial class SettingsView : UserControl
         UpdateKeyStatus();
         UpdateSteamInstallStatus();
         UpdateLocalInstallationSettings();
+        settingsReady = true;
+        ShowSelectedCategory();
         Unloaded += (_, _) => { ApiKey.Clear(); SteamKey.Clear(); steamWork?.Cancel(); };
     }
-    private void JumpToSection_Click(object sender, RoutedEventArgs e)
+
+    private void SettingsCategories_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is Button { Tag: string name } && FindName(name) is FrameworkElement section)
-        {
-            section.BringIntoView();
-            section.Focus();
-        }
+        if (settingsReady && ReferenceEquals(e.OriginalSource, SettingsCategories)) ShowSelectedCategory();
+    }
+
+    private void ShowSelectedCategory()
+    {
+        if (SettingsCategories.SelectedItem is not ListBoxItem { Tag: string sectionName } item) return;
+        DataBackupSection.Visibility = sectionName == nameof(DataBackupSection) ? Visibility.Visible : Visibility.Collapsed;
+        GamesCategory.Visibility = sectionName == nameof(GamesDisplaySection) ? Visibility.Visible : Visibility.Collapsed;
+        AccountsCategory.Visibility = sectionName == nameof(StoreOffersSection) ? Visibility.Visible : Visibility.Collapsed;
+        UpdatesCategory.Visibility = sectionName == nameof(ApplicationUpdatesSection) ? Visibility.Visible : Visibility.Collapsed;
+        AboutCategory.Visibility = sectionName == nameof(SupportSection) ? Visibility.Visible : Visibility.Collapsed;
+        CategoryHeading.Text = System.Windows.Automation.AutomationProperties.GetName(item);
+        SettingsScroll.ScrollToTop();
+    }
+
+    private void Settings_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!settingsReady) return;
+        var compact = e.NewSize.Width < 1050;
+        CategoryColumn.Width = new GridLength(compact ? 0 : 260);
+        CategoryGap.Width = new GridLength(compact ? 0 : 32);
+        Grid.SetRowSpan(CategoryNavigation, compact ? 1 : 2);
+        Grid.SetColumnSpan(CategoryNavigation, compact ? 3 : 1);
+        Grid.SetColumn(SettingsScroll, compact ? 0 : 2);
+        Grid.SetColumnSpan(SettingsScroll, compact ? 3 : 1);
+        Grid.SetRow(SettingsScroll, compact ? 1 : 0);
+        Grid.SetRowSpan(SettingsScroll, compact ? 1 : 2);
+        CategoryNavigation.BorderThickness = compact ? new Thickness(0, 0, 0, 1) : new Thickness(0, 0, 1, 0);
+        CategoryNavigation.Padding = compact ? new Thickness(0, 0, 0, 12) : new Thickness(0, 0, 24, 0);
+        CategoryNavigation.Margin = compact ? new Thickness(0, 0, 0, 16) : new Thickness(0);
+        SettingsCategories.ItemsPanel = (ItemsPanelTemplate)FindResource(compact ? "SettingsCategoryWrap" : "SettingsCategoryStack");
+    }
+
+    private void BackupContents_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        BackupContents.Columns = e.NewSize.Width < 540 ? 1 : 2;
     }
 
     private void UpdateLocalInstallationSettings()
@@ -201,7 +238,7 @@ public partial class SettingsView : UserControl
     {
         try
         {
-            canRefreshStoreOffers = !string.IsNullOrWhiteSpace(CatalogCredentials.Get());
+            canRefreshStoreOffers = catalogKeyConfigured();
             KeyStatus.Text = canRefreshStoreOffers ? "Saved" : "Not configured";
         }
         catch (System.ComponentModel.Win32Exception)

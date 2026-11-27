@@ -16,10 +16,10 @@ public class ReleaseHistoryTests
     [Fact]
     public void BundledHistoryIncludesEveryVersionAndMarksTheCandidateInstalled()
     {
-        var entries = ReleaseHistory.Load("1.7.0");
-        Assert.Equal(new[] { "1.7.0", "1.6.2", "1.6.1", "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
+        var entries = ReleaseHistory.Load("1.8.0");
+        Assert.Equal(new[] { "1.8.0", "1.7.0", "1.6.2", "1.6.1", "1.6.0", "1.5.0", "1.4.0", "1.3.0", "1.2.0", "1.1.0", "1.0.0" }, entries.Select(entry => entry.Version));
         var installed = Assert.Single(entries, entry => entry.IsInstalled);
-        Assert.Equal("1.7.0", installed.Version);
+        Assert.Equal("1.8.0", installed.Version);
         Assert.True(installed.IsExpanded);
         Assert.All(entries.Where(entry => entry != installed), entry => Assert.False(entry.IsExpanded));
         Assert.All(entries.Where(entry => !entry.Unreleased), entry => Assert.Contains("UTC", entry.DateLabel));
@@ -81,7 +81,7 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
             Assert.True(installed.IsInstalled);
             Assert.True(installed.IsExpanded);
             Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(window));
-            Assert.Single(Descendants<Button>(window), button => button.IsCancel);
+            Assert.True(((Button)window.FindName("CloseHistoryButton")).IsCancel);
             Assert.Contains(Descendants<ToggleButton>(window), button => button.Focusable && button.IsTabStop);
             Assert.All(Descendants<TextBlock>(list).Where(text => text.Text.Length > 90), text => Assert.Equal(TextWrapping.Wrap, text.TextWrapping));
             await Capture(window, $"installed-{width}");
@@ -118,7 +118,7 @@ public class ReleaseHistoryWindowTests(WpfTestHost host)
             {
                 var status = ((TextBlock)window.FindName("HistoryStatus")).Text;
                 Assert.Contains(fail ? "could not be loaded" : "No release notes", status);
-                Assert.Single(((Grid)window.Content).Children.OfType<Button>(), button => button.IsCancel);
+                Assert.True(((Button)window.FindName("CloseHistoryButton")).IsCancel);
             }
             finally { window.Close(); }
         }

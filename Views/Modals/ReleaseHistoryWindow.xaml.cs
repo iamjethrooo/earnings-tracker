@@ -17,6 +17,8 @@ public partial class ReleaseHistoryWindow : Window
         try
         {
             var entries = load(installedVersion);
+            var expanded = entries.FirstOrDefault(entry => entry.IsInstalled) ?? entries.FirstOrDefault();
+            if (expanded != null) expanded.IsExpanded = true;
             Releases.ItemsSource = entries;
             var installed = entries.FirstOrDefault(entry => entry.IsInstalled);
             HistoryStatus.Text = entries.Count == 0 ? "No release notes are included in this build."

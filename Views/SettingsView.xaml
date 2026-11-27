@@ -1,7 +1,11 @@
 <UserControl x:Class="EarningsTracker.Views.SettingsView"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:fluent="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+ x:Name="Root" FontSize="{StaticResource FontSizeBody}" SizeChanged="Settings_SizeChanged">
  <UserControl.Resources>
+  <ItemsPanelTemplate x:Key="SettingsCategoryStack"><StackPanel/></ItemsPanelTemplate>
+  <ItemsPanelTemplate x:Key="SettingsCategoryWrap"><WrapPanel/></ItemsPanelTemplate>
   <Style TargetType="TextBlock">
    <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/>
    <Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="0,0,0,6"/>
@@ -10,59 +14,164 @@
    <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/>
    <Setter Property="Margin" Value="0,8,0,0"/>
   </Style>
+  <Style x:Key="SettingsCategoryItem" TargetType="ListBoxItem">
+   <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/>
+   <Setter Property="Padding" Value="12,10"/><Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+   <Setter Property="Margin" Value="0,0,4,6"/>
+   <Setter Property="Foreground" Value="{StaticResource DefaultTextColor}"/><Setter Property="FontWeight" Value="SemiBold"/>
+   <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusVisual}"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+    <Border x:Name="CategorySurface" Background="{TemplateBinding Background}" CornerRadius="{StaticResource CardCornerRadius}" Padding="{TemplateBinding Padding}">
+     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+    </Border>
+    <ControlTemplate.Triggers>
+     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CategorySurface" Property="Background" Value="{StaticResource ControlHoverColor}"/></Trigger>
+     <Trigger Property="IsSelected" Value="True"><Setter TargetName="CategorySurface" Property="Background" Value="{StaticResource AccentBackgroundColor}"/></Trigger>
+    </ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
  </UserControl.Resources>
- <Grid>
-  <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
- <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-  <StackPanel x:Name="SettingsBody" Margin="20" MaxWidth="960" HorizontalAlignment="Left">
-   <StackPanel Margin="0,0,0,12">
-                <TextBlock Text="Settings" Style="{StaticResource TabName}"/>
-
-            </StackPanel>
+ <Grid Margin="{StaticResource PageInset}">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel Grid.Row="0" Margin="0,0,0,24">
+   <TextBlock Text="Settings" Style="{StaticResource PageTitle}"/>
+   <TextBlock Text="Manage your data, preferences, and connected services." Style="{StaticResource PageDescription}"/>
    <TextBlock x:Name="Feedback" Foreground="{StaticResource SecondaryTextColor}" AutomationProperties.LiveSetting="Polite">
     <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
      <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
     </Style></TextBlock.Style>
    </TextBlock>
-   <WrapPanel Margin="0,0,0,8" AutomationProperties.Name="Settings sections">
-    <Button Content="Data &amp; backup" Tag="DataBackupSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
-    <Button Content="Games" Tag="GamesDisplaySection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
-    <Button Content="Accounts &amp; integrations" Tag="StoreOffersSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
-    <Button Content="Updates" Tag="ApplicationUpdatesSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8"/>
-    <Button Content="About" Tag="SupportSection" Click="JumpToSection_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8"/>
-   </WrapPanel>
-   <Border x:Name="DataBackupSection" Focusable="True" AutomationProperties.Name="Data and backup" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Backup &amp; restore" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="Includes saved records and settings, Steam account ID and cached library. Excludes API keys and cached artwork." Foreground="{StaticResource SecondaryTextColor}"/>
-    <WrapPanel Margin="0,4,0,0">
-     <Button x:Name="BackupButton" Content="Create backup" Click="Backup_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,8,8" AutomationProperties.Name="Create application data backup"/>
-     <Button x:Name="RestoreButton" Content="Restore backup" Click="Restore_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" Margin="0,0,0,8" AutomationProperties.Name="Restore application data from backup"/>
-    </WrapPanel>
-    <TextBlock Text="Restore replaces saved data and requires reopening the app." Foreground="{StaticResource SecondaryTextColor}" Margin="0"/>
+  </StackPanel>
+  <Grid Grid.Row="1">
+   <Grid.ColumnDefinitions><ColumnDefinition x:Name="CategoryColumn" Width="260"/><ColumnDefinition x:Name="CategoryGap" Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+   <Border x:Name="CategoryNavigation" Grid.RowSpan="2" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,0,1,0" Padding="0,0,24,0">
+    <ListBox x:Name="SettingsCategories" Background="Transparent" BorderThickness="0" Padding="0" VerticalAlignment="Top"
+             ItemContainerStyle="{StaticResource SettingsCategoryItem}" SelectionMode="Single" SelectedIndex="0"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+             SelectionChanged="SettingsCategories_SelectionChanged" AutomationProperties.Name="Settings categories">
+     <ListBox.ItemsPanel>
+      <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
+     </ListBox.ItemsPanel>
+     <ListBoxItem Tag="DataBackupSection" AutomationProperties.Name="Data &amp; backup"><Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <fluent:SymbolIcon Symbol="Database" Width="20" Height="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" IsHitTestVisible="False" Focusable="False"/>
+      <TextBlock Grid.Column="1" Text="Data &amp; backup" Margin="12,0,0,0" VerticalAlignment="Center"/>
+     </Grid></ListBoxItem>
+     <ListBoxItem Tag="GamesDisplaySection" AutomationProperties.Name="Games"><Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <fluent:SymbolIcon Symbol="Games" Width="20" Height="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" IsHitTestVisible="False" Focusable="False"/>
+      <TextBlock Grid.Column="1" Text="Games" Margin="12,0,0,0" VerticalAlignment="Center"/>
+     </Grid></ListBoxItem>
+     <ListBoxItem Tag="StoreOffersSection" AutomationProperties.Name="Accounts &amp; integrations"><Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <fluent:SymbolIcon Symbol="Link" Width="20" Height="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" IsHitTestVisible="False" Focusable="False"/>
+      <TextBlock Grid.Column="1" Text="Accounts &amp; integrations" Margin="12,0,0,0" VerticalAlignment="Center"/>
+     </Grid></ListBoxItem>
+     <ListBoxItem Tag="ApplicationUpdatesSection" AutomationProperties.Name="Updates"><Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <fluent:SymbolIcon Symbol="ArrowDownload" Width="20" Height="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" IsHitTestVisible="False" Focusable="False"/>
+      <TextBlock Grid.Column="1" Text="Updates" Margin="12,0,0,0" VerticalAlignment="Center"/>
+     </Grid></ListBoxItem>
+     <ListBoxItem Tag="SupportSection" AutomationProperties.Name="About"><Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <fluent:SymbolIcon Symbol="Info" Width="20" Height="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" IsHitTestVisible="False" Focusable="False"/>
+      <TextBlock Grid.Column="1" Text="About" Margin="12,0,0,0" VerticalAlignment="Center"/>
+     </Grid></ListBoxItem>
+    </ListBox>
+   </Border>
+   <ScrollViewer x:Name="SettingsScroll" Grid.Column="2" Grid.RowSpan="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel x:Name="SettingsBody">
+     <TextBlock x:Name="CategoryHeading" Text="Data &amp; backup" Style="{StaticResource PageTitle}" Margin="0,0,0,24" AutomationProperties.LiveSetting="Polite"/>
+     <Border x:Name="DataBackupSection" Focusable="True" AutomationProperties.Name="Data and backup">
+      <StackPanel>
+       <TextBlock Text="Create a backup" Style="{StaticResource ContentHeading}"/>
+       <TextBlock Text="Save a standalone database backup of your records and settings." Style="{StaticResource PageDescription}" FontSize="{StaticResource FontSizeBody}"/>
+       <UniformGrid x:Name="BackupContents" Columns="2" Margin="0,16,0,16" SizeChanged="BackupContents_SizeChanged">
+        <StackPanel Margin="0,0,24,8">
+         <TextBlock Text="Included" FontWeight="SemiBold"/>
+         <TextBlock Text="Sessions and payouts"/>
+         <TextBlock Text="Adjustments and audit history"/>
+         <TextBlock Text="Games and saved preferences"/>
+         <TextBlock Text="Steam account ID and cached library"/>
+        </StackPanel>
+        <StackPanel>
+         <TextBlock Text="Excluded" FontWeight="SemiBold"/>
+         <TextBlock Text="API keys stored in Windows Credential Manager"/>
+         <TextBlock Text="Cached artwork"/>
+        </StackPanel>
+       </UniformGrid>
+       <Button x:Name="BackupButton" Content="Create backup" Click="Backup_Click" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+               AutomationProperties.Name="Create application data backup"/>
+       <TextBlock Text="Choose a location when saving. Existing backups are never overwritten." Style="{StaticResource PageDescription}" Margin="0,8,0,0"/>
+       <Border Style="{StaticResource OpenSectionPanel}" Margin="0,24,0,0" Padding="0,24,0,0"><StackPanel>
+        <TextBlock Text="Restore from backup" Style="{StaticResource ContentHeading}"/>
+        <TextBlock Text="Choose a compatible database backup to restore your saved records and settings." Style="{StaticResource PageDescription}" FontSize="{StaticResource FontSizeBody}"/>
+        <Grid Margin="0,16,0,16">
+         <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+         <fluent:SymbolIcon Symbol="Warning" Width="20" Height="20" Foreground="{StaticResource PendingTextColor}" VerticalAlignment="Top" IsHitTestVisible="False" Focusable="False"/>
+         <TextBlock x:Name="RestoreConsequencesText" Grid.Column="1" Text="Restoring replaces saved data and requires reopening the app." Foreground="{StaticResource PendingTextColor}" FontWeight="SemiBold" Margin="12,0,0,0"/>
+        </Grid>
+        <Button x:Name="RestoreButton" Content="Choose backup…" Click="Restore_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
+                AutomationProperties.Name="Restore application data from backup"/>
+        <TextBlock Text="Review the selected file and confirm before a restore is scheduled. A verified recovery copy is kept before replacement." Style="{StaticResource PageDescription}" Margin="0,8,0,0"/>
+       </StackPanel></Border>
+       <Border Style="{StaticResource OpenSectionPanel}" Margin="0,24,0,0">
+        <Expander Header="About backups"><StackPanel Margin="0,8,0,0">
+         <TextBlock Text="Backups contain personal financial records in unencrypted SQLite form. Keep backup files private."/>
+         <TextBlock Text="A backup includes saved source evidence, settings and Steam library observations. Existing backup files are not included in a new backup."/>
+         <TextBlock Text="Restore validates database integrity and schema compatibility before confirmation. A recovery snapshot is created before replacement on the next launch."/>
+         <TextBlock Text="API keys and cached artwork are unchanged by restore. Relink Steam if the restored account has no matching saved key."/>
+        </StackPanel></Expander>
+       </Border>
+      </StackPanel>
+     </Border>
+     <StackPanel x:Name="GamesCategory" Visibility="Collapsed">
+   <Border x:Name="GamesDisplaySection" Focusable="True" AutomationProperties.Name="Games display" Style="{StaticResource OpenSectionPanel}" BorderThickness="0" Padding="0" Margin="0"><StackPanel>
+    <TextBlock Text="Games display" Style="{StaticResource ContentHeading}"/>
+
+    <TextBlock Text="Default sort" Style="{StaticResource FilterLabel}"/>
+    <ComboBox x:Name="GamesDefaultSort" AutomationProperties.Name="Default Games sort" SelectionChanged="GamesDefaultSort_SelectionChanged" HorizontalAlignment="Left" MinWidth="160" Margin="0,0,0,8">
+     <ComboBoxItem Content="Highest rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest price"/>
+    </ComboBox>
+    <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarked games" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
+    <CheckBox x:Name="GamesShowArchived" Content="Show archived games" Click="GamesShowArchived_Click" ToolTip="Include archived games in the Games list. Archived game history remains available."/>
    </StackPanel></Border>
-   <Grid>
-    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Active subscriptions" Style="{StaticResource CompactSectionHeading}"/>
+
+   <Border Style="{StaticResource OpenSectionPanel}" Margin="0,24,0,0"><StackPanel>
+    <TextBlock Text="Local installations" Style="{StaticResource ContentHeading}"/>
+    <TextBlock Text="Choose what Games can check on this PC. Installation evidence is read locally and works without a Steam account." Foreground="{StaticResource SecondaryTextColor}"/>
+    <CheckBox x:Name="WindowsInstallations" Content="Include Windows installed apps" Click="WindowsInstallations_Click" Margin="0,4,0,4"/>
+    <TextBlock Text="Windows lists registered desktop apps, including apps other than games. Choose individual game folders to include portable or unregistered games." Foreground="{StaticResource SecondaryTextColor}"/>
+    <TextBlock x:Name="LocalFolderStatus" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,4"/>
+    <WrapPanel>
+     <Button Content="Add game folders" Click="ChooseLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
+     <Button Content="Clear game folders" Click="ClearLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
+    </WrapPanel>
+    <TextBlock x:Name="SteamInstallStatus" AutomationProperties.LiveSetting="Polite" Margin="0,8,0,4"/>
+    <WrapPanel>
+     <Button Content="Choose Steam folders" Click="ChooseSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4" ToolTip="Choose local folders named steamapps."/>
+     <Button Content="Clear Steam folders" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
+    </WrapPanel>
+   </StackPanel></Border>
+    <Border Style="{StaticResource OpenSectionPanel}"><StackPanel>
+     <TextBlock Text="Active subscriptions" Style="{StaticResource ContentHeading}"/>
      <CheckBox x:Name="GamePass" Content="PC Game Pass" Click="Subscription_Click" MinHeight="32" VerticalContentAlignment="Center" ToolTip="Select if your membership is active. Changes save automatically."/>
      <Expander Header="Availability"><TextBlock Text="{Binding SubscriptionStatus}" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" ToolTip="Playable now requires current Philippine PC availability and an active membership. The PC Game Pass filter retains previously verified inclusion with a stale warning after seven days or expiry."/></Expander>
     </StackPanel></Border>
-    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Catalog updates" Style="{StaticResource CompactSectionHeading}"/>
-     <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
-     <Button x:Name="Refresh" Content="Check for game list updates" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
-     <TextBlock x:Name="CatalogUpdateFeedback" AutomationProperties.LiveSetting="Polite"/>
-     <Expander Header="Update details"><StackPanel Margin="0,8,0,0">
-      <TextBlock Text="{Binding UpdateStatus}"/>
-      <Button x:Name="RollbackCatalog" Content="Restore previous catalog" Click="RollbackCatalog_Click"
-              Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
-     </StackPanel></Expander>
+    <Border Style="{StaticResource OpenSectionPanel}"><StackPanel>
+     <TextBlock Text="Currency &amp; region" Style="{StaticResource ContentHeading}"/>
+     <TextBlock Text="Philippines · PC"/>
+     <TextBlock Text="Prices: PHP · Earnings: USD" Margin="0" ToolTip="Region and currencies are fixed for the supported catalog."/>
+     <TextBlock Text="{Binding RateStatus}" Margin="0,8,0,0" Foreground="{StaticResource SecondaryTextColor}"/>
     </StackPanel></Border>
-    <Border x:Name="StoreOffersSection" Focusable="True" AutomationProperties.Name="Accounts and integrations" Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource SurfacePanel}"><StackPanel>
+     </StackPanel>
+     <StackPanel x:Name="AccountsCategory" Visibility="Collapsed">
+    <Border x:Name="StoreOffersSection" Focusable="True" AutomationProperties.Name="Accounts and integrations" Style="{StaticResource OpenSectionPanel}" BorderThickness="0" Padding="0" Margin="0"><StackPanel>
      <DockPanel>
       <TextBlock x:Name="KeyStatus" DockPanel.Dock="Right" Foreground="{StaticResource SecondaryTextColor}" Margin="12,0,0,0"/>
-      <TextBlock Text="Store offers" Style="{StaticResource CompactSectionHeading}"/>
+      <TextBlock Text="Store offers" Style="{StaticResource ContentHeading}"/>
      </DockPanel>
      <Expander x:Name="PriceRefreshSetup" Header="Configure optional price refresh"><StackPanel>
      <TextBlock Text="Refresh prices and store links from IsThereAnyDeal for games with a reviewed match."/>
@@ -78,23 +187,8 @@
      <TextBlock x:Name="StoreOffersFeedback" AutomationProperties.LiveSetting="Polite"/>
      </StackPanel></Expander>
     </StackPanel></Border>
-    <Border Grid.Row="4" Grid.Column="0" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Currency &amp; region" Style="{StaticResource CompactSectionHeading}"/>
-     <TextBlock Text="Philippines · PC"/>
-     <TextBlock Text="Prices: PHP · Earnings: USD" Margin="0" ToolTip="Region and currencies are fixed for the supported catalog."/>
-     <TextBlock Text="{Binding RateStatus}" Margin="0,8,0,0" Foreground="{StaticResource SecondaryTextColor}"/>
-    </StackPanel></Border>
-    <Border x:Name="SupportSection" Focusable="True" AutomationProperties.Name="About" Grid.Row="4" Grid.Column="2" Style="{StaticResource SurfacePanel}"><StackPanel>
-     <TextBlock Text="Support &amp; about" Style="{StaticResource CompactSectionHeading}"/>
-     <Button Content="Export diagnostics" Click="Export_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" HorizontalAlignment="Left" ToolTip="Exports version, update timestamps and outcomes. Excludes credentials and financial records."/>
-     <StackPanel Margin="0,8,0,0">
-      <TextBlock Text="Metadata: IGDB · Prices: IsThereAnyDeal · Rates: Frankfurter"/>
-      <TextBlock Text="{Binding DataFolder, StringFormat=Local data: {0}}" Margin="0"/>
-     </StackPanel>
-    </StackPanel></Border>
-   </Grid>
-   <Border x:Name="SteamPanel" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Steam account" Style="{StaticResource CompactSectionHeading}"/>
+   <Border x:Name="SteamPanel" Style="{StaticResource OpenSectionPanel}" Margin="0,24,0,0"><StackPanel>
+    <TextBlock Text="Steam account" Style="{StaticResource ContentHeading}"/>
     <TextBlock Text="Link Steam to show library matches alongside manual ownership." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextColor}"/>
     <TextBlock Text="{Binding SteamStatus}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
     <TextBlock x:Name="SteamFeedback" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
@@ -117,35 +211,10 @@
      </StackPanel></Expander>
     </StackPanel></Expander>
    </StackPanel></Border>
-   <Border Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Local installations" Style="{StaticResource CompactSectionHeading}"/>
-    <TextBlock Text="Choose what Games can check on this PC. Installation evidence is read locally and works without a Steam account." Foreground="{StaticResource SecondaryTextColor}"/>
-    <CheckBox x:Name="WindowsInstallations" Content="Include Windows installed apps" Click="WindowsInstallations_Click" Margin="0,4,0,4"/>
-    <TextBlock Text="Windows lists registered desktop apps, including apps other than games. Choose individual game folders to include portable or unregistered games." Foreground="{StaticResource SecondaryTextColor}"/>
-    <TextBlock x:Name="LocalFolderStatus" AutomationProperties.LiveSetting="Polite" Margin="0,4,0,4"/>
-    <WrapPanel>
-     <Button Content="Add game folders" Click="ChooseLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4"/>
-     <Button Content="Clear game folders" Click="ClearLocalFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
-    </WrapPanel>
-    <TextBlock x:Name="SteamInstallStatus" AutomationProperties.LiveSetting="Polite" Margin="0,8,0,4"/>
-    <WrapPanel>
-     <Button Content="Choose Steam folders" Click="ChooseSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,4" ToolTip="Choose local folders named steamapps."/>
-     <Button Content="Clear Steam folders" Click="DisableSteamFolders_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,4"/>
-    </WrapPanel>
-   </StackPanel></Border>
-   <Border x:Name="GamesDisplaySection" Focusable="True" AutomationProperties.Name="Games display" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Games display" Style="{StaticResource CompactSectionHeading}"/>
-
-    <TextBlock Text="Default sort" Style="{StaticResource FilterLabel}"/>
-    <ComboBox x:Name="GamesDefaultSort" AutomationProperties.Name="Default Games sort" SelectionChanged="GamesDefaultSort_SelectionChanged" HorizontalAlignment="Left" MinWidth="160" Margin="0,0,0,8">
-     <ComboBoxItem Content="Highest rate"/><ComboBoxItem Content="Name A–Z"/><ComboBoxItem Content="Newest"/><ComboBoxItem Content="Lowest price"/>
-    </ComboBox>
-    <CheckBox x:Name="GamesBookmarksOnly" Content="Start with bookmarked games" Click="GamesBookmarksOnly_Click" Margin="0,0,0,8" ToolTip="Show bookmarked games when Games opens. You can turn this filter off on the Games page."/>
-    <CheckBox x:Name="GamesShowArchived" Content="Show archived games" Click="GamesShowArchived_Click" ToolTip="Include archived games in the Games list. Archived game history remains available."/>
-   </StackPanel></Border>
-
-   <Border x:Name="ApplicationUpdatesSection" Focusable="True" AutomationProperties.Name="Application updates" Style="{StaticResource SurfacePanel}" Margin="0,10,0,0"><StackPanel>
-    <TextBlock Text="Application updates" Style="{StaticResource CompactSectionHeading}"/>
+     </StackPanel>
+     <StackPanel x:Name="UpdatesCategory" Visibility="Collapsed">
+   <Border x:Name="ApplicationUpdatesSection" Focusable="True" AutomationProperties.Name="Application updates" Style="{StaticResource OpenSectionPanel}" BorderThickness="0" Padding="0" Margin="0"><StackPanel>
+    <TextBlock Text="Application updates" Style="{StaticResource ContentHeading}"/>
     <CheckBox x:Name="ApplicationStartup" Content="Check when the application starts" IsChecked="{Binding CheckApplicationOnStartup, Mode=OneWay}" Click="ApplicationStartup_Click" Margin="0,0,0,8"/>
     <StackPanel DataContext="{Binding ApplicationUpdates}">
      <TextBlock Text="{Binding CurrentVersion}" Foreground="{StaticResource SecondaryTextColor}"/>
@@ -163,9 +232,32 @@
      <TextBlock Text="Downloads and restarts are manual." Foreground="{StaticResource SecondaryTextColor}" Margin="0,4,0,0"/>
     </StackPanel>
    </StackPanel></Border>
-  </StackPanel>
- </ScrollViewer>
-  <Border Grid.Row="1" Width="{Binding ActualWidth, ElementName=SettingsBody}" MaxWidth="960" HorizontalAlignment="Left" Margin="20,0,20,20" Padding="0,12,0,0"
+    <Border Style="{StaticResource OpenSectionPanel}"><StackPanel>
+     <TextBlock Text="Catalog updates" Style="{StaticResource ContentHeading}"/>
+     <CheckBox x:Name="Automatic" Content="Check daily when Games opens" Click="Automatic_Click" VerticalAlignment="Center" ToolTip="Check catalog and exchange rates when Games opens, at most daily. Live prices refresh only manually."/>
+     <Button x:Name="Refresh" Content="Check for game list updates" Click="Refresh_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+     <TextBlock x:Name="CatalogUpdateFeedback" AutomationProperties.LiveSetting="Polite"/>
+     <Expander Header="Update details"><StackPanel Margin="0,8,0,0">
+      <TextBlock Text="{Binding UpdateStatus}"/>
+      <Button x:Name="RollbackCatalog" Content="Restore previous catalog" Click="RollbackCatalog_Click"
+              Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+     </StackPanel></Expander>
+    </StackPanel></Border>
+     </StackPanel>
+     <StackPanel x:Name="AboutCategory" Visibility="Collapsed">
+    <Border x:Name="SupportSection" Focusable="True" AutomationProperties.Name="About" Style="{StaticResource OpenSectionPanel}" BorderThickness="0" Padding="0" Margin="0"><StackPanel>
+     <TextBlock Text="Support &amp; about" Style="{StaticResource ContentHeading}"/>
+     <Button Content="Export diagnostics" Click="Export_Click" Style="{StaticResource SecondaryButton}" Padding="10,7" HorizontalAlignment="Left" ToolTip="Exports version, update timestamps and outcomes. Excludes credentials and financial records."/>
+     <StackPanel Margin="0,8,0,0">
+      <TextBlock Text="Metadata: IGDB · Prices: IsThereAnyDeal · Rates: Frankfurter"/>
+      <TextBlock Text="{Binding DataFolder, StringFormat=Local data: {0}}" Margin="0"/>
+     </StackPanel>
+    </StackPanel></Border>
+     </StackPanel>
+    </StackPanel>
+   </ScrollViewer>
+  </Grid>
+  <Border Grid.Row="2" Margin="0,16,0,0" Padding="0,12,0,0"
           BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="0,1,0,0">
    <DockPanel>
     <Button Content="Release history" Click="ReleaseHistory_Click" DockPanel.Dock="Right"

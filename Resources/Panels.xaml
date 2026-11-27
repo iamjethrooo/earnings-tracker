@@ -86,4 +86,12 @@
         <Setter Property="Margin" Value="0,0,0,12"/>
     </Style>
 
+    <Style x:Key="OpenSectionPanel" TargetType="Border" BasedOn="{StaticResource SurfacePanel}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="0,16,0,0"/>
+        <Setter Property="Margin" Value="0,16,0,0"/>
+    </Style>
+
 </ResourceDictionary>

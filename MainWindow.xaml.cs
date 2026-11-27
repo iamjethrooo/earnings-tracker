@@ -14,6 +14,30 @@ namespace EarningsTracker
     public partial class MainWindow : Window
     {
         private readonly Func<NavigationPage, UserControl> _createPage;
+        public bool IsNavigationExpanded
+        {
+            get => (bool)GetValue(IsNavigationExpandedProperty);
+            set => SetValue(IsNavigationExpandedProperty, value);
+        }
+        public static readonly DependencyProperty IsNavigationExpandedProperty = DependencyProperty.Register(
+            nameof(IsNavigationExpanded), typeof(bool), typeof(MainWindow), new PropertyMetadata(false, NavigationExpansionChanged));
+
+        private static void NavigationExpansionChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is MainWindow window && window.NavigationColumn != null)
+                window.NavigationColumn.Width = new GridLength((bool)e.NewValue ? 224 : 116);
+        }
+
+        private void ToggleNavigation_Click(object sender, RoutedEventArgs e) => IsNavigationExpanded = !IsNavigationExpanded;
+
+        public bool UseCompactNavigationSpacing
+        {
+            get => (bool)GetValue(UseCompactNavigationSpacingProperty);
+            private set => SetValue(UseCompactNavigationSpacingProperty, value);
+        }
+        public static readonly DependencyProperty UseCompactNavigationSpacingProperty = DependencyProperty.Register(
+            nameof(UseCompactNavigationSpacing), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+
         internal Utilities.ApplicationUpdates? ApplicationUpdates { get; private set; }
         internal bool IsEditorOpen => MainModal.Visibility == Visibility.Visible || MainModal.IsBusy
             || MainContent.Content is Views.SessionsView sessions && sessions.HasActiveDraft;
@@ -176,7 +200,11 @@ namespace EarningsTracker
             Close();
         }
 
-        public void Window_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateWindowChrome();
+        public void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UseCompactNavigationSpacing = ActualHeight < 740;
+            UpdateWindowChrome();
+        }
 
         private void ShowModal(string title, object content)
         {

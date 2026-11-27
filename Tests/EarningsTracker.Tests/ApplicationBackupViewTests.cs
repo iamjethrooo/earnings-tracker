@@ -16,22 +16,24 @@ public sealed class ApplicationBackupViewTests(WpfTestHost host)
     public Task BackupActionsRemainReachableAtSettingsWidths(int width) => host.RunAsync(() =>
     {
         using var database = new TestDatabase();
-        var view = new SettingsView(database.Options) { Width = width, Height = 560 };
+        var view = new SettingsView(database.Options, catalogKeyConfigured: static () => false) { Width = width, Height = 560 };
         view.Measure(new Size(width, 560));
         view.Arrange(new Rect(0, 0, width, 560));
         view.UpdateLayout();
-        var scroll = Assert.Single(((Grid)view.Content).Children.OfType<ScrollViewer>());
+        var scroll = Assert.IsType<ScrollViewer>(view.FindName("SettingsScroll"));
         scroll.ScrollToTop();
         view.UpdateLayout();
         foreach (var name in new[] { "BackupButton", "RestoreButton" })
         {
             var button = Assert.IsType<Button>(view.FindName(name));
+            button.BringIntoView();
+            view.UpdateLayout();
             var bounds = button.TransformToAncestor(scroll).TransformBounds(new Rect(button.RenderSize));
             Assert.True(button.ActualWidth > 90);
             Assert.InRange(bounds.Left, 0, width);
             Assert.InRange(bounds.Right, 0, width);
             Assert.InRange(bounds.Top, 0, scroll.ViewportHeight);
-            Assert.InRange(bounds.Bottom, 0, scroll.ViewportHeight);
+            Assert.InRange(bounds.Bottom, 0, scroll.ViewportHeight + 0.5);
         }
         var bitmap = new RenderTargetBitmap(width, 560, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(view);

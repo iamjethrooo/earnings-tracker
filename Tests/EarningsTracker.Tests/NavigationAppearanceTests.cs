@@ -50,7 +50,7 @@ public class NavigationAppearanceTests(WpfTestHost host)
                 var label = Descendants<TextBlock>(item).Single(text => text.Text == (string)item.Content);
                 var iconBounds = icon.TransformToAncestor(item).TransformBounds(new Rect(icon.RenderSize));
                 var labelBounds = label.TransformToAncestor(item).TransformBounds(new Rect(label.RenderSize));
-                Assert.True(iconBounds.Right < labelBounds.Left);
+                Assert.True(iconBounds.Bottom < labelBounds.Top);
                 Assert.True(labelBounds.Right <= item.ActualWidth);
                 Assert.Same(item.Foreground, icon.Foreground);
                 Assert.False(icon.Focusable);

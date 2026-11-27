@@ -65,8 +65,10 @@ namespace EarningsTracker.ViewModels
             || _selectedGenre != "All genres" || _selectedStore != "All stores"
             || _freeOnly || _ownedOnly || _gamePassOnly || _playableOnly || _steamOnly || _multiplayerOnly || _installedOnly || _timeLeftOnly;
         public int SecondaryFilterCount => (_freeOnly ? 1 : 0) + (_steamOnly ? 1 : 0)
-            + (_gamePassOnly ? 1 : 0) + (_showArchived ? 1 : 0);
-        public string MoreFiltersText => SecondaryFilterCount == 0 ? "More filters" : $"More filters ({SecondaryFilterCount})";
+            + (_gamePassOnly ? 1 : 0) + (_showArchived ? 1 : 0) + (_installedOnly ? 1 : 0)
+            + (_ownedOnly ? 1 : 0) + (_multiplayerOnly ? 1 : 0)
+            + (_selectedGenre != "All genres" ? 1 : 0) + (_selectedStore != "All stores" ? 1 : 0);
+        public string MoreFiltersText => SecondaryFilterCount == 0 ? "Filters" : $"Filters ({SecondaryFilterCount})";
         public HashSet<string> MySubscriptions { get; private set; } = [];
         public string CatalogStatus { get; private set; } = "";
         public string LibraryStatusSummary => CatalogStatus.Contains("unavailable", StringComparison.OrdinalIgnoreCase)

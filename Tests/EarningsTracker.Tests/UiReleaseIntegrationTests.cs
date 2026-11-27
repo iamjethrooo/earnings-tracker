@@ -83,7 +83,7 @@ public class UiReleaseIntegrationTests(WpfTestHost host)
             Assert.Equal(-1m, first.PeriodEarned);
             Assert.Equal(0, first.Balance); Assert.Contains("without posted dates", first.BalanceDescription);
             await Capture(window, $"shell-dashboard-{width}");
-            Descendants<Button>(first).Single(button => Equals(button.Content, "Sessions →")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            ((Button)first.FindName("ViewSessionsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             await Settle();
             var sessions = Assert.IsType<SessionsView>(content.Content);
             var row = Assert.Single(((SessionsViewModel)sessions.DataContext).Sessions);

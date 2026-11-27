@@ -31,6 +31,7 @@ namespace EarningsTracker.Views.Modals
             _work = new DialogWork(this, BusyStatus);
             Unloaded += (_, _) => Dispose();
             _existing = existing;
+            EditorDescription.Text = existing == null ? "Enter the record and explain any adjustment." : "Update the record and explain any adjustment.";
             _expectedState = existing == null ? null : PayoutService.CaptureEditState(existing);
             PayoutType.ItemsSource = new[] { "Payment", "Bonus", "Earnings correction", "Other" };
             Status.ItemsSource = new[] { "Paid", "Processing", "Failed", "Pending", "Verified" };
@@ -50,6 +51,13 @@ namespace EarningsTracker.Views.Modals
                 var isAdjustment = PayoutType.SelectedItem?.ToString() is "Bonus" or "Earnings correction";
                 AdjustmentOptions.Visibility = isAdjustment ? Visibility.Visible : Visibility.Collapsed;
             };
+        }
+
+        private void PayoutForm_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var columns = e.NewSize.Width < 520 ? 1 : 2;
+            DateTypeFields.Columns = columns;
+            StatusAmountFields.Columns = columns;
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)

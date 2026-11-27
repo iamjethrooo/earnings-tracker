@@ -73,6 +73,10 @@ namespace EarningsTracker.Views
         public string LifetimeSummary => $"Lifetime earned: {CurrencyDisplay.FormatUsd(TotalEarned)} · Paid + Processing: {CurrencyDisplay.FormatUsd(TotalPaidOut)}";
         public string BalanceExclusionNotice { get; private set; } = "";
         public string PaymentBreakdown { get; private set; } = "";
+        public string PaidDisplay { get; private set; } = "";
+        public string ProcessingDisplay { get; private set; } = "";
+        public bool IsCompactLayout { get; private set; }
+        public int MetricColumns => IsCompactLayout ? 2 : 4;
         internal decimal PeriodEarned => Trend.Sum(day => day.Earned);
         internal decimal PeriodPending => Trend.Sum(day => day.Pending);
         private static DateTime RecordedDay(Session session) => (session.RecordedDate == default ? session.Date : session.RecordedDate).Date;
@@ -154,9 +158,9 @@ namespace EarningsTracker.Views
                     report.Sessions.Where(row => row.Status == status).Sum(row => row.Earnings), BrushFor(status switch
                     { SessionStatus.Verified => "VerifiedTextColor", SessionStatus.Pending => "PendingTextColor", SessionStatus.Rejected => "RejectedTextColor", _ => "NotUploadedTextColor" }))).ToList();
             Metrics = [new("Earned", CurrencyDisplay.FormatUsd(PeriodEarned), "Verified + separate adjustments", BrushFor("DefaultTextColor")),
-                new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "", BrushFor("PendingTextColor")),
+                new("Pending earnings", CurrencyDisplay.FormatUsd(PeriodPending), "Awaiting verification", BrushFor("PendingTextColor")),
                 new("Paid + processing", CurrencyDisplay.FormatUsd(report.Paid), "Payments in this period", BrushFor("DefaultTextColor")),
-                new("Hours played", $"{report.Hours:N1} h", "Verified + Pending", BrushFor("DefaultTextColor"))];
+                new("Hours played", $"{report.Hours:N1} h", "Verified + pending sessions", BrushFor("DefaultTextColor"))];
             RangeLabel = $"{report.Start:MMM d} – {report.End:MMM d, yyyy}";
             if (report.PayoutNotice.Length > 0)
                 RangeLabel += $". {report.PayoutNotice}";
@@ -174,6 +178,7 @@ namespace EarningsTracker.Views
             var firstRun = TotalSessions == 0 && _payouts.Count == 0;
             GettingStarted.Visibility = firstRun ? Visibility.Visible : Visibility.Collapsed;
             AnalysisGrid.Visibility = RecordingsPanel.Visibility = firstRun ? Visibility.Collapsed : Visibility.Visible;
+            MoreInsights.Visibility = firstRun ? Visibility.Collapsed : Visibility.Visible;
             foreach (var property in new[] { nameof(Metrics), nameof(Trend), nameof(TopGames), nameof(Statuses), nameof(RangeLabel), nameof(SessionCountLabel), nameof(VerifiedPercent), nameof(VerifiedShare), nameof(GameAttributionNotice) })
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
         }
@@ -204,14 +209,20 @@ namespace EarningsTracker.Views
         private void Dashboard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             var stacked = ActualWidth - 40 < 850;
-            foreach (var panel in new[] { DistributionPanel, GamesPanel })
+            if (IsCompactLayout != stacked)
             {
-                Grid.SetColumn(panel, stacked ? 0 : 2);
-                Grid.SetRow(panel, stacked ? 1 : 0);
-                panel.Margin = stacked ? new Thickness(0, 16, 0, 0) : new Thickness(0);
+                IsCompactLayout = stacked;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompactLayout)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MetricColumns)));
             }
-            Grid.SetColumnSpan(TrendPanel, stacked ? 3 : 1);
-            Grid.SetColumnSpan(ActivityPanel, stacked ? 3 : 1);
+            RecentRecordedColumn.Width = stacked ? new GridLength(0) : new GridLength(1.9, GridUnitType.Star);
+            RecentDurationColumn.Width = stacked ? new GridLength(0) : new GridLength(1.8, GridUnitType.Star);
+            RecentEarningsColumn.Width = stacked ? new GridLength(150) : new GridLength(1.4, GridUnitType.Star);
+            RecentStatusColumn.Width = stacked ? new GridLength(136) : new GridLength(1.4, GridUnitType.Star);
+            RecentRecordedHeader.Visibility = RecentDurationHeader.Visibility = stacked ? Visibility.Collapsed : Visibility.Visible;
+            Grid.SetColumn(GamesPanel, stacked ? 0 : 2);
+            Grid.SetRow(GamesPanel, stacked ? 1 : 0);
+            GamesPanel.Margin = stacked ? new Thickness(0, 16, 0, 0) : new Thickness(0);
             Grid.SetColumnSpan(DistributionPanel, stacked ? 3 : 1);
             Grid.SetColumnSpan(GamesPanel, stacked ? 3 : 1);
         }
@@ -285,7 +296,11 @@ namespace EarningsTracker.Views
                     var payments = payouts.Where(p => p.Type.Equals("Payment", StringComparison.OrdinalIgnoreCase)).ToList();
                     var paid = payments.Where(p => p.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
                     var processing = payments.Where(p => p.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase)).Sum(p => Math.Abs(p.Amount));
+                    PaidDisplay = CurrencyDisplay.FormatUsd(paid);
+                    ProcessingDisplay = CurrencyDisplay.FormatUsd(processing);
                     PaymentBreakdown = $"Paid: {CurrencyDisplay.FormatUsd(paid)} · Processing: {CurrencyDisplay.FormatUsd(processing)}";
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PaidDisplay)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProcessingDisplay)));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PaymentBreakdown)));
                     _artwork = artwork;
                     _snapshotDay = today;

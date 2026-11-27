@@ -164,9 +164,10 @@ public class ResponsiveLayoutTests(WpfTestHost host)
                 var action = Descendants<Button>(view).Single(b => b.Content as string is "Preview import" or "Save payout");
                 scroll.ScrollToBottom();
                 modal.UpdateLayout();
-                Assert.True(Bounds(action, scroll).Bottom <= scroll.ActualHeight + 1);
-                Assert.True(Bounds(action, scroll).Top >= -1);
                 Snapshot(modal, $"{view.GetType().Name}-dialog-{width}");
+                Assert.True(Bounds(action, scroll).Bottom <= scroll.ActualHeight + 1,
+                    $"{view.GetType().Name}: action {Bounds(action, scroll)}, viewport {scroll.ActualWidth} x {scroll.ActualHeight}, view {view.ActualHeight}");
+                Assert.True(Bounds(action, scroll).Top >= -1);
             }
             finally { modal.Close(); }
         }

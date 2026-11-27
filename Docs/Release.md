@@ -98,6 +98,25 @@ dotnet test EarningsTracker.slnx --configuration Release --no-build --no-restore
 
 Do not launch the default application merely to verify a build; startup can migrate the current user's database. Use the isolated storage rules in [Database and storage](Database.md) for manual testing.
 
+## v1.8.0 candidate preparation — 2026-11-27
+
+Prepare an unsigned, self-contained Windows x64 minor release for the redesigned pages,
+compact navigation rail, eight modal layouts, wrapped tooltips and dark action menus.
+Product/package version is 1.8.0; assembly/file version is 1.8.0.0. Retain package identity
+`EarningsTracker.App`, channel `win-x64-app-stable`, Production updates and full packages only.
+There is no new database migration. Preserve all existing financial, import and audit rules.
+
+Reconcile v1.7.0's history timestamp with GitHub's actual `2026-11-22T07:43:34Z`.
+The v1.8.0 timestamp is provisional until publication. Record exact dirty-source hashes,
+fresh Debug/Release results, package/privacy validation, signature status and isolated startup
+evidence under `.local-docs/` and `artifacts/`. Keep required unsigned, data-preservation,
+licensing and verification disclosures in the generated notes. Existing accepted lifecycle
+evidence remains applicable; native input, screen-reader, physical monitor-DPI and exact
+installer/update checks must not be represented as passed without new evidence.
+
+Local preparation does not publish or authorize source pushes, tags or uploads. Obtain
+approval for the exact reviewed source and artifact hashes before publication.
+
 ## v1.7.0 candidate preparation — 2026-11-22
 
 Prepare an unsigned, self-contained Windows x64 minor release with product/package version

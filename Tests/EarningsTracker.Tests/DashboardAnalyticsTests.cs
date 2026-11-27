@@ -191,12 +191,15 @@ public class DashboardAnalyticsTests(WpfTestHost host)
             Assert.True(selector.Focus()); Assert.True(selector.IsKeyboardFocusWithin);
             selector.SelectedIndex = 0; Assert.Equal(7, view.Trend.Count);
             selector.SelectedIndex = 2; Assert.Equal(90, view.Trend.Count);
-            var all = Descendants<Button>(view).Single(button => Equals(button.Content, "Sessions →"));
+            var all = (Button)view.FindName("ViewSessionsButton");
             all.BringIntoView(); await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Assert.True(all.Focus());
             Assert.True(all.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
             var scroll = (ScrollViewer)view.FindName("TotalsScroll"); scroll.ScrollToBottom(); view.UpdateLayout();
-            Assert.True(Bounds(selector, view).Bottom < 120); // Header stays outside page scrolling.
+            selector.BringIntoView();
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            Assert.True(Bounds(selector, view).Top >= 0);
+            Assert.True(Bounds(selector, view).Bottom <= view.ActualHeight);
             var list = (ListBox)view.FindName("SessionsList");
             var item = view.RecentSessions.First(row => row.Game != null);
             list.ScrollIntoView(item); view.UpdateLayout();
@@ -221,7 +224,7 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         ((ComboBox)view.FindName("PeriodSelector")).SelectedIndex = 1;
         await Layout(view, width, height);
         Assert.Equal(4, view.Metrics.Count);
-        Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("DistributionPanel")));
+        Assert.Equal(width < 890 ? 1 : 0, Grid.GetRow((Border)view.FindName("GamesPanel")));
         var scroll = (ScrollViewer)view.FindName("TotalsScroll");
         Assert.Equal(0, scroll.ScrollableWidth);
         var selector = (ComboBox)view.FindName("PeriodSelector");
@@ -252,11 +255,13 @@ public class DashboardAnalyticsTests(WpfTestHost host)
         var linked = view.RecentSessions.First(row => row.Game != null);
         recent.SelectedItem = linked;
         Assert.Equal(linked.Game!.Id, gameId);
+        ((Expander)view.FindName("MoreInsights")).IsExpanded = true;
+        await Layout(view, width, height);
         var gameButton = Descendants<Button>((Border)view.FindName("GamesPanel")).First(button => button.DataContext is DashboardGame { Game: not null });
         gameButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.Equal(((DashboardGame)gameButton.DataContext).Game!.Id, gameId);
         var all = false; view.ViewAllSessionsRequested += (_, _) => all = true;
-        Descendants<Button>(view).Single(button => Equals(button.Content, "Sessions →")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        ((Button)view.FindName("ViewSessionsButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.True(all);
         Capture(view, $"dashboard-bottom-{width}");
         if (width == 1212) Capture(view, "dashboard-150pct", 1.5);

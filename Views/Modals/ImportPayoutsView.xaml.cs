@@ -19,6 +19,21 @@ namespace EarningsTracker.Views.Modals
         private PayoutImportResult? _importResult;
         private bool _importCompleted;
 
+        public bool IsCompactReview
+        {
+            get => (bool)GetValue(IsCompactReviewProperty);
+            private set => SetValue(IsCompactReviewProperty, value);
+        }
+        public static readonly DependencyProperty IsCompactReviewProperty = DependencyProperty.Register(
+            nameof(IsCompactReview), typeof(bool), typeof(ImportPayoutsView), new PropertyMetadata(false));
+        private void Review_SizeChanged(object sender, SizeChangedEventArgs e) => IsCompactReview = e.NewSize.Width < 680;
+
+        internal sealed record PayoutReviewRow(PayoutHistoryItem Row, string Before = "")
+        {
+            public string AccessibleName => $"{Row.PostedText} · {Row.Type} · {Row.Description} · {Row.AmountText} · {Row.Status} {Before}";
+            public override string ToString() => AccessibleName;
+        }
+
         public event EventHandler? ImportCompleted;
         private bool CanImport => !string.IsNullOrWhiteSpace(ImportTextBox.Text);
 
@@ -37,6 +52,22 @@ namespace EarningsTracker.Views.Modals
             _work.Dispose();
             // Closing a preview must not dispose a context while its worker is still reading.
             if (!_work.IsRunning) _importer?.Dispose();
+        }
+
+        private Modal? FindParentModal()
+        {
+            DependencyObject? parent = this;
+            while (parent != null)
+            {
+                if (parent is Modal modal) return modal;
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
+
+        private void CancelImport_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_work.IsRunning && !_work.IsDisposed) FindParentModal()?.Close();
         }
 
         private void ParseImportButton_Click(object sender, RoutedEventArgs e)
@@ -91,6 +122,8 @@ namespace EarningsTracker.Views.Modals
 
         private void SummaryBackButton_Click(object sender, RoutedEventArgs e)
         {
+            Modal.SetContentMaxWidth(this, 920);
+            if (FindParentModal() is Modal modal) modal.Title = "Import payouts";
             ImportInputPanel.Visibility = Visibility.Visible;
             ImportResultContainer.Visibility = Visibility.Collapsed;
         }
@@ -164,8 +197,14 @@ namespace EarningsTracker.Views.Modals
 
         private void ShowSummary(PayoutImportResult result, bool completed = false)
         {
+            Modal.SetContentMaxWidth(this, 940);
+            if (FindParentModal() is Modal modal) modal.Title = completed ? "Import complete" : "Review payout import";
+            var total = result.AddedCount + result.UpdatedCount + result.UnchangedCount + result.SkippedCount + result.FailedRows.Count;
+            ImportCounts.Text = $"{total} records found · {result.AddedCount} new · {result.UpdatedCount} {(result.UpdatedCount == 1 ? "update" : "updates")} · {result.UnchangedCount} unchanged · {result.SkippedCount} skipped";
+            if (result.FailedRows.Count > 0) ImportCounts.Text += $" · {result.FailedRows.Count} failed";
             ImportSummarySections.Children.Clear();
             SetOutcome(completed ? "Import saved." : "Import preview", completed ? "VerifiedTextColor" : "DefaultTextColor");
+            ImportOutcome.Visibility = completed ? Visibility.Visible : Visibility.Collapsed;
             ImportGuidance.Text = completed ? "" :
                 result.ConflictingRows.Count > 0 ? "Conflicting rows must be corrected before importing." :
                 result.AmbiguousPayoutMatches.Count + result.AmbiguousForceVerifiedSessions.Count > 0 ? "Ambiguous rows: review Skipped, then skip them or correct the input. Nothing saved yet." :
@@ -175,16 +214,22 @@ namespace EarningsTracker.Views.Modals
             ImportGuidance.Visibility = string.IsNullOrEmpty(ImportGuidance.Text) ? Visibility.Collapsed : Visibility.Visible;
 
             AddSection("Added", result.AddedCount,
-                result.NewPayouts.Select(p => $"{p.Date:d} · {p.Type} — {p.Description} ({CurrencyDisplay.FormatUsd(p.Amount)}, {p.Status})"), "VerifiedTextColor");
+                result.NewPayouts.Select(p => $"{p.Date:d} · {p.Type} — {p.Description} ({CurrencyDisplay.FormatUsd(p.Amount)}, {p.Status})"), "VerifiedTextColor",
+                reviewRows: result.NewPayouts.Select(p => new PayoutReviewRow(PayoutHistoryItem.FromPayout(p))));
 
             var updatedRows = result.Updates.Select(update =>
                     $"{update.Existing.Date:d} {update.Existing.Type} — {update.Existing.Description} ({CurrencyDisplay.FormatUsd(update.Existing.Amount)}, {update.Existing.Status}) → {update.Imported.Date:d} {update.Imported.Type} — {update.Imported.Description} ({CurrencyDisplay.FormatUsd(update.Imported.Amount)}, {update.Imported.Status})")
                 .Concat(result.ForceVerifiedSessionUpdates.Select(update =>
                     $"{update.Session.GameName}, recorded {update.Session.RecordedDate:d} {update.Session.RecordedDate:t}, posted {update.Session.PostedDate:d}"));
-            AddSection("Updated", result.UpdatedCount, updatedRows);
+            AddSection("Updated", result.UpdatedCount, updatedRows,
+                reviewRows: result.Updates.Select(update => new PayoutReviewRow(PayoutHistoryItem.FromPayout(update.Imported),
+                    $"Saved: {update.Existing.Date:d} · {update.Existing.Type} · {update.Existing.Description} · {CurrencyDisplay.FormatUsd(update.Existing.Amount)} · {update.Existing.Status}"))
+                    .Concat(result.ForceVerifiedSessionUpdates.Select(update => new PayoutReviewRow(PayoutHistoryItem.FromSession(update.Session),
+                        $"Force verification · recorded {update.Session.RecordedDate:d} {update.Session.RecordedDate:t} · posted {update.Session.PostedDate:d}"))));
 
             AddSection("Unchanged", result.UnchangedCount,
-                result.Duplicates.Select(p => $"{p.Date:d} · {p.Type} — {p.Description} ({CurrencyDisplay.FormatUsd(p.Amount)}, {p.Status})"));
+                result.Duplicates.Select(p => $"{p.Date:d} · {p.Type} — {p.Description} ({CurrencyDisplay.FormatUsd(p.Amount)}, {p.Status})"),
+                reviewRows: result.Duplicates.Select(p => new PayoutReviewRow(PayoutHistoryItem.FromPayout(p))));
 
             var skippedRows = result.SkippedRows
                 .Concat(result.ConflictingRows.Select(row => $"Conflicting import rows: {row}"))
@@ -204,13 +249,15 @@ namespace EarningsTracker.Views.Modals
 
         private void SetOutcome(string text, string foreground)
         {
+            ImportOutcome.Visibility = Visibility.Visible;
             ImportOutcome.Text = text;
             ImportOutcome.SetResourceReference(TextBlock.ForegroundProperty, foreground);
         }
 
-        private void AddSection(string title, int count, IEnumerable<string> details, string foreground = "DefaultTextColor", bool expanded = false)
+        private void AddSection(string title, int count, IEnumerable<string> details, string foreground = "DefaultTextColor", bool expanded = false, IEnumerable<PayoutReviewRow>? reviewRows = null)
         {
             var rows = details.ToList();
+            var formattedRows = reviewRows?.ToList();
             if (count == 0)
             {
                 ImportSummarySections.Children.Add(new TextBlock
@@ -230,19 +277,19 @@ namespace EarningsTracker.Views.Modals
                     Foreground = (Brush)FindResource(count == 0 ? "SecondaryTextColor" : foreground),
                     Margin = new Thickness(0)
                 },
-                IsExpanded = expanded,
+                IsExpanded = expanded || title is "Added" or "Updated",
                 Margin = new Thickness(0, 0, 0, 8),
-                Padding = (Thickness)FindResource("CompactPanelPadding"),
-                Background = (Brush)FindResource("SurfaceColor"),
+                Padding = new Thickness(0, 12, 0, 0),
+                Background = Brushes.Transparent,
                 Foreground = (Brush)FindResource("DefaultTextColor"),
                 BorderBrush = (Brush)FindResource("DefaultBorderColor"),
-                BorderThickness = new Thickness(1)
+                BorderThickness = new Thickness(0, 1, 0, 0)
             };
 
             // A finite viewport keeps recycling active inside the modal's outer scroller.
             var list = new ListBox
             {
-                ItemsSource = rows,
+                ItemsSource = formattedRows == null ? rows : formattedRows,
                 MaxHeight = 240,
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
@@ -256,16 +303,29 @@ namespace EarningsTracker.Views.Modals
             list.Resources.Add(typeof(System.Windows.Controls.Primitives.ScrollBar),
                 new Style(typeof(System.Windows.Controls.Primitives.ScrollBar), (Style)FindResource("VerticalScrollBar")));
             System.Windows.Automation.AutomationProperties.SetName(list, $"{title} import records");
-            var rowStyle = new Style(typeof(ListBoxItem), (Style)FindResource("ItemButton"));
+            var rowStyle = new Style(typeof(ListBoxItem), (Style)FindResource("DialogReviewItem"));
             rowStyle.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(8)));
-            rowStyle.Setters.Add(new Setter(Control.FontSizeProperty, FindResource("FontSizeCompactBody")));
+            rowStyle.Setters.Add(new Setter(Control.FontSizeProperty, FindResource("FontSizeBody")));
             rowStyle.Setters.Add(new Setter(Control.FontWeightProperty, FontWeights.Normal));
+            if (formattedRows != null)
+                rowStyle.Setters.Add(new Setter(System.Windows.Automation.AutomationProperties.NameProperty,
+                    new System.Windows.Data.Binding(nameof(PayoutReviewRow.AccessibleName))));
             list.ItemContainerStyle = rowStyle;
             var text = new FrameworkElementFactory(typeof(TextBlock));
             text.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding());
             text.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
             text.SetValue(TextBlock.ForegroundProperty, FindResource("DefaultTextColor"));
-            list.ItemTemplate = new DataTemplate { VisualTree = text };
+            if (formattedRows == null)
+                list.ItemTemplate = new DataTemplate { VisualTree = text };
+            if (formattedRows != null)
+            {
+                var listStyle = new Style(typeof(ListBox), (Style)FindResource(typeof(ListBox)));
+                listStyle.Setters.Add(new Setter(ItemsControl.ItemTemplateProperty, FindResource("PayoutReviewRow")));
+                var compact = new DataTrigger { Binding = new System.Windows.Data.Binding(nameof(IsCompactReview)) { Source = this }, Value = true };
+                compact.Setters.Add(new Setter(ItemsControl.ItemTemplateProperty, FindResource("CompactPayoutReviewRow")));
+                listStyle.Triggers.Add(compact);
+                list.Style = listStyle;
+            }
             expander.Content = list;
             ImportSummarySections.Children.Add(expander);
         }

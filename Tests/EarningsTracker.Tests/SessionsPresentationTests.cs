@@ -75,6 +75,8 @@ public class SessionsPresentationTests(WpfTestHost host)
         ((Button)view.FindName("PanelRetryButton"))
             .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         await view.RefreshSessionsAsync();
+        // The selected record's evidence read also uses this fixture's shared SQLite connection.
+        await view.EvidenceCompletion;
         using (var db = database.CreateContext())
             Assert.Single(db.SessionChanges.Where(change => change.ChangeType == "Updated"));
     });

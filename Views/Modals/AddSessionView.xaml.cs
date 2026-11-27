@@ -77,6 +77,11 @@ namespace EarningsTracker.Views.Modals
 
         public void Dispose() => _work.Dispose();
 
+        private void CancelImport_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_work.IsRunning && !_work.IsDisposed) FindParentModal()?.Close();
+        }
+
         private void ParseImportButton_Click(object sender, RoutedEventArgs e) { if (!_work.IsRunning && !_work.IsDisposed) OperationCompletion = ParseAsync(); }
 
         private async Task ParseAsync()
@@ -95,15 +100,16 @@ namespace EarningsTracker.Views.Modals
             try
             {
                 ImportInputPanel.Visibility = Visibility.Collapsed;
-                importResult = await _work.RunAsync("Preparing session preview…", () =>
+                var preview = await _work.RunAsync("Preparing session preview…", () =>
                 {
                     using var db = _databaseOptions == null ? new AppDbContext() : new AppDbContext(_databaseOptions);
                     var games = db.Games.AsNoTracking().ToList();
-                    return importer.PreviewImport(SessionTextParser.Parse(importText, games, game));
+                    return (Result: importer.PreviewImport(SessionTextParser.Parse(importText, games, game)), Games: games, Metadata: db.GameMetadata.AsNoTracking().ToList());
                 });
                 if (_work.IsDisposed) return;
 
-                ImportResultModal.ShowPreview(importResult);
+                importResult = preview.Result;
+                ImportResultModal.ShowPreview(importResult, preview.Games, preview.Metadata);
                 ImportResultContainer.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
@@ -116,6 +122,8 @@ namespace EarningsTracker.Views.Modals
 
         private void SummaryBackButton_Click()
         {
+            Modal.SetContentMaxWidth(this, 920);
+            if (FindParentModal() is Modal modal) modal.Title = "Add session";
             ImportInputPanel.Visibility = Visibility.Visible;
             ImportResultContainer.Visibility = Visibility.Collapsed;
             ImportTextBox.Focus();

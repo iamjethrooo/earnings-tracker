@@ -185,7 +185,8 @@ public class SteamLibraryUiTests(WpfTestHost host)
         using var client = new HttpClient(new SteamLibraryTests.Handler());
         var credentials = new SteamLibraryTests.FakeCredentials();
         var service = new SteamLibrary(database.Options, client, credentials);
-        var view = new SettingsView(database.Options, steamLibrary: service);
+        var view = new SettingsView(database.Options, steamLibrary: service, catalogKeyConfigured: static () => false);
+        SettingsOverviewTests.SelectCategory(view, "StoreOffersSection");
         ((TextBox)view.FindName("SteamProfile")).Text = SteamLibraryTests.SteamId;
         var password = (PasswordBox)view.FindName("SteamKey"); password.Password = SteamLibraryTests.Key;
         ((Button)view.FindName("SteamLink")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

@@ -7,19 +7,12 @@
     <UserControl.Resources>
         <Style TargetType="ToolTip" BasedOn="{StaticResource ChartToolTip}"/>
     </UserControl.Resources>
-    <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="StatisticsScroll" Background="Transparent" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="{StaticResource PageInset}">
-            <Grid Margin="0,0,0,16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                <TextBlock Text="Statistics" Style="{StaticResource TabName}"/>
-
+            <StackPanel Margin="0,0,0,24">
+                <TextBlock Text="Statistics" Style="{StaticResource PageTitle}"/>
+                <TextBlock Text="Understand earnings over time and across games." Style="{StaticResource PageDescription}"/>
             </StackPanel>
-
-            </Grid>
 
             <Border x:Name="LoadStatusPanel" Visibility="Collapsed" Style="{StaticResource FeedbackPanel}">
                 <DockPanel>
@@ -28,32 +21,34 @@
                 </DockPanel>
             </Border>
             <StackPanel x:Name="TotalsPanel" Visibility="Collapsed">
-                <TextBlock Text="Calendar summaries · USD · Independent of the analysis period below" Style="{StaticResource PageDescription}" Margin="0,0,0,8"/>
-                <UniformGrid x:Name="MetricCards" Columns="3" Margin="-4,0,-4,16" SizeChanged="MetricCards_SizeChanged">
+                <TextBlock Text="Calendar summaries · USD" Style="{StaticResource SectionHeading}" Margin="0,0,0,12"/>
+                <UniformGrid x:Name="MetricCards" Columns="3" Margin="0,0,0,8" SizeChanged="MetricCards_SizeChanged">
 
-                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                    <Border Padding="0" Margin="0,0,24,8">
                         <StackPanel>
                             <TextBlock Text="Today so far" Style="{StaticResource DashboardStatLabel}"/>
-                            <TextBlock Text="{Binding TodayEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource AccentTextColor}"/>
+                            <TextBlock Text="{Binding TodayEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource AccentTextColor}" FontSize="36"/>
 
                         </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                    <Border Padding="0" Margin="0,0,24,8">
                         <StackPanel>
-                            <TextBlock Text="This Week" Style="{StaticResource DashboardStatLabel}"/>
-                            <TextBlock Text="{Binding ThisWeekEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
-                            <TextBlock Text="Since Monday" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
+                            <TextBlock Text="This week" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="{Binding ThisWeekEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}" FontSize="36"/>
+                            <TextBlock Text="{Binding CalendarWeekDescription}" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource MetricPanel}" BorderBrush="{StaticResource DefaultBorderColor}" Padding="{StaticResource StandardPanelPadding}" Margin="4,0,4,8">
+                    <Border Padding="0" Margin="0,0,24,8">
                         <StackPanel>
-                            <TextBlock Text="This Month" Style="{StaticResource DashboardStatLabel}"/>
-                            <TextBlock Text="{Binding ThisMonthEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}"/>
+                            <TextBlock Text="This month" Style="{StaticResource DashboardStatLabel}"/>
+                            <TextBlock Text="{Binding ThisMonthEarningsDisplay}" Style="{StaticResource DashboardStatValue}" TextWrapping="Wrap" Foreground="{StaticResource DefaultTextColor}" FontSize="36"/>
+                            <TextBlock Text="{Binding CalendarMonthDescription}" Style="{StaticResource DashboardStatDescription}" TextWrapping="Wrap"/>
 
                         </StackPanel>
                     </Border>
                 </UniformGrid>
 
+                <TextBlock Text="Calendar totals are independent of the analysis period." Style="{StaticResource PageDescription}" Margin="0,0,0,8"/>
                 <Expander Header="How calculated" Margin="0,0,0,12" AutomationProperties.Name="Statistics calculation details">
                     <StackPanel Margin="0,8,0,0">
                         <TextBlock Text="Earned includes verified sessions and eligible separate bonuses/corrections. Sessions use recording dates; adjustments use transaction dates. Game totals exclude adjustments." Style="{StaticResource PageDescription}"/>
@@ -61,35 +56,41 @@
                         <TextBlock Text="Cap usage counts verified time since the last reset. No reset date means all history." Style="{StaticResource PageDescription}"/>
                     </StackPanel>
                 </Expander>
-                <TextBlock Text="Earnings analysis" Style="{StaticResource SectionHeading}"/>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,8,0,12">
-                    <TextBlock Text="Period" Style="{StaticResource FilterLabel}" Margin="0,0,8,0"/>
-                    <ComboBox Style="{StaticResource FilterDropdown}" x:Name="EarningsRangeComboBox" Width="165" AutomationProperties.Name="Earnings chart date range" SelectedIndex="4" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
-                        <ComboBoxItem Content="Last 30 days" Tag="30"/>
-                        <ComboBoxItem Content="Last 90 days" Tag="90"/>
-                        <ComboBoxItem Content="This year" Tag="Year"/>
-                        <ComboBoxItem Content="All time" Tag="All"/>
-                        <ComboBoxItem Content="Current payout" Tag="Payout"/>
-                    </ComboBox>
-                </StackPanel>
-                <TextBlock Text="{Binding RangeDescription}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                <Border Style="{StaticResource OpenSectionPanel}" Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,16,0">
+                            <TextBlock Text="Earnings analysis" Style="{StaticResource ContentHeading}"/>
+                            <TextBlock Text="{Binding RangeDescription}" Style="{StaticResource ItemSubtitle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Style="{StaticResource FilterDropdown}" x:Name="EarningsRangeComboBox" Width="190" VerticalAlignment="Top"
+                                  AutomationProperties.Name="Earnings chart date range" SelectedIndex="4" SelectionChanged="EarningsRangeComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Last 30 days" Tag="30"/>
+                            <ComboBoxItem Content="Last 90 days" Tag="90"/>
+                            <ComboBoxItem Content="This year" Tag="Year"/>
+                            <ComboBoxItem Content="All time" Tag="All"/>
+                            <ComboBoxItem Content="Current payout" Tag="Payout"/>
+                        </ComboBox>
+                    </Grid>
+                </Border>
                 <TextBlock x:Name="PayoutRangeNotice" Visibility="Collapsed" Foreground="{StaticResource SecondaryTextColor}"
-                           FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                <Grid x:Name="ChartsGrid" SizeChanged="ChartsGrid_SizeChanged">
+                           FontSize="{StaticResource FontSizeSupporting}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                <Grid x:Name="ChartsGrid" SizeChanged="ChartsGrid_SizeChanged" Margin="0,24,0,0">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.15*"/>
+                        <ColumnDefinition Width="1.65*"/>
                         <ColumnDefinition Width="0.85*"/>
                     </Grid.ColumnDefinitions>
-                    <Border x:Name="TrendPanel" Grid.Column="0" Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="0,0,7,0" MinHeight="300">
+                    <Border x:Name="TrendPanel" Grid.Column="0" Background="Transparent" Padding="0" Margin="0,0,24,0" MinHeight="300">
                         <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
-                                <TextBlock Text="Earnings by period" Style="{StaticResource SectionHeading}"/><TextBlock Text="Bars show earned amounts in each period. The current period is incomplete." Style="{StaticResource PageDescription}"/>
+                                <TextBlock Text="Earnings by period" Style="{StaticResource ContentHeading}"/>
 
                             </StackPanel>
                             <Canvas Grid.Row="1" x:Name="EarningsTrendCanvas" Height="230" SizeChanged="EarningsTrendCanvas_SizeChanged"/>
-                            <Expander Grid.Row="2" x:Name="TrendValuesExpander" Header="Values" Margin="0,10,0,0"
+                            <TextBlock Grid.Row="2" Text="Current period is incomplete" Style="{StaticResource ItemSubtitle}" HorizontalAlignment="Right" Margin="0,14,0,0" IsHitTestVisible="False"/>
+                            <Expander Grid.Row="2" x:Name="TrendValuesExpander" Header="Exact values" Margin="0,10,0,0"
                                       Foreground="{StaticResource DefaultTextColor}" FontSize="{StaticResource FontSizeSupporting}">
                                 <ListBox x:Name="TrendValuesList" ItemsSource="{Binding TrendPeriods}" Height="180" Margin="0,8,0,0"
                                          Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
@@ -118,11 +119,11 @@
                             </Expander>
                         </Grid>
                     </Border>
-                    <Border x:Name="GameEarningsPanel" Grid.Column="1" Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="7,0,0,0" MinHeight="300">
+                    <Border x:Name="GameEarningsPanel" Grid.Column="1" Background="Transparent" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1,0,0,0" Padding="24,0,0,0" MinHeight="300">
                         <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                             <StackPanel Grid.Row="0" Margin="0,0,0,10">
-                                <TextBlock Text="Earnings by game" Style="{StaticResource SectionHeading}"/>
+                                <TextBlock Text="Earnings by game" Style="{StaticResource ContentHeading}"/>
                                 <ComboBox x:Name="GameEarningsMode" Style="{StaticResource FilterDropdown}" HorizontalAlignment="Left"
                                           SelectedIndex="0" SelectionChanged="EarningsRangeComboBox_SelectionChanged"
                                           AutomationProperties.Name="Rank games by" Margin="0,6,0,0">
@@ -132,10 +133,10 @@
                                 <TextBlock Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,3,0,0" TextWrapping="Wrap">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="Top 8 · verified session earnings"/>
+                                            <Setter Property="Text" Value="Top 8 · verified session earnings · adjustments excluded"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding SelectedIndex, ElementName=GameEarningsMode}" Value="1">
-                                                    <Setter Property="Text" Value="Top 8 · linked verified sessions with recorded playtime"/>
+                                                    <Setter Property="Text" Value="Top 8 · linked verified playtime · adjustments excluded"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -162,9 +163,9 @@
                                     <DataTemplate>
                                         <Grid Margin="0,6">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding GameName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding AccessibleSummary}" AutomationProperties.Name="{Binding AccessibleSummary}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding GameName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding AccessibleSummary}" AutomationProperties.Name="{Binding AccessibleSummary}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <ProgressBar Style="{StaticResource MetricProgressBar}" Grid.Column="1" Value="{Binding Share, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="2" Text="{Binding ValueText}" FontSize="{StaticResource FontSizeSupporting}" TextAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ValueText}" FontSize="{StaticResource FontSizeBody}" TextAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -172,7 +173,7 @@
                         </Grid>
                     </Border>
                 </Grid>
-                <Border Style="{StaticResource SurfacePanel}" Padding="{StaticResource StandardPanelPadding}" Margin="0,16,0,16">
+                <Border Style="{StaticResource OpenSectionPanel}" Margin="0,24,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -180,9 +181,12 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="220"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Game cap utilization" Style="{StaticResource SectionHeading}" Margin="4,0,4,8"/>
-                        <TextBlock Grid.Row="1" Text="Verified time since the last reset." Foreground="{StaticResource SecondaryTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap"/>
-                        <TextBlock Grid.Row="2" x:Name="GameAssociationNoticeText" Text="{Binding GameAssociationNotice}" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="4,0,4,8" TextWrapping="Wrap">
+                        <TextBlock Grid.Row="0" Text="Game cap utilization" Style="{StaticResource ContentHeading}" Margin="0,0,0,8"/>
+                        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                            <TextBlock Text="Verified linked play time since the last reset." Style="{StaticResource PageDescription}"/>
+                            <TextBlock Text="Current cycles; independent of the analysis range." Style="{StaticResource PageDescription}"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" x:Name="GameAssociationNoticeText" Text="{Binding GameAssociationNotice}" Foreground="{StaticResource PendingTextColor}" FontSize="{StaticResource FontSizeSupporting}" Margin="0,0,0,8" TextWrapping="Wrap">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Style.Triggers>
@@ -195,9 +199,12 @@
                         </TextBlock>
                         <ListView Grid.Row="3" x:Name="GameCapList" ItemsSource="{Binding GameCapRows}" SizeChanged="GameCapList_SizeChanged"
                                   ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                                  ItemContainerStyle="{StaticResource TableRow}"
+                                  FontSize="{StaticResource FontSizeBody}"
                                   GridViewColumnHeader.Click="GameCapList_ColumnHeaderClick"
                                   Background="Transparent" BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TableRow}">
+                                <Setter Property="Padding" Value="8,10"/><Setter Property="MinHeight" Value="42"/>
+                            </Style></ListView.ItemContainerStyle>
                             <ListView.Resources>
                                 <Style TargetType="ScrollBar" BasedOn="{StaticResource VerticalScrollBar}"/>
                                 <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource CompactTableColumnHeader}">
@@ -224,14 +231,14 @@
                                     <GridViewColumn Header="UTILIZATION" Width="130">
                                         <GridViewColumn.CellTemplate><DataTemplate>
                                             <Grid VerticalAlignment="Center">
-                                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                                <ProgressBar Style="{StaticResource MetricProgressBar}" Value="{Binding ProgressValue, Mode=OneWay}" Maximum="100" VerticalAlignment="Center" Margin="2,0,7,0"/>
-                                                <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="{Binding UtilizationText}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" TextAlignment="Right"/>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding UtilizationText}" FontSize="{StaticResource FontSizeSupporting}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ProgressBar Grid.Column="1" Style="{StaticResource MetricProgressBar}" Value="{Binding ProgressValue, Mode=OneWay}" Maximum="100" Height="8" VerticalAlignment="Center" Margin="0,0,7,0"/>
                                             </Grid>
                                         </DataTemplate></GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                     <GridViewColumn Header="RATE" Width="90">
-                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding RateText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
+                                        <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding RateText, StringFormat={}{0}/h}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
                                     </GridViewColumn>
                                     <GridViewColumn Header="EARNED" Width="125">
                                         <GridViewColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding EarningsText}" TextWrapping="Wrap"/></DataTemplate></GridViewColumn.CellTemplate>
